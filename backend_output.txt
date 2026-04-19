@@ -1,0 +1,4156 @@
+===== 文件路径: backend\app\database.py =====
+from sqlalchemy import create_engine
+from sqlalchemy.orm import sessionmaker, declarative_base
+# T0
+# DATABASE_URL = "mysql+pymysql://autotest_data:auto1234@10.1.248.187:3306/autotest_data"
+# Local
+DATABASE_URL = "mysql+pymysql://root:Yuhongyi850623!@localhost:3306/autotest_data"
+
+engine = create_engine(
+    DATABASE_URL,
+    pool_pre_ping=True
+)
+
+SessionLocal = sessionmaker(
+    autocommit=False,
+    autoflush=False,
+    bind=engine
+)
+
+Base = declarative_base()
+
+def get_db():
+    db = SessionLocal()
+    try:
+        yield db
+    finally:
+        db.close()
+
+===== 文件路径: backend\app\main.py =====
+# 浏览器默认 不允许不同域名之间互相请求数据，例如前端和后端，这就是“跨域”，会被浏览器拦截
+from fastapi.middleware.cors import CORSMiddleware # 导入 FastAPI 提供的 CORS 中间件
+from fastapi import FastAPI
+from app.api.execution_api import router as execution_router2
+from app.api.case_task_api import router as case_task_router
+from app.api.template_api import router as template_router
+from app.api.component_api import router as component_router
+from app.api.parameter_api import router as parameter_router
+from app.api.component_parameter_api import router as component_parameter_router
+from app.api.auto_data_sql_api import router as auto_sql_router
+from app.api.provision_parameter_api import router as provision_router
+from app.api.pre_cfg_relation_api import router as pre_relation_router
+from app.api.billing_data_pool_api import router as billing_router
+from app.api.test_dispatcher_api import router as dispatcher_router
+from app.api.test_plan_api import router as plan_router
+from app.api.batch_detail_api import router as batch_detail_router
+from app.api.test_case_execution_api import router as execution_router
+from app.api.case_ext_api import router as case_ext_router
+from app.api.analysis_api import router as analysis_router
+from app.api.dispatcher_ext_api import router as dispatcher_ext_router
+from app.api.template_ext_api import router as template_ext_router
+from app.api import template_meta_router
+from app.api.component_parameter_api import router as component_parameter_api
+from app.api.template_rel_api import router as template_rel_router
+from app.api import test_plan_api
+from app.api.test_component_execution_api import router as component_execution_router
+
+
+# 创建一个 FastAPI 应用实例  可以理解为：app = API服务器， 所有接口都会挂在这个 app 上。
+app = FastAPI()
+# 给 FastAPI 应用添加一个“中间件”（middleware），中间件作用：在请求进入接口之前/之后处理一些事情（比如权限、日志、CORS）
+#  CORSMiddleware,指定使用 CORS 中间件
+# 允许任何网站访问你的 FastAPI 后端接口（完全开放 CORS）
+app.add_middleware(
+    CORSMiddleware,
+    allow_origins=["*"], # 允许所有网站访问 （开发环境常用）生产环境建议写具体地址，例如 ["http://localhost:3000", "https://yourdomain.com"]
+    allow_credentials=True, #是否允许发送“凭证”
+    allow_methods=["*"], # 允许哪些 HTTP 方法  "*" = 全部允许（GET, POST, PUT, DELETE 等）
+    allow_headers=["*"],  # 允许哪些请求头（headers）  比如：Content-Type Authorization
+)
+
+# 把 case_api.py 里的接口 注册到主应用。
+app.include_router(case_task_router)
+app.include_router(template_rel_router)
+app.include_router(template_router)
+app.include_router(component_router)
+app.include_router(parameter_router)
+app.include_router(component_parameter_router)
+app.include_router(auto_sql_router)
+app.include_router(provision_router)
+app.include_router(pre_relation_router)
+app.include_router(billing_router)
+app.include_router(dispatcher_router)
+app.include_router(plan_router)
+app.include_router(batch_detail_router)
+app.include_router(execution_router)
+# app.include_router(execution_router2)
+app.include_router(component_execution_router)
+app.include_router(case_ext_router)
+app.include_router(analysis_router)
+app.include_router(dispatcher_ext_router)
+app.include_router(template_ext_router)
+app.include_router(template_meta_router.router)
+app.include_router(component_parameter_api)
+app.include_router(template_rel_router)
+app.include_router(test_plan_api.router)
+app.include_router(component_execution_router)
+# 定义首页接口，这是 根路径接口
+# 访问：http://localhost:8000/  执行：home()
+@app.get("/")
+def home():
+    # 用来确认 API 服务启动成功
+    return {"message": "AI TestOps Platform Running"}
+
+===== 文件路径: backend\app\__init__.py =====
+
+
+===== 文件路径: backend\app\api\analysis_api.py =====
+from fastapi import APIRouter
+from app.database import SessionLocal
+from app.models.batch_detail_model import BatchDetail
+
+router = APIRouter(prefix="/analysis", tags=["Analysis"])
+
+
+@router.get("/batch/{batch_id}")
+def analyze_batch(batch_id: int):
+
+    db = SessionLocal()
+
+    try:
+        items = db.query(BatchDetail).filter(
+            BatchDetail.BATCH_ID == batch_id
+        ).all()
+
+        total = len(items)
+        success = len([i for i in items if i.STATUS in [5,13,14]])
+        fail = total - success
+
+        return {
+            "total": total,
+            "success": success,
+            "fail": fail,
+            "success_rate": round(success / total * 100, 2) if total else 0
+        }
+
+    finally:
+        db.close()
+
+===== 文件路径: backend\app\api\auto_data_sql_api.py =====
+from fastapi import APIRouter, HTTPException
+from app.database import SessionLocal
+from app.models.auto_data_sql_uipath_model import AutoDataSqlUipath
+from app.schemas.auto_data_sql_schema import (
+    AutoSqlCreateRequest,
+    AutoSqlListResponse,
+    AutoSqlDetailResponse
+)
+
+router = APIRouter(prefix="/auto-sql", tags=["Auto SQL"])
+
+
+@router.post("")
+def create_sql(req: AutoSqlCreateRequest):
+
+    db = SessionLocal()
+
+    try:
+        existing = db.query(AutoDataSqlUipath).filter(
+            AutoDataSqlUipath.SQL_NAME == req.sql_name
+        ).first()
+
+        if existing:
+            raise HTTPException(status_code=400, detail="SQL_NAME already exists")
+
+        new_sql = AutoDataSqlUipath(
+            SQL_NAME=req.sql_name,
+            DB=req.db,
+            SQL_CONTENT=req.sql_content
+        )
+
+        db.add(new_sql)
+        db.commit()
+
+        return {"message": "created"}
+
+    except Exception as e:
+        db.rollback()
+        raise HTTPException(status_code=500, detail=str(e))
+
+    finally:
+        db.close()
+
+@router.get("", response_model=AutoSqlListResponse)
+def get_sql_list():
+
+    db = SessionLocal()
+
+    try:
+        items = db.query(AutoDataSqlUipath).all()
+
+        result = []
+
+        for i in items:
+            result.append({
+                "sql_name": i.SQL_NAME,
+                "db": i.DB,
+                "sql_content": i.SQL_CONTENT
+            })
+
+        return {
+            "total": len(result),
+            "data": result
+        }
+
+    finally:
+        db.close()
+
+@router.get("/{sql_name}", response_model=AutoSqlDetailResponse)
+def get_sql(sql_name: str):
+
+    db = SessionLocal()
+
+    try:
+        item = db.query(AutoDataSqlUipath).filter(
+            AutoDataSqlUipath.SQL_NAME == sql_name
+        ).first()
+
+        if not item:
+            raise HTTPException(status_code=404, detail="Not found")
+
+        return {
+            "sql_name": item.SQL_NAME,
+            "db": item.DB,
+            "sql_content": item.SQL_CONTENT
+        }
+
+    finally:
+        db.close()
+
+===== 文件路径: backend\app\api\batch_detail_api.py =====
+from fastapi import APIRouter
+from sqlalchemy import asc, desc
+from datetime import datetime
+
+from app.database import SessionLocal
+from app.models.batch_detail_model import BatchDetail
+from app.schemas.batch_detail_schema import BatchDetailListResponse
+
+router = APIRouter(prefix="/batch-details", tags=["Batch Details"])
+
+
+@router.get("", response_model=BatchDetailListResponse)
+def get_batch_detail_list(
+    batch_detail_id: int = None,
+    batch_id: int = None,
+    cfg_id: int = None,
+    status: int = None,
+    task_status: int = None,
+    create_date_from: str = None,
+    create_date_to: str = None,
+    page: int = 1,
+    page_size: int = 10,
+    sort_field: str = "batch_detail_id",
+    sort_order: str = "desc"
+):
+    db = SessionLocal()
+    try:
+        query = db.query(BatchDetail)
+
+        # ===== Filters =====
+        if batch_detail_id:
+            query = query.filter(BatchDetail.BATCH_DETAIL_ID == batch_detail_id)
+
+        if batch_id:
+            query = query.filter(BatchDetail.BATCH_ID == batch_id)
+
+        if cfg_id:
+            query = query.filter(BatchDetail.CFG_ID == cfg_id)
+
+        if status is not None:
+            query = query.filter(BatchDetail.STATUS == status)
+
+        if task_status is not None:
+            query = query.filter(BatchDetail.TASK_STATUS == task_status)
+
+        if create_date_from:
+            try:
+                dt_from = datetime.fromisoformat(create_date_from)
+                query = query.filter(BatchDetail.CREATE_DATE >= dt_from)
+            except ValueError:
+                pass
+
+        if create_date_to:
+            try:
+                dt_to = datetime.fromisoformat(create_date_to)
+                query = query.filter(BatchDetail.CREATE_DATE <= dt_to)
+            except ValueError:
+                pass
+
+        # ===== Sort =====
+        sort_column = {
+            "batch_detail_id": BatchDetail.BATCH_DETAIL_ID,
+            "batch_id": BatchDetail.BATCH_ID,
+            "cfg_id": BatchDetail.CFG_ID,
+            "status": BatchDetail.STATUS,
+            "task_status": BatchDetail.TASK_STATUS,
+            "create_date": BatchDetail.CREATE_DATE,
+            "finish_date": BatchDetail.FINISH_DATE,
+        }.get(sort_field.lower(), BatchDetail.BATCH_DETAIL_ID)
+
+        if sort_order == "asc":
+            query = query.order_by(asc(sort_column), asc(BatchDetail.BATCH_DETAIL_ID))
+        else:
+            query = query.order_by(desc(sort_column), desc(BatchDetail.BATCH_DETAIL_ID))
+
+        total = query.count()
+        rows = query.offset((page - 1) * page_size).limit(page_size).all()
+
+        return {
+            "total": total,
+            "data": [
+                {
+                    "batch_detail_id": x.BATCH_DETAIL_ID,
+                    "batch_id": x.BATCH_ID,
+                    "cfg_id": x.CFG_ID,
+                    "uipath_case_exe_id": x.UIPATH_CASE_EXE_ID,
+                    "order_case_exe_id": x.ORDER_CASE_EXE_ID,
+                    "verify_case_exe_id": x.VERIFY_CASE_EXE_ID,
+                    "status": x.STATUS if x.STATUS is not None else 0,
+                    "task_status": x.TASK_STATUS if x.TASK_STATUS is not None else 0,
+                    "create_date": x.CREATE_DATE,
+                    "finish_date": x.FINISH_DATE,
+                }
+                for x in rows
+            ]
+        }
+
+    finally:
+        db.close()
+
+===== 文件路径: backend\app\api\billing_data_pool_api.py =====
+from fastapi import APIRouter, HTTPException
+from app.database import SessionLocal
+from app.models.billing_data_pool_model import BillingTestDataPool
+from app.schemas.billing_data_pool_schema import (
+    BillingDataCreateRequest,
+    BillingDataListResponse
+)
+from datetime import datetime
+router = APIRouter(prefix="/billing-pool", tags=["Billing Data Pool"])
+
+@router.post("")
+def create_data(req: BillingDataCreateRequest):
+
+    db = SessionLocal()
+
+    try:
+        existing = db.query(BillingTestDataPool).filter(
+            BillingTestDataPool.cust_id == req.cust_id
+        ).first()
+
+        if existing:
+            raise HTTPException(status_code=400, detail="cust_id already exists")
+
+        new_data = BillingTestDataPool(
+            cfg_id=req.cfg_id,
+            testCaseName_str=req.test_case_name,
+            cust_id=req.cust_id,
+            account_id=req.account_id,
+            order_id=req.order_id,
+            status=0,
+            create_time=datetime.now()
+        )
+
+        db.add(new_data)
+        db.commit()
+
+        return {"message": "created"}
+
+    except Exception as e:
+        db.rollback()
+        raise HTTPException(status_code=500, detail=str(e))
+
+    finally:
+        db.close()
+
+@router.get("", response_model=BillingDataListResponse)
+def get_list(cfg_id: str = None, status: int = None):
+
+    db = SessionLocal()
+
+    try:
+        query = db.query(BillingTestDataPool)
+
+        if cfg_id:
+            query = query.filter(BillingTestDataPool.cfg_id == cfg_id)
+
+        if status is not None:
+            query = query.filter(BillingTestDataPool.status == status)
+
+        items = query.all()
+
+        result = []
+
+        for i in items:
+            result.append({
+                "id": i.id,
+                "cfg_id": i.cfg_id,
+                "test_case_name": i.testCaseName_str,
+                "cust_id": i.cust_id,
+                "account_id": i.account_id,
+                "order_id": i.order_id,
+                "status": i.status,
+                "used": i.status == 1,
+                "create_time": i.create_time,
+                "used_time": i.used_time
+            })
+
+        return {
+            "total": len(result),
+            "data": result
+        }
+
+    finally:
+        db.close()
+
+@router.get("/next")
+def get_next_data(cfg_id: str):
+
+    db = SessionLocal()
+
+    try:
+        data = db.query(BillingTestDataPool).filter(
+            BillingTestDataPool.cfg_id == cfg_id,
+            BillingTestDataPool.status == 0
+        ).first()
+
+        if not data:
+            raise HTTPException(status_code=404, detail="No available data")
+
+        # 标记为已使用
+        data.status = 1
+        data.used_time = datetime.now()
+
+        db.commit()
+
+        return {
+            "cust_id": data.cust_id,
+            "account_id": data.account_id,
+            "order_id": data.order_id
+        }
+
+    finally:
+        db.close()
+
+===== 文件路径: backend\app\api\case_ext_api.py =====
+from fastapi import APIRouter, HTTPException
+from app.database import SessionLocal
+from app.models.cfg_test_case_task_model import TestCaseTask
+from app.models.cfg_test_case_data_model import TestCaseData
+from app.models.test_case_execution_model import TestCaseExecution
+from app.models.test_component_execution_model import TestComponentExecution
+
+router = APIRouter(prefix="/cases-ext", tags=["Case EXT"])
+
+# =============================
+# 更新 Case
+# =============================
+@router.put("/{cfg_id}")
+def update_case(cfg_id: int, data: dict):
+    db = SessionLocal()
+
+    try:
+        case = db.query(TestCaseTask).filter(
+            TestCaseTask.CFG_ID == cfg_id
+        ).first()
+
+        if not case:
+            raise HTTPException(status_code=404, detail="Case not found")
+
+        for k, v in data.items():
+            if hasattr(case, k):
+                setattr(case, k, v)
+
+        db.commit()
+
+        return {"message": "updated"}
+
+    finally:
+        db.close()
+
+
+# =============================
+# 删除 Case
+# =============================
+@router.delete("/{cfg_id}")
+def delete_case(cfg_id: int):
+    db = SessionLocal()
+
+    try:
+        db.query(TestCaseData).filter(TestCaseData.CFG_ID == cfg_id).delete()
+        db.query(TestCaseTask).filter(TestCaseTask.CFG_ID == cfg_id).delete()
+
+        db.commit()
+
+        return {"message": "deleted"}
+
+    finally:
+        db.close()
+
+
+# =============================
+# Case 全链路（🔥核心）
+# =============================
+@router.get("/{cfg_id}/full")
+def get_case_full(cfg_id: int):
+
+    db = SessionLocal()
+
+    try:
+        case = db.query(TestCaseTask).filter(
+            TestCaseTask.CFG_ID == cfg_id
+        ).first()
+
+        executions = db.query(TestCaseExecution).filter(
+            TestCaseExecution.CFG_ID == cfg_id
+        ).all()
+
+        exe_list = []
+
+        for exe in executions:
+            components = db.query(TestComponentExecution).filter(
+                TestComponentExecution.TEST_CASE_EXE_ID == exe.TEST_CASE_EXE_ID
+            ).all()
+
+            exe_list.append({
+                "execution": exe.TEST_CASE_EXE_ID,
+                "state": exe.STATE,
+                "components": [
+                    {
+                        "name": c.TEST_COMPONENT_NAME,
+                        "state": c.STATE,
+                        "error": c.PYTHON_ERROR_MESSAGE
+                    } for c in components
+                ]
+            })
+
+        return {
+            "case": case.TEST_CASE_NAME,
+            "executions": exe_list
+        }
+
+    finally:
+        db.close()
+
+===== 文件路径: backend\app\api\case_task_api.py =====
+from fastapi import APIRouter, HTTPException, Query
+from app.database import SessionLocal
+from app.models.cfg_test_case_task_model import TestCaseTask
+from app.models.cfg_test_case_data_model import TestCaseData
+from app.schemas.case_task_schema import CaseCreateRequest, CaseUpdateRequest
+from datetime import datetime
+import json
+
+router = APIRouter(tags=["Case"])
+
+
+def _has_value(v):
+    return v is not None and v != 0 and v != ""
+
+
+def _build_order_data(req):
+    if req.order_test_data is not None:
+        return req.order_test_data
+    return req.test_data or {}
+
+
+def _build_verify_data(req):
+    if req.verify_test_data is not None:
+        return req.verify_test_data
+    return req.test_data or {}
+
+
+def _insert_case_data_rows(db, cfg_id: int, req):
+    """
+    规则：
+    1. UiPath 入参永远插入一条
+    2. 如果 template_id 有值，则插入 order 一条
+    3. 如果 verify_template_id 有值，则插入 verify 一条
+    """
+
+    now = datetime.now()
+
+    # 1) UiPath
+    db.add(TestCaseData(
+        CFG_ID=cfg_id,
+        TEST_CASE_TEMPLATE_ID=None,
+        TEST_DATA=json.dumps(req.test_data or {}, ensure_ascii=False),
+        TENANT_ID=req.tenant_id,
+        STATE=1,
+        UIPATH_FLAG=1,
+        CREATE_DATE=now,
+        EXPIRE_DATE=datetime(2099, 12, 31, 23, 59, 59)
+    ))
+
+    # 2) Order
+    if _has_value(req.template_id):
+        db.add(TestCaseData(
+            CFG_ID=cfg_id,
+            TEST_CASE_TEMPLATE_ID=req.template_id,
+            TEST_DATA=json.dumps(_build_order_data(req), ensure_ascii=False),
+            TENANT_ID=req.tenant_id,
+            STATE=1,
+            UIPATH_FLAG=0,
+            CREATE_DATE=now,
+            EXPIRE_DATE=datetime(2099, 12, 31, 23, 59, 59)
+        ))
+
+    # 3) Verify
+    if _has_value(req.verify_template_id):
+        db.add(TestCaseData(
+            CFG_ID=cfg_id,
+            TEST_CASE_TEMPLATE_ID=req.verify_template_id,
+            TEST_DATA=json.dumps(_build_verify_data(req), ensure_ascii=False),
+            TENANT_ID=req.tenant_id,
+            STATE=1,
+            UIPATH_FLAG=0,
+            CREATE_DATE=now,
+            EXPIRE_DATE=datetime(2099, 12, 31, 23, 59, 59)
+        ))
+
+
+@router.post("/case-tasks")
+def create_case(case: CaseCreateRequest):
+    db = SessionLocal()
+
+    try:
+        new_case = TestCaseTask(
+            TEST_CASE_TEMPLATE_ID=case.template_id if _has_value(case.template_id) else None,
+            TEST_CASE_NAME=case.test_case_name if _has_value(case.template_id) else "",
+            VERIFY_TEST_CASE_TEMPLATE_ID=case.verify_template_id if _has_value(case.verify_template_id) else None,
+            VERIFY_TEST_CASE_NAME=case.verify_template_name if _has_value(case.verify_template_id) else "",
+            TRIGGER_MODE=case.trigger_mode,
+            CRON_EXPRESSION=case.cron_expression,
+            TASK_STATUS=case.task_status,
+            EXECUTION_ENVIRONMENT=case.environment,
+            EXECUTION_MACHINE=case.machine,
+            TENANT_ID=case.tenant_id,
+            STATE=case.state,
+            CREATE_DATE=datetime.now(),
+            EXPIRE_DATE=datetime(2099, 12, 31, 23, 59, 59),
+            TEST_INST_ID=case.inst_id,
+            UIPATH_ENTRY=case.uipath_entry,
+            UIPATH_CASE_NAME=case.uipath_case_name,
+            CASE_ID=case.case_id
+        )
+
+        db.add(new_case)
+        db.flush()
+
+        cfg_id = new_case.CFG_ID
+
+        _insert_case_data_rows(db, cfg_id, case)
+
+        db.commit()
+
+        return {
+            "message": "success",
+            "cfg_id": cfg_id
+        }
+
+    except Exception as e:
+        db.rollback()
+        raise HTTPException(status_code=500, detail=str(e))
+
+    finally:
+        db.close()
+
+
+from sqlalchemy import desc, asc
+
+@router.get("/case-tasks")
+def get_case_list(
+    cfg_id: int = None,
+    uipath_case_name: str = Query(None),
+    environment: str = None,
+    machine: str = None,
+    template_id: int = None,
+    verify_template_id: int = None,
+
+    page: int = 1,
+    page_size: int = 10,
+
+    sort_field: str = "CFG_ID",
+    sort_order: str = "desc"
+):
+    db = SessionLocal()
+
+    try:
+        query = db.query(TestCaseTask)
+
+        # ===== 查询条件 =====
+        if cfg_id:
+            query = query.filter(TestCaseTask.CFG_ID == cfg_id)
+
+        if uipath_case_name:
+            query = query.filter(
+                TestCaseTask.UIPATH_CASE_NAME.like(f"%{uipath_case_name}%")
+            )
+
+        if environment:
+            query = query.filter(
+                TestCaseTask.EXECUTION_ENVIRONMENT == environment
+            )
+
+        if machine:
+            query = query.filter(
+                TestCaseTask.EXECUTION_MACHINE.like(f"%{machine}%")
+            )
+
+        if template_id:
+            query = query.filter(
+                TestCaseTask.TEST_CASE_TEMPLATE_ID == template_id
+            )
+
+        if verify_template_id:
+            query = query.filter(
+                TestCaseTask.VERIFY_TEST_CASE_TEMPLATE_ID == verify_template_id
+            )
+
+        # ===== 排序 =====
+        sort_column = {
+            "cfg_id": TestCaseTask.CFG_ID,
+            "case_name": TestCaseTask.UIPATH_CASE_NAME
+        }.get(sort_field.lower(), TestCaseTask.CFG_ID)
+
+        if sort_order == "asc":
+            query = query.order_by(
+                asc(sort_column),
+                asc(TestCaseTask.CFG_ID)  # 保证稳定
+            )
+        else:
+            query = query.order_by(
+                desc(sort_column),
+                desc(TestCaseTask.CFG_ID)  # 保证稳定
+            )
+
+        # ===== 总数 =====
+        total = query.count()
+
+        # ===== 分页 =====
+        tasks = query.offset((page - 1) * page_size)\
+                     .limit(page_size)\
+                     .all()
+
+        # ===== 返回数据 =====
+        result = []
+        for t in tasks:
+            result.append({
+                "cfg_id": t.CFG_ID,
+                "uipath_case_name": t.UIPATH_CASE_NAME,
+                "test_case_name": t.TEST_CASE_NAME,
+                "verify_template_name": t.VERIFY_TEST_CASE_NAME,
+                "environment": t.EXECUTION_ENVIRONMENT,
+                "machine": t.EXECUTION_MACHINE,
+                "uipath_entry": t.UIPATH_ENTRY,
+                "task_status": t.TASK_STATUS,
+                "create_date": t.CREATE_DATE
+            })
+
+        return {
+            "total": total,
+            "data": result
+        }
+
+    finally:
+        db.close()
+
+@router.get("/case-tasks/{cfg_id}")
+def get_case_detail(cfg_id: int):
+    db = SessionLocal()
+
+    try:
+        task = db.query(TestCaseTask).filter(
+            TestCaseTask.CFG_ID == cfg_id
+        ).first()
+
+        if not task:
+            raise HTTPException(status_code=404, detail="Not found")
+
+        datas = db.query(TestCaseData).filter(
+            TestCaseData.CFG_ID == cfg_id
+        ).all()
+
+        uipath_data = {}
+        order_data = {}
+        verify_data = {}
+
+        for d in datas:
+            raw = json.loads(d.TEST_DATA) if d.TEST_DATA else {}
+
+            if d.UIPATH_FLAG == 1:
+                uipath_data = raw
+            elif task.TEST_CASE_TEMPLATE_ID and d.TEST_CASE_TEMPLATE_ID == task.TEST_CASE_TEMPLATE_ID:
+                order_data = raw
+            elif task.VERIFY_TEST_CASE_TEMPLATE_ID and d.TEST_CASE_TEMPLATE_ID == task.VERIFY_TEST_CASE_TEMPLATE_ID:
+                verify_data = raw
+
+        return {
+            "cfg_id": task.CFG_ID,
+            "template_id": task.TEST_CASE_TEMPLATE_ID,
+            "test_case_name": task.TEST_CASE_NAME,
+            "verify_template_id": task.VERIFY_TEST_CASE_TEMPLATE_ID,
+            "verify_template_name": task.VERIFY_TEST_CASE_NAME,
+            "trigger_mode": task.TRIGGER_MODE,
+            "cron_expression": task.CRON_EXPRESSION,
+            "task_status": task.TASK_STATUS,
+            "environment": task.EXECUTION_ENVIRONMENT,
+            "machine": task.EXECUTION_MACHINE,
+            "tenant_id": task.TENANT_ID,
+            "state": task.STATE,
+            "inst_id": task.TEST_INST_ID,
+            "uipath_entry": task.UIPATH_ENTRY,
+            "uipath_case_name": task.UIPATH_CASE_NAME,
+            "case_id": task.CASE_ID,
+
+            # 前端编辑页主要使用这一份
+            "test_data": uipath_data,
+
+            # 返回出来便于调试
+            "uipath_data": uipath_data,
+            "order_data": order_data,
+            "verify_data": verify_data
+        }
+
+    finally:
+        db.close()
+
+
+@router.put("/case-tasks/{cfg_id}")
+def update_case(cfg_id: int, case: CaseUpdateRequest):
+    db = SessionLocal()
+
+    try:
+        task = db.query(TestCaseTask).filter(
+            TestCaseTask.CFG_ID == cfg_id
+        ).first()
+
+        if not task:
+            raise HTTPException(status_code=404, detail="Case not found")
+
+
+        task.TEST_CASE_TEMPLATE_ID = case.template_id if _has_value(case.template_id) else None,
+        task.TEST_CASE_NAME = case.test_case_name if _has_value(case.template_id) else "",
+        task.VERIFY_TEST_CASE_TEMPLATE_ID = case.verify_template_id if _has_value(case.verify_template_id) else None,
+        task.VERIFY_TEST_CASE_NAME = case.verify_template_name if _has_value(case.verify_template_id) else "",
+
+        task.TRIGGER_MODE = case.trigger_mode
+        task.CRON_EXPRESSION = case.cron_expression
+        task.TASK_STATUS = case.task_status
+        task.EXECUTION_ENVIRONMENT = case.environment
+        task.EXECUTION_MACHINE = case.machine
+        task.TENANT_ID = case.tenant_id
+        task.STATE = case.state
+        task.TEST_INST_ID = case.inst_id
+        task.UIPATH_ENTRY = case.uipath_entry
+        task.UIPATH_CASE_NAME = case.uipath_case_name
+        task.CASE_ID = case.case_id
+
+        # 先删旧数据，再按最新配置重建
+        db.query(TestCaseData).filter(
+            TestCaseData.CFG_ID == cfg_id
+        ).delete()
+
+        _insert_case_data_rows(db, cfg_id, case)
+
+        db.commit()
+
+        return {"message": "updated", "cfg_id": cfg_id}
+
+    except Exception as e:
+        db.rollback()
+        raise HTTPException(status_code=500, detail=str(e))
+
+    finally:
+        db.close()
+
+
+@router.delete("/case-tasks/{cfg_id}")
+def delete_case(cfg_id: int):
+    db = SessionLocal()
+
+    try:
+        task = db.query(TestCaseTask).filter(
+            TestCaseTask.CFG_ID == cfg_id
+        ).first()
+
+        if not task:
+            raise HTTPException(status_code=404, detail="Case not found")
+
+        db.query(TestCaseData).filter(
+            TestCaseData.CFG_ID == cfg_id
+        ).delete()
+
+        db.delete(task)
+        db.commit()
+
+        return {"message": "deleted", "cfg_id": cfg_id}
+
+    except Exception as e:
+        db.rollback()
+        raise HTTPException(status_code=500, detail=str(e))
+
+    finally:
+        db.close()
+
+===== 文件路径: backend\app\api\component_api.py =====
+from fastapi import APIRouter, HTTPException
+from sqlalchemy import asc, desc
+from app.database import SessionLocal
+from app.models.test_component_model import TestComponent
+from app.schemas.component_schema import (
+    ComponentCreateRequest,
+    ComponentUpdateRequest,
+    ComponentListResponse,
+    ComponentDetailResponse
+)
+from datetime import datetime
+
+router = APIRouter(prefix="/components", tags=["Components"])
+
+
+@router.post("")
+def create_component(req: ComponentCreateRequest):
+    db = SessionLocal()
+
+    try:
+        new_component = TestComponent(
+            TEST_COMPONENT_NAME=req.component_name,
+            TEST_COMPONENT_TYPE=req.component_type,
+            TEST_COMPONENT_FILE=req.component_file,
+            REMARK=req.remark,
+            TENANT_ID=req.tenant_id,
+            STATE=req.state,
+            CREATE_DATE=datetime.now(),
+            EXPIRE_DATE=datetime(2099, 12, 31, 23, 59, 59)
+        )
+
+        db.add(new_component)
+        db.commit()
+        db.refresh(new_component)
+
+        return {
+            "message": "success",
+            "component_id": new_component.TEST_COMPONENT_ID
+        }
+
+    except Exception as e:
+        db.rollback()
+        raise HTTPException(status_code=500, detail=str(e))
+    finally:
+        db.close()
+
+
+@router.get("", response_model=ComponentListResponse)
+def get_components(
+    component_id: int = None,
+    component_name: str = None,
+    component_type: str = None,
+    component_file: str = None,
+    page: int = 1,
+    page_size: int = 10,
+    sort_field: str = "component_id",
+    sort_order: str = "desc"
+):
+    db = SessionLocal()
+
+    try:
+        query = db.query(TestComponent)
+
+        if component_id:
+            query = query.filter(TestComponent.TEST_COMPONENT_ID == component_id)
+
+        if component_name:
+            query = query.filter(TestComponent.TEST_COMPONENT_NAME.like(f"%{component_name}%"))
+
+        if component_type:
+            query = query.filter(TestComponent.TEST_COMPONENT_TYPE.like(f"%{component_type}%"))
+
+        if component_file:
+            query = query.filter(TestComponent.TEST_COMPONENT_FILE.like(f"%{component_file}%"))
+
+        sort_column = {
+            "component_id": TestComponent.TEST_COMPONENT_ID,
+            "component_name": TestComponent.TEST_COMPONENT_NAME,
+            "component_type": TestComponent.TEST_COMPONENT_TYPE,
+            "component_file": TestComponent.TEST_COMPONENT_FILE,
+            "state": TestComponent.STATE,
+            "create_date": TestComponent.CREATE_DATE
+        }.get(sort_field.lower(), TestComponent.TEST_COMPONENT_ID)
+
+        if sort_order == "asc":
+            query = query.order_by(asc(sort_column), asc(TestComponent.TEST_COMPONENT_ID))
+        else:
+            query = query.order_by(desc(sort_column), desc(TestComponent.TEST_COMPONENT_ID))
+
+        total = query.count()
+
+        tasks = query.offset((page - 1) * page_size).limit(page_size).all()
+
+        result = []
+        for c in tasks:
+            result.append({
+                "component_id": c.TEST_COMPONENT_ID,
+                "component_name": c.TEST_COMPONENT_NAME,
+                "component_type": c.TEST_COMPONENT_TYPE,
+                "component_file": c.TEST_COMPONENT_FILE,
+                "remark": c.REMARK,
+                "tenant_id": c.TENANT_ID,
+                "state": c.STATE,
+                "active": c.STATE == 1,
+                "create_date": c.CREATE_DATE
+            })
+
+        return {"total": total, "data": result}
+
+    finally:
+        db.close()
+
+
+@router.get("/{component_id}", response_model=ComponentDetailResponse)
+def get_component_detail(component_id: int):
+    db = SessionLocal()
+
+    try:
+        c = db.query(TestComponent).filter(
+            TestComponent.TEST_COMPONENT_ID == component_id
+        ).first()
+
+        if not c:
+            raise HTTPException(status_code=404, detail="Component not found")
+
+        return {
+            "component_id": c.TEST_COMPONENT_ID,
+            "component_name": c.TEST_COMPONENT_NAME,
+            "component_type": c.TEST_COMPONENT_TYPE,
+            "component_file": c.TEST_COMPONENT_FILE,
+            "remark": c.REMARK,
+            "tenant_id": c.TENANT_ID,
+            "state": c.STATE,
+            "create_date": c.CREATE_DATE,
+            "update_date": c.UPDATE_DATE
+        }
+
+    finally:
+        db.close()
+
+
+@router.put("/{component_id}")
+def update_component(component_id: int, req: ComponentUpdateRequest):
+    db = SessionLocal()
+
+    try:
+        c = db.query(TestComponent).filter(
+            TestComponent.TEST_COMPONENT_ID == component_id
+        ).first()
+
+        if not c:
+            raise HTTPException(status_code=404, detail="Component not found")
+
+        c.TEST_COMPONENT_NAME = req.component_name
+        c.TEST_COMPONENT_TYPE = req.component_type
+        c.TEST_COMPONENT_FILE = req.component_file
+        c.REMARK = req.remark
+        c.TENANT_ID = req.tenant_id
+        c.STATE = req.state
+        c.UPDATE_DATE = datetime.now()
+
+        db.commit()
+
+        return {"message": "updated", "component_id": component_id}
+
+    except Exception as e:
+        db.rollback()
+        raise HTTPException(status_code=500, detail=str(e))
+    finally:
+        db.close()
+
+
+@router.delete("/{component_id}")
+def delete_component(component_id: int):
+    db = SessionLocal()
+
+    try:
+        c = db.query(TestComponent).filter(
+            TestComponent.TEST_COMPONENT_ID == component_id
+        ).first()
+
+        if not c:
+            raise HTTPException(status_code=404, detail="Component not found")
+
+        db.delete(c)
+        db.commit()
+
+        return {"message": "deleted", "component_id": component_id}
+
+    except Exception as e:
+        db.rollback()
+        raise HTTPException(status_code=500, detail=str(e))
+    finally:
+        db.close()
+
+===== 文件路径: backend\app\api\component_parameter_api.py =====
+from fastapi import APIRouter, HTTPException
+from sqlalchemy import asc, desc
+from app.database import SessionLocal
+from app.models.test_component_parameter_model import TestComponentParameter
+from app.schemas.component_parameter_schema import (
+    ComponentParameterCreateRequest,
+    ComponentParameterUpdateRequest,
+    ComponentParameterListResponse,
+    ComponentParameterDetailResponse
+)
+from datetime import datetime
+
+router = APIRouter(prefix="/component-parameters", tags=["Component Parameters"])
+
+
+@router.post("")
+def create_component_parameter(req: ComponentParameterCreateRequest):
+    db = SessionLocal()
+
+    try:
+        new_item = TestComponentParameter(
+            TEST_COMPONENT_ID=req.component_id,
+            TEST_PARAMETER_ID=req.parameter_id,
+            SORT=req.sort,
+            REMARK=req.remark,
+            TENANT_ID=req.tenant_id,
+            STATE=req.state,
+            CREATE_DATE=datetime.now(),
+            EXPIRE_DATE=datetime(2099, 12, 31, 23, 59, 59)
+        )
+
+        db.add(new_item)
+        db.commit()
+        db.refresh(new_item)
+
+        return {
+            "message": "success",
+            "id": new_item.TEST_COMPONENT_PARAMETER_ID
+        }
+
+    except Exception as e:
+        db.rollback()
+        raise HTTPException(status_code=500, detail=str(e))
+    finally:
+        db.close()
+
+
+@router.get("", response_model=ComponentParameterListResponse)
+def get_component_parameters(
+    id: int = None,
+    component_id: int = None,
+    parameter_id: int = None,
+    page: int = 1,
+    page_size: int = 10,
+    sort_field: str = "id",
+    sort_order: str = "desc"
+):
+    db = SessionLocal()
+
+    try:
+        query = db.query(TestComponentParameter)
+
+        if id:
+            query = query.filter(TestComponentParameter.TEST_COMPONENT_PARAMETER_ID == id)
+
+        if component_id:
+            query = query.filter(TestComponentParameter.TEST_COMPONENT_ID == component_id)
+
+        if parameter_id:
+            query = query.filter(TestComponentParameter.TEST_PARAMETER_ID == parameter_id)
+
+        sort_column = {
+            "id": TestComponentParameter.TEST_COMPONENT_PARAMETER_ID,
+            "component_id": TestComponentParameter.TEST_COMPONENT_ID,
+            "parameter_id": TestComponentParameter.TEST_PARAMETER_ID,
+            "sort": TestComponentParameter.SORT,
+            "state": TestComponentParameter.STATE,
+            "create_date": TestComponentParameter.CREATE_DATE
+        }.get(sort_field.lower(), TestComponentParameter.TEST_COMPONENT_PARAMETER_ID)
+
+        if sort_order == "asc":
+            query = query.order_by(asc(sort_column), asc(TestComponentParameter.TEST_COMPONENT_PARAMETER_ID))
+        else:
+            query = query.order_by(desc(sort_column), desc(TestComponentParameter.TEST_COMPONENT_PARAMETER_ID))
+
+        total = query.count()
+        items = query.offset((page - 1) * page_size).limit(page_size).all()
+
+        result = []
+        for i in items:
+            result.append({
+                "id": i.TEST_COMPONENT_PARAMETER_ID,
+                "component_id": i.TEST_COMPONENT_ID,
+                "parameter_id": i.TEST_PARAMETER_ID,
+                "sort": i.SORT,
+                "remark": i.REMARK,
+                "tenant_id": i.TENANT_ID,
+                "state": i.STATE,
+                "active": i.STATE == 1,
+                "create_date": i.CREATE_DATE
+            })
+
+        return {"total": total, "data": result}
+
+    finally:
+        db.close()
+
+
+@router.get("/{id}", response_model=ComponentParameterDetailResponse)
+def get_component_parameter(id: int):
+    db = SessionLocal()
+
+    try:
+        item = db.query(TestComponentParameter).filter(
+            TestComponentParameter.TEST_COMPONENT_PARAMETER_ID == id
+        ).first()
+
+        if not item:
+            raise HTTPException(status_code=404, detail="Not found")
+
+        return {
+            "id": item.TEST_COMPONENT_PARAMETER_ID,
+            "component_id": item.TEST_COMPONENT_ID,
+            "parameter_id": item.TEST_PARAMETER_ID,
+            "sort": item.SORT,
+            "remark": item.REMARK,
+            "tenant_id": item.TENANT_ID,
+            "state": item.STATE,
+            "create_date": item.CREATE_DATE,
+            "update_date": item.UPDATE_DATE
+        }
+
+    finally:
+        db.close()
+
+
+@router.put("/{id}")
+def update_component_parameter(id: int, req: ComponentParameterUpdateRequest):
+    db = SessionLocal()
+
+    try:
+        item = db.query(TestComponentParameter).filter(
+            TestComponentParameter.TEST_COMPONENT_PARAMETER_ID == id
+        ).first()
+
+        if not item:
+            raise HTTPException(status_code=404, detail="Not found")
+
+        item.TEST_COMPONENT_ID = req.component_id
+        item.TEST_PARAMETER_ID = req.parameter_id
+        item.SORT = req.sort
+        item.REMARK = req.remark
+        item.TENANT_ID = req.tenant_id
+        item.STATE = req.state
+        item.UPDATE_DATE = datetime.now()
+
+        db.commit()
+
+        return {"message": "updated", "id": id}
+
+    except Exception as e:
+        db.rollback()
+        raise HTTPException(status_code=500, detail=str(e))
+    finally:
+        db.close()
+
+
+@router.delete("/{id}")
+def delete_component_parameter(id: int):
+    db = SessionLocal()
+
+    try:
+        item = db.query(TestComponentParameter).filter(
+            TestComponentParameter.TEST_COMPONENT_PARAMETER_ID == id
+        ).first()
+
+        if not item:
+            raise HTTPException(status_code=404, detail="Not found")
+
+        db.delete(item)
+        db.commit()
+
+        return {"message": "deleted", "id": id}
+
+    except Exception as e:
+        db.rollback()
+        raise HTTPException(status_code=500, detail=str(e))
+    finally:
+        db.close()
+
+===== 文件路径: backend\app\api\dispatcher_ext_api.py =====
+from fastapi import APIRouter, HTTPException
+from app.database import SessionLocal
+from app.models.test_dispatcher_model import TestDispatcherData
+
+router = APIRouter(prefix="/dispatcher-ext")
+
+
+@router.put("/{plan_id}")
+def update_dispatcher(plan_id: int, data: dict):
+
+    db = SessionLocal()
+
+    try:
+        item = db.query(TestDispatcherData).filter(
+            TestDispatcherData.DISPATCHER_PLAN_ID == plan_id
+        ).first()
+
+        if not item:
+            raise HTTPException(status_code=404, detail="Not found")
+
+        for k, v in data.items():
+            if hasattr(item, k):
+                setattr(item, k, v)
+
+        db.commit()
+
+        return {"message": "updated"}
+
+    finally:
+        db.close()
+
+===== 文件路径: backend\app\api\execution_api.py =====
+from fastapi import APIRouter
+from sqlalchemy.orm import Session
+from sqlalchemy import func
+
+from app.database import SessionLocal
+from app.models.test_plan_model import TestPlan
+from app.models.batch_detail_model import BatchDetail
+
+# 创建一个 API 路由组
+router = APIRouter()
+
+# 定义API接口 创建一个 GET接口
+@router.get("/executions")
+def get_executions():
+
+    # 数据库会话,用来执行 SQL 查询
+    db= SessionLocal()
+    try:
+        # 查询最近10个执行批次
+        # plans = db.query(TestPlan).order_by(TestPlan.CREATE_DATE.desc()).limit(10).all()
+        regression_list = [
+            "Regression 1 Mobile Automation",
+            "Regression 2 OpennetNewOM Automation",
+            "Regression 3 WS Automation",
+            "Regression 4 NewOmMobile Automation"
+        ]
+
+        plans = db.query(TestPlan).filter(
+            TestPlan.BATCH_NAME.in_(regression_list)
+        ).order_by(
+            TestPlan.CREATE_DATE.desc()
+        ).limit(10).all()
+
+        result = []
+
+        for p in plans:
+            # 统计总测试用例
+            total = db.query(BatchDetail).filter(
+                BatchDetail.BATCH_ID == p.BATCH_ID
+            ).count()
+            # 统计成功用例
+            passed = db.query(BatchDetail).filter(
+                BatchDetail.BATCH_ID == p.BATCH_ID,
+                BatchDetail.STATUS.in_([5,13,14])
+            ).count()
+            # 统计失败用例
+            failed = db.query(BatchDetail).filter(
+                BatchDetail.BATCH_ID == p.BATCH_ID,
+                BatchDetail.STATUS.in_([3,6,11])
+            ).count()
+
+            success_rate = 0
+            # 计算成功率
+            if total > 0:
+                success_rate = round(passed / total * 100, 2)
+            # 组装结果，生成一个 JSON 对象
+            result.append({
+                "batch_id": p.BATCH_ID,
+                "time": p.CREATE_DATE,
+                "batch_name": p.BATCH_NAME,
+                "total_cases": total,
+                "passed": passed,
+                "failed": failed,
+                "success_rate": f"{success_rate}%"
+            })
+
+        return result
+    finally:
+        db.close()
+
+===== 文件路径: backend\app\api\parameter_api.py =====
+from fastapi import APIRouter, HTTPException
+from sqlalchemy import asc, desc
+from app.database import SessionLocal
+from app.models.test_parameter_model import TestParameter
+from app.schemas.parameter_schema import (
+    ParameterCreateRequest,
+    ParameterUpdateRequest,
+    ParameterListResponse,
+    ParameterDetailResponse
+)
+from datetime import datetime
+
+router = APIRouter(prefix="/parameters", tags=["Parameters"])
+
+
+@router.post("")
+def create_parameter(req: ParameterCreateRequest):
+    db = SessionLocal()
+
+    try:
+        new_param = TestParameter(
+            TEST_PARAMETER_NAME=req.parameter_name,
+            PARAMETER_PATH=req.parameter_path,
+            TEST_PARAMETER_TYPE=req.parameter_type,
+            DEFAULT_VALUE=req.default_value,
+            REMARK=req.remark,
+            TENANT_ID=req.tenant_id,
+            STATE=req.state,
+            CREATE_DATE=datetime.now(),
+            EXPIRE_DATE=datetime(2099, 12, 31, 23, 59, 59)
+        )
+
+        db.add(new_param)
+        db.commit()
+        db.refresh(new_param)
+
+        return {
+            "message": "success",
+            "parameter_id": new_param.TEST_PARAMETER_ID
+        }
+
+    except Exception as e:
+        db.rollback()
+        raise HTTPException(status_code=500, detail=str(e))
+    finally:
+        db.close()
+
+
+@router.get("", response_model=ParameterListResponse)
+def get_parameters(
+    parameter_id: int = None,
+    parameter_name: str = None,
+    parameter_path: str = None,
+    parameter_type: str = None,
+    page: int = 1,
+    page_size: int = 10,
+    sort_field: str = "parameter_id",
+    sort_order: str = "desc"
+):
+    db = SessionLocal()
+
+    try:
+        query = db.query(TestParameter)
+
+        if parameter_id:
+            query = query.filter(TestParameter.TEST_PARAMETER_ID == parameter_id)
+
+        if parameter_name:
+            query = query.filter(TestParameter.TEST_PARAMETER_NAME.like(f"%{parameter_name}%"))
+
+        if parameter_path:
+            query = query.filter(TestParameter.PARAMETER_PATH.like(f"%{parameter_path}%"))
+
+        if parameter_type:
+            query = query.filter(TestParameter.TEST_PARAMETER_TYPE.like(f"%{parameter_type}%"))
+
+        sort_column = {
+            "parameter_id": TestParameter.TEST_PARAMETER_ID,
+            "parameter_name": TestParameter.TEST_PARAMETER_NAME,
+            "parameter_path": TestParameter.PARAMETER_PATH,
+            "parameter_type": TestParameter.TEST_PARAMETER_TYPE,
+            "state": TestParameter.STATE,
+            "create_date": TestParameter.CREATE_DATE
+        }.get(sort_field.lower(), TestParameter.TEST_PARAMETER_ID)
+
+        if sort_order == "asc":
+            query = query.order_by(asc(sort_column), asc(TestParameter.TEST_PARAMETER_ID))
+        else:
+            query = query.order_by(desc(sort_column), desc(TestParameter.TEST_PARAMETER_ID))
+
+        total = query.count()
+
+        items = query.offset((page - 1) * page_size).limit(page_size).all()
+
+        result = []
+        for p in items:
+            result.append({
+                "parameter_id": p.TEST_PARAMETER_ID,
+                "parameter_name": p.TEST_PARAMETER_NAME,
+                "parameter_path": p.PARAMETER_PATH,
+                "parameter_type": p.TEST_PARAMETER_TYPE,
+                "default_value": p.DEFAULT_VALUE,
+                "remark": p.REMARK,
+                "tenant_id": p.TENANT_ID,
+                "state": p.STATE,
+                "active": p.STATE == 1,
+                "create_date": p.CREATE_DATE
+            })
+
+        return {"total": total, "data": result}
+
+    finally:
+        db.close()
+
+
+@router.get("/{parameter_id}", response_model=ParameterDetailResponse)
+def get_parameter_detail(parameter_id: int):
+    db = SessionLocal()
+
+    try:
+        p = db.query(TestParameter).filter(
+            TestParameter.TEST_PARAMETER_ID == parameter_id
+        ).first()
+
+        if not p:
+            raise HTTPException(status_code=404, detail="Parameter not found")
+
+        return {
+            "parameter_id": p.TEST_PARAMETER_ID,
+            "parameter_name": p.TEST_PARAMETER_NAME,
+            "parameter_path": p.PARAMETER_PATH,
+            "parameter_type": p.TEST_PARAMETER_TYPE,
+            "default_value": p.DEFAULT_VALUE,
+            "remark": p.REMARK,
+            "tenant_id": p.TENANT_ID,
+            "state": p.STATE or 0,
+            "create_date": p.CREATE_DATE,
+            "update_date": p.UPDATE_DATE
+        }
+
+    finally:
+        db.close()
+
+
+@router.put("/{parameter_id}")
+def update_parameter(parameter_id: int, req: ParameterUpdateRequest):
+    db = SessionLocal()
+
+    try:
+        p = db.query(TestParameter).filter(
+            TestParameter.TEST_PARAMETER_ID == parameter_id
+        ).first()
+
+        if not p:
+            raise HTTPException(status_code=404, detail="Parameter not found")
+
+        p.TEST_PARAMETER_NAME = req.parameter_name
+        p.PARAMETER_PATH = req.parameter_path
+        p.TEST_PARAMETER_TYPE = req.parameter_type
+        p.DEFAULT_VALUE = req.default_value
+        p.REMARK = req.remark
+        p.TENANT_ID = req.tenant_id
+        p.STATE = req.state
+        p.UPDATE_DATE = datetime.now()
+
+        db.commit()
+
+        return {"message": "updated", "parameter_id": parameter_id}
+
+    except Exception as e:
+        db.rollback()
+        raise HTTPException(status_code=500, detail=str(e))
+    finally:
+        db.close()
+
+
+@router.delete("/{parameter_id}")
+def delete_parameter(parameter_id: int):
+    db = SessionLocal()
+
+    try:
+        p = db.query(TestParameter).filter(
+            TestParameter.TEST_PARAMETER_ID == parameter_id
+        ).first()
+
+        if not p:
+            raise HTTPException(status_code=404, detail="Parameter not found")
+
+        db.delete(p)
+        db.commit()
+
+        return {"message": "deleted", "parameter_id": parameter_id}
+
+    except Exception as e:
+        db.rollback()
+        raise HTTPException(status_code=500, detail=str(e))
+    finally:
+        db.close()
+
+===== 文件路径: backend\app\api\pre_cfg_relation_api.py =====
+from fastapi import APIRouter, HTTPException
+from app.database import SessionLocal
+from app.models.pre_cfg_relation_model import PreCfgRelation
+from app.schemas.pre_cfg_relation_schema import (
+    PreCfgRelationCreateRequest,
+    PreCfgRelationListResponse
+)
+router = APIRouter(prefix="/pre-relations", tags=["Pre CFG Relation"])
+
+@router.post("")
+def create_relation(req: PreCfgRelationCreateRequest):
+
+    db = SessionLocal()
+
+    try:
+        existing = db.query(PreCfgRelation).filter(
+            PreCfgRelation.preCfgId == req.pre_cfg_id,
+            PreCfgRelation.cfgId == req.cfg_id
+        ).first()
+
+        if existing:
+            raise HTTPException(status_code=400, detail="Relation already exists")
+
+        relation = PreCfgRelation(
+            preCfgId=req.pre_cfg_id,
+            cfgId=req.cfg_id
+        )
+
+        db.add(relation)
+        db.commit()
+
+        return {"message": "success"}
+
+    except Exception as e:
+        db.rollback()
+        raise HTTPException(status_code=500, detail=str(e))
+
+    finally:
+        db.close()
+
+@router.get("", response_model=PreCfgRelationListResponse)
+def get_relations(cfg_id: str = None):
+
+    db = SessionLocal()
+
+    try:
+        query = db.query(PreCfgRelation)
+
+        if cfg_id:
+            query = query.filter(PreCfgRelation.cfgId == cfg_id)
+
+        items = query.all()
+
+        result = []
+
+        for i in items:
+            result.append({
+                "pre_cfg_id": i.preCfgId,
+                "cfg_id": i.cfgId
+            })
+
+        return {
+            "total": len(result),
+            "data": result
+        }
+
+    finally:
+        db.close()
+
+@router.delete("")
+def delete_relation(pre_cfg_id: str, cfg_id: str):
+
+    db = SessionLocal()
+
+    try:
+        relation = db.query(PreCfgRelation).filter(
+            PreCfgRelation.preCfgId == pre_cfg_id,
+            PreCfgRelation.cfgId == cfg_id
+        ).first()
+
+        if not relation:
+            raise HTTPException(status_code=404, detail="Not found")
+
+        db.delete(relation)
+        db.commit()
+
+        return {"message": "deleted"}
+
+    finally:
+        db.close()
+
+===== 文件路径: backend\app\api\provision_parameter_api.py =====
+from fastapi import APIRouter, HTTPException
+from app.database import SessionLocal
+from app.models.test_provision_parameter_model import TestProvisionParameter
+from app.schemas.provision_parameter_schema import (
+    ProvisionParameterCreateRequest,
+    ProvisionParameterListResponse,
+    ProvisionParameterDetailResponse
+)
+router = APIRouter(prefix="/provision-params", tags=["Provision Parameters"])
+
+@router.post("")
+def create_provision_param(req: ProvisionParameterCreateRequest):
+
+    db = SessionLocal()
+
+    try:
+        new_item = TestProvisionParameter(
+            action_id=req.action_id,
+            platform_code=req.platform_code,
+            provision_type=req.provision_type,
+            provision_Mandatory_aram=req.provision_mandatory_param,
+            provision_optional_aram=req.provision_optional_param,
+            state=req.state,
+            ext1=req.ext1,
+            ext2=req.ext2,
+            ext3=req.ext3,
+            product_line=req.product_line,
+            veris_code_status=req.veris_code_status,
+            platform=req.platform
+        )
+
+        db.add(new_item)
+        db.commit()
+        db.refresh(new_item)
+
+        return {
+            "message": "success",
+            "id": new_item.provision_seq_id
+        }
+
+    except Exception as e:
+        db.rollback()
+        raise HTTPException(status_code=500, detail=str(e))
+
+    finally:
+        db.close()
+
+@router.get("", response_model=ProvisionParameterListResponse)
+def get_list(product_line: str = None, platform_code: str = None):
+
+    db = SessionLocal()
+
+    try:
+        query = db.query(TestProvisionParameter)
+
+        if product_line:
+            query = query.filter(TestProvisionParameter.product_line == product_line)
+
+        if platform_code:
+            query = query.filter(TestProvisionParameter.platform_code == platform_code)
+
+        items = query.all()
+
+        result = []
+
+        for i in items:
+            result.append({
+                "id": i.provision_seq_id,
+                "action_id": i.action_id,
+                "platform_code": i.platform_code,
+                "provision_type": i.provision_type,
+                "mandatory": i.provision_Mandatory_aram,
+                "optional": i.provision_optional_aram,
+                "state": i.state,
+                "active": i.state == "U",
+                "product_line": i.product_line
+            })
+
+        return {
+            "total": len(result),
+            "data": result
+        }
+
+    finally:
+        db.close()
+
+@router.get("/{id}", response_model=ProvisionParameterDetailResponse)
+def get_one(id: int):
+
+    db = SessionLocal()
+
+    try:
+        item = db.query(TestProvisionParameter).filter(
+            TestProvisionParameter.provision_seq_id == id
+        ).first()
+
+        if not item:
+            raise HTTPException(status_code=404, detail="Not found")
+
+        return {
+            "id": item.provision_seq_id,
+            "action_id": item.action_id,
+            "platform_code": item.platform_code,
+            "provision_type": item.provision_type,
+            "mandatory": item.provision_Mandatory_aram,
+            "optional": item.provision_optional_aram,
+            "state": item.state,
+            "ext1": item.ext1,
+            "ext2": item.ext2,
+            "ext3": item.ext3,
+            "product_line": item.product_line,
+            "veris_code_status": item.veris_code_status,
+            "platform": item.platform
+        }
+
+    finally:
+        db.close()
+
+===== 文件路径: backend\app\api\template_api.py =====
+from fastapi import APIRouter, HTTPException
+from sqlalchemy import asc, desc
+from app.database import SessionLocal
+from datetime import datetime
+
+from app.models.test_case_template_model import TestCaseTemplate
+from app.models.test_case_component_model import TestCaseComponent
+from app.schemas.template_schema import TemplateCreateRequest, TemplateUpdateRequest
+
+router = APIRouter(tags=["Template"])
+
+
+@router.post("/templates")
+def create_template(req: TemplateCreateRequest):
+    db = SessionLocal()
+
+    try:
+        if not req.components:
+            raise HTTPException(status_code=400, detail="components cannot be empty")
+
+        template = TestCaseTemplate(
+            TEST_CASE_NAME=req.template_name,
+            TEST_CASE_TYPE=req.test_case_type,
+            MODULE=req.module,
+            IS_BROWSER=req.is_browser,
+            REMARK=req.remark,
+            TENANT_ID=req.tenant_id,
+            STATE=req.state,
+            CREATE_DATE=datetime.now(),
+            EXPIRE_DATE=datetime(2099, 12, 31, 23, 59, 59),
+            UPDATE_DATE=datetime.now()
+        )
+
+        db.add(template)
+        db.flush()
+
+        for comp in req.components:
+            relation = TestCaseComponent(
+                TEST_CASE_TEMPLATE_ID=template.TEST_CASE_TEMPLATE_ID,
+                TEST_COMPONENT_ID=comp.component_id,
+                SORT=comp.sort,
+                WAIT_TIME=comp.wait_time,
+                LOOP_NUM=comp.loop_num,
+                IS_SUSPEND=comp.is_suspend,
+                REMARK=comp.remark,
+                TENANT_ID=req.tenant_id,
+                STATE=req.state,
+                CREATE_DATE=datetime.now(),
+                EXPIRE_DATE=datetime(2099, 12, 31, 23, 59, 59),
+                UPDATE_DATE=datetime.now()
+            )
+            db.add(relation)
+
+        db.commit()
+
+        return {
+            "message": "Template created successfully",
+            "template_id": template.TEST_CASE_TEMPLATE_ID
+        }
+
+    except HTTPException:
+        db.rollback()
+        raise
+    except Exception as e:
+        db.rollback()
+        raise HTTPException(status_code=500, detail=str(e))
+    finally:
+        db.close()
+
+
+@router.get("/templates")
+def get_templates(
+    template_id: int = None,
+    template_name: str = None,
+    module: str = None,
+    test_case_type: str = None,
+    page: int = 1,
+    page_size: int = 10,
+    sort_field: str = "template_id",
+    sort_order: str = "desc"
+):
+    db = SessionLocal()
+
+    try:
+        query = db.query(TestCaseTemplate)
+
+        if template_id:
+            query = query.filter(TestCaseTemplate.TEST_CASE_TEMPLATE_ID == template_id)
+
+        if template_name:
+            query = query.filter(TestCaseTemplate.TEST_CASE_NAME.like(f"%{template_name}%"))
+
+        if module:
+            query = query.filter(TestCaseTemplate.MODULE.like(f"%{module}%"))
+
+        if test_case_type:
+            query = query.filter(TestCaseTemplate.TEST_CASE_TYPE == test_case_type)
+
+        sort_column = {
+            "template_id": TestCaseTemplate.TEST_CASE_TEMPLATE_ID,
+            "template_name": TestCaseTemplate.TEST_CASE_NAME,
+            "module": TestCaseTemplate.MODULE,
+            "test_case_type": TestCaseTemplate.TEST_CASE_TYPE,
+            "state": TestCaseTemplate.STATE,
+            "create_date": TestCaseTemplate.CREATE_DATE
+        }.get(sort_field.lower(), TestCaseTemplate.TEST_CASE_TEMPLATE_ID)
+
+        if sort_order == "asc":
+            query = query.order_by(asc(sort_column), asc(TestCaseTemplate.TEST_CASE_TEMPLATE_ID))
+        else:
+            query = query.order_by(desc(sort_column), desc(TestCaseTemplate.TEST_CASE_TEMPLATE_ID))
+
+        total = query.count()
+        templates = query.offset((page - 1) * page_size).limit(page_size).all()
+
+        result = []
+
+        for t in templates:
+            result.append({
+                "template_id": t.TEST_CASE_TEMPLATE_ID,
+                "template_name": t.TEST_CASE_NAME,
+                "test_case_type": t.TEST_CASE_TYPE,
+                "module": t.MODULE,
+                "is_browser": t.IS_BROWSER,
+                "tenant_id": t.TENANT_ID,
+                "state": t.STATE,
+                "remark": t.REMARK,
+                "create_date": t.CREATE_DATE
+            })
+
+        return {
+            "total": total,
+            "data": result
+        }
+
+    finally:
+        db.close()
+
+
+@router.get("/templates/{template_id}")
+def get_template_detail(template_id: int):
+    db = SessionLocal()
+
+    try:
+        template = db.query(TestCaseTemplate).filter(
+            TestCaseTemplate.TEST_CASE_TEMPLATE_ID == template_id
+        ).first()
+
+        if not template:
+            raise HTTPException(status_code=404, detail="Template not found")
+
+        components = db.query(TestCaseComponent).filter(
+            TestCaseComponent.TEST_CASE_TEMPLATE_ID == template_id
+        ).order_by(TestCaseComponent.SORT.asc()).all()
+
+        component_list = []
+
+        for c in components:
+            component_list.append({
+                "test_case_component_id": c.TEST_CASE_COMPONENT_ID,
+                "component_id": c.TEST_COMPONENT_ID,
+                "sort": c.SORT,
+                "wait_time": c.WAIT_TIME,
+                "loop_num": c.LOOP_NUM,
+                "is_suspend": c.IS_SUSPEND,
+                "remark": c.REMARK
+            })
+
+        return {
+            "template_id": template.TEST_CASE_TEMPLATE_ID,
+            "template_name": template.TEST_CASE_NAME,
+            "test_case_type": template.TEST_CASE_TYPE,
+            "module": template.MODULE,
+            "is_browser": template.IS_BROWSER,
+            "remark": template.REMARK,
+            "tenant_id": template.TENANT_ID,
+            "state": template.STATE,
+            "create_date": template.CREATE_DATE,
+            "components": component_list
+        }
+
+    finally:
+        db.close()
+
+
+@router.put("/templates/{template_id}")
+def update_template(template_id: int, req: TemplateUpdateRequest):
+    db = SessionLocal()
+
+    try:
+        template = db.query(TestCaseTemplate).filter(
+            TestCaseTemplate.TEST_CASE_TEMPLATE_ID == template_id
+        ).first()
+
+        if not template:
+            raise HTTPException(status_code=404, detail="Template not found")
+
+        template.TEST_CASE_NAME = req.template_name
+        template.TEST_CASE_TYPE = req.test_case_type
+        template.MODULE = req.module
+        template.IS_BROWSER = req.is_browser
+        template.REMARK = req.remark
+        template.TENANT_ID = req.tenant_id
+        template.STATE = req.state
+        template.UPDATE_DATE = datetime.now()
+
+        db.query(TestCaseComponent).filter(
+            TestCaseComponent.TEST_CASE_TEMPLATE_ID == template_id
+        ).delete()
+
+        for comp in req.components:
+            relation = TestCaseComponent(
+                TEST_CASE_TEMPLATE_ID=template_id,
+                TEST_COMPONENT_ID=comp.component_id,
+                SORT=comp.sort,
+                WAIT_TIME=comp.wait_time,
+                LOOP_NUM=comp.loop_num,
+                IS_SUSPEND=comp.is_suspend,
+                REMARK=comp.remark,
+                TENANT_ID=req.tenant_id,
+                STATE=req.state,
+                CREATE_DATE=datetime.now(),
+                EXPIRE_DATE=datetime(2099, 12, 31, 23, 59, 59),
+                UPDATE_DATE=datetime.now()
+            )
+            db.add(relation)
+
+        db.commit()
+
+        return {"message": "updated", "template_id": template_id}
+
+    except HTTPException:
+        db.rollback()
+        raise
+    except Exception as e:
+        db.rollback()
+        raise HTTPException(status_code=500, detail=str(e))
+    finally:
+        db.close()
+
+
+@router.delete("/templates/{template_id}")
+def delete_template(template_id: int):
+    db = SessionLocal()
+
+    try:
+        template = db.query(TestCaseTemplate).filter(
+            TestCaseTemplate.TEST_CASE_TEMPLATE_ID == template_id
+        ).first()
+
+        if not template:
+            raise HTTPException(status_code=404, detail="Template not found")
+
+        db.query(TestCaseComponent).filter(
+            TestCaseComponent.TEST_CASE_TEMPLATE_ID == template_id
+        ).delete()
+
+        db.delete(template)
+        db.commit()
+
+        return {"message": "deleted", "template_id": template_id}
+
+    except Exception as e:
+        db.rollback()
+        raise HTTPException(status_code=500, detail=str(e))
+    finally:
+        db.close()
+
+===== 文件路径: backend\app\api\template_ext_api.py =====
+from fastapi import APIRouter
+from app.database import SessionLocal
+from app.models.test_case_template_model import TestCaseTemplate
+
+router = APIRouter(prefix="/template-ext")
+
+
+@router.delete("/{template_id}")
+def delete_template(template_id: int):
+
+    db = SessionLocal()
+
+    try:
+        db.query(TestCaseTemplate).filter(
+            TestCaseTemplate.TEST_CASE_TEMPLATE_ID == template_id
+        ).delete()
+
+        db.commit()
+
+        return {"message": "deleted"}
+
+    finally:
+        db.close()
+
+===== 文件路径: backend\app\api\template_meta_router.py =====
+from fastapi import APIRouter
+from app.database import SessionLocal
+from app.models.test_component_model import TestComponent
+from app.models.test_parameter_model import TestParameter
+
+router = APIRouter(tags=["Template Meta"])
+
+
+# 获取组件列表
+@router.get("/components")
+def get_components():
+    db = SessionLocal()
+    try:
+        data = db.query(TestComponent).all()
+
+        return [
+            {
+                "id": c.ID,
+                "name": c.NAME
+            }
+            for c in data
+        ]
+    finally:
+        db.close()
+
+
+# 获取参数列表
+@router.get("/parameters")
+def get_parameters():
+    db = SessionLocal()
+    try:
+        data = db.query(TestParameter).all()
+
+        return [
+            {
+                "id": p.ID,
+                "name": p.NAME
+            }
+            for p in data
+        ]
+    finally:
+        db.close()
+
+===== 文件路径: backend\app\api\template_rel_api.py =====
+from fastapi import APIRouter, HTTPException
+from sqlalchemy import asc, desc
+from datetime import datetime
+
+from app.database import SessionLocal
+from app.models.test_case_template_rel_model import TestCaseTemplateRel
+from app.schemas.template_rel_schema import (
+    TemplateRelCreateRequest,
+    TemplateRelUpdateRequest,
+    TemplateRelListResponse,
+    TemplateRelDetailResponse
+)
+
+router = APIRouter(prefix="/template-relations", tags=["Template Relations"])
+
+
+@router.post("")
+def create_template_relation(req: TemplateRelCreateRequest):
+    db = SessionLocal()
+    try:
+        obj = TestCaseTemplateRel(
+            TEST_CASE_TEMPLATE_ID=req.test_case_template_id,
+            PRE_TEST_CASE_TEMPLATE_ID=req.pre_test_case_template_id,
+            TENANT_ID=req.tenant_id,
+            STATE=req.state,
+            CREATE_DATE=datetime.now(),
+            EXPIRE_DATE=datetime(2099, 12, 31, 23, 59, 59)
+        )
+
+        db.add(obj)
+        db.commit()
+        db.refresh(obj)
+
+        return {
+            "message": "success",
+            "rel_id": obj.TEST_CASE_TEMPLATE_REL_ID
+        }
+
+    except Exception as e:
+        db.rollback()
+        raise HTTPException(status_code=500, detail=str(e))
+    finally:
+        db.close()
+
+
+@router.get("", response_model=TemplateRelListResponse)
+def get_template_relations(
+    rel_id: int = None,
+    test_case_template_id: int = None,
+    pre_test_case_template_id: int = None,
+    page: int = 1,
+    page_size: int = 10,
+    sort_field: str = "rel_id",
+    sort_order: str = "desc"
+):
+    db = SessionLocal()
+    try:
+        query = db.query(TestCaseTemplateRel)
+
+        if rel_id:
+            query = query.filter(
+                TestCaseTemplateRel.TEST_CASE_TEMPLATE_REL_ID == rel_id
+            )
+
+        if test_case_template_id:
+            query = query.filter(
+                TestCaseTemplateRel.TEST_CASE_TEMPLATE_ID == test_case_template_id
+            )
+
+        if pre_test_case_template_id:
+            query = query.filter(
+                TestCaseTemplateRel.PRE_TEST_CASE_TEMPLATE_ID == pre_test_case_template_id
+            )
+
+        sort_column = {
+            "rel_id": TestCaseTemplateRel.TEST_CASE_TEMPLATE_REL_ID,
+            "test_case_template_id": TestCaseTemplateRel.TEST_CASE_TEMPLATE_ID,
+            "pre_test_case_template_id": TestCaseTemplateRel.PRE_TEST_CASE_TEMPLATE_ID,
+            "tenant_id": TestCaseTemplateRel.TENANT_ID,
+            "state": TestCaseTemplateRel.STATE,
+            "create_date": TestCaseTemplateRel.CREATE_DATE
+        }.get(sort_field.lower(), TestCaseTemplateRel.TEST_CASE_TEMPLATE_REL_ID)
+
+        if sort_order == "asc":
+            query = query.order_by(
+                asc(sort_column),
+                asc(TestCaseTemplateRel.TEST_CASE_TEMPLATE_REL_ID)
+            )
+        else:
+            query = query.order_by(
+                desc(sort_column),
+                desc(TestCaseTemplateRel.TEST_CASE_TEMPLATE_REL_ID)
+            )
+
+        total = query.count()
+        items = query.offset((page - 1) * page_size).limit(page_size).all()
+
+        result = []
+        for x in items:
+            result.append({
+                "rel_id": x.TEST_CASE_TEMPLATE_REL_ID,
+                "test_case_template_id": x.TEST_CASE_TEMPLATE_ID,
+                "pre_test_case_template_id": x.PRE_TEST_CASE_TEMPLATE_ID,
+                "tenant_id": x.TENANT_ID,
+                "state": x.STATE or 0,
+                "create_date": x.CREATE_DATE
+            })
+
+        return {
+            "total": total,
+            "data": result
+        }
+
+    finally:
+        db.close()
+
+
+@router.get("/{rel_id}", response_model=TemplateRelDetailResponse)
+def get_template_relation_detail(rel_id: int):
+    db = SessionLocal()
+    try:
+        x = db.query(TestCaseTemplateRel).filter(
+            TestCaseTemplateRel.TEST_CASE_TEMPLATE_REL_ID == rel_id
+        ).first()
+
+        if not x:
+            raise HTTPException(status_code=404, detail="Relation not found")
+
+        return {
+            "rel_id": x.TEST_CASE_TEMPLATE_REL_ID,
+            "test_case_template_id": x.TEST_CASE_TEMPLATE_ID,
+            "pre_test_case_template_id": x.PRE_TEST_CASE_TEMPLATE_ID,
+            "tenant_id": x.TENANT_ID,
+            "state": x.STATE or 0,
+            "create_date": x.CREATE_DATE
+        }
+
+    finally:
+        db.close()
+
+
+@router.put("/{rel_id}")
+def update_template_relation(rel_id: int, req: TemplateRelUpdateRequest):
+    db = SessionLocal()
+    try:
+        x = db.query(TestCaseTemplateRel).filter(
+            TestCaseTemplateRel.TEST_CASE_TEMPLATE_REL_ID == rel_id
+        ).first()
+
+        if not x:
+            raise HTTPException(status_code=404, detail="Relation not found")
+
+        x.TEST_CASE_TEMPLATE_ID = req.test_case_template_id
+        x.PRE_TEST_CASE_TEMPLATE_ID = req.pre_test_case_template_id
+        x.TENANT_ID = req.tenant_id
+        x.STATE = req.state
+
+        db.commit()
+
+        return {
+            "message": "updated",
+            "rel_id": rel_id
+        }
+
+    except Exception as e:
+        db.rollback()
+        raise HTTPException(status_code=500, detail=str(e))
+    finally:
+        db.close()
+
+
+@router.delete("/{rel_id}")
+def delete_template_relation(rel_id: int):
+    db = SessionLocal()
+    try:
+        x = db.query(TestCaseTemplateRel).filter(
+            TestCaseTemplateRel.TEST_CASE_TEMPLATE_REL_ID == rel_id
+        ).first()
+
+        if not x:
+            raise HTTPException(status_code=404, detail="Relation not found")
+
+        db.delete(x)
+        db.commit()
+
+        return {
+            "message": "deleted",
+            "rel_id": rel_id
+        }
+
+    except Exception as e:
+        db.rollback()
+        raise HTTPException(status_code=500, detail=str(e))
+    finally:
+        db.close()
+
+===== 文件路径: backend\app\api\test_case_execution_api.py =====
+# app/api/test_case_execution_api.py
+
+from fastapi import APIRouter, Depends
+from sqlalchemy.orm import Session
+from app.database import get_db
+from app.models.test_case_execution_model import TestCaseExecution
+from app.schemas.test_case_execution_schema import (
+    ExecutionBase,
+    ExecutionListResponse,
+    ExecutionQueryRequest
+)
+
+router = APIRouter(prefix="/case-executions", tags=["Case Execution"])
+
+
+@router.get("")
+def get_list(
+    test_case_exe_id: int | None = None,
+    cfg_id: int | None = None,
+    test_case_name: str | None = None,
+    execution_machine: str | None = None,
+    state: int | None = None,
+    page: int = 1,
+    page_size: int = 10,
+    db: Session = Depends(get_db)
+):
+    query = db.query(TestCaseExecution)
+
+    if test_case_exe_id:
+        query = query.filter(TestCaseExecution.TEST_CASE_EXE_ID == test_case_exe_id)
+
+    if cfg_id:
+        query = query.filter(TestCaseExecution.CFG_ID == cfg_id)
+
+    if test_case_name:
+        query = query.filter(TestCaseExecution.TEST_CASE_NAME.like(f"%{test_case_name}%"))
+
+    if execution_machine:
+        query = query.filter(TestCaseExecution.EXECUTION_MACHINE.like(f"%{execution_machine}%"))
+
+    if state is not None:
+        query = query.filter(TestCaseExecution.STATE == state)
+
+    query = query.order_by(TestCaseExecution.TEST_CASE_EXE_ID.desc())
+
+    total = query.count()
+
+    data = query.offset((page - 1) * page_size).limit(page_size).all()
+
+    return {
+        "total": total,
+        "data": data   # ⭐ 关键
+    }
+
+===== 文件路径: backend\app\api\test_component_execution_api.py =====
+from fastapi import APIRouter, Depends
+from sqlalchemy.orm import Session
+from typing import Optional
+
+from app.database import get_db
+from app.models.test_component_execution_model import TestComponentExecution
+from app.schemas.test_component_execution_schema import ComponentExecutionListResponse
+
+router = APIRouter(prefix="/component-executions", tags=["Component Execution"])
+
+
+@router.get("/", response_model=ComponentExecutionListResponse)
+def get_component_executions(
+    test_case_exe_id: Optional[int] = None,
+    test_component_id: Optional[int] = None,
+    test_component_name: Optional[str] = None,
+    state: Optional[int] = None,
+    page: int = 1,
+    page_size: int = 10,
+    db: Session = Depends(get_db),
+):
+    query = db.query(TestComponentExecution)
+
+    if test_case_exe_id:
+        query = query.filter(TestComponentExecution.TEST_CASE_EXE_ID == test_case_exe_id)
+
+    if test_component_id:
+        query = query.filter(TestComponentExecution.TEST_COMPONENT_ID == test_component_id)
+
+    if test_component_name:
+        query = query.filter(TestComponentExecution.TEST_COMPONENT_NAME.like(f"%{test_component_name}%"))
+
+    if state is not None:
+        query = query.filter(TestComponentExecution.STATE == state)
+
+    total = query.count()
+
+    rows = (
+        query.order_by(TestComponentExecution.CREATE_DATE.desc())
+        .offset((page - 1) * page_size)
+        .limit(page_size)
+        .all()
+    )
+
+    return {
+        "total": total,
+        "data": rows
+    }
+
+===== 文件路径: backend\app\api\test_dispatcher_api.py =====
+from fastapi import APIRouter, HTTPException
+from sqlalchemy import asc, desc
+from datetime import datetime
+
+from app.database import SessionLocal
+from app.models.test_dispatcher_model import TestDispatcherData
+from app.schemas.test_dispatcher_schema import (
+    TestDispatcherCreateRequest,
+    TestDispatcherUpdateRequest,
+    TestDispatcherDetailResponse,
+    TestDispatcherListResponse
+)
+
+router = APIRouter(prefix="/test-dispatcher", tags=["Test Dispatcher"])
+
+
+@router.post("")
+def create_test_dispatcher(req: TestDispatcherCreateRequest):
+    db = SessionLocal()
+    try:
+        new_item = TestDispatcherData(
+            QUE_NAME=req.que_name,
+            EXE_MACHINE=req.exe_machine,
+            PLAN_ID=req.plan_id if req.plan_id is not None else 0,
+            BATCH_NAME=req.batch_name,
+
+            SEND_EMAIL=req.send_email if req.send_email is not None else 0,
+            PASS_RATE_SWITCH=req.pass_rate_switch if req.pass_rate_switch is not None else 0,
+            PASS_RATE=req.pass_rate,
+
+            DEFAULT_MSG_TO_LIST=req.default_msg_to_list,
+            MSG_CC_LIST=req.msg_cc_list,
+            MSG_TO_LIST=req.msg_to_list,
+
+            CASE_LIST=req.case_list,
+            ACTUAL_CASE_LIST=req.actual_case_list,
+
+            EXPLANATION=req.explanation,
+
+            CREATE_DATE=datetime.now(),
+            EXPIRE_DATE=datetime(2099, 12, 31, 23, 59, 59),
+
+            UPDATE_JIRA=req.update_jira,
+            CREATE_BUG=req.create_bug,
+
+            UIPATH_EXE_MACHONE=req.uipath_exe_machone
+        )
+
+        db.add(new_item)
+        db.commit()
+        db.refresh(new_item)
+
+        return {
+            "message": "created",
+            "dispatcher_plan_id": new_item.DISPATCHER_PLAN_ID
+        }
+
+    except Exception as e:
+        db.rollback()
+        raise HTTPException(status_code=500, detail=str(e))
+
+    finally:
+        db.close()
+
+
+@router.get("", response_model=TestDispatcherListResponse)
+def get_test_dispatcher_list(
+    dispatcher_plan_id: int = None,
+    que_name: str = None,
+    exe_machine: str = None,
+    plan_id: int = None,
+    batch_name: str = None,
+    explanation: str = None,
+    update_jira: str = None,
+    create_bug: str = None,
+    uipath_exe_machone: str = None,
+
+    page: int = 1,
+    page_size: int = 10,
+
+    sort_field: str = "dispatcher_plan_id",
+    sort_order: str = "desc"
+):
+    db = SessionLocal()
+    try:
+        query = db.query(TestDispatcherData)
+
+        # ===== 查询条件 =====
+        if dispatcher_plan_id:
+            query = query.filter(
+                TestDispatcherData.DISPATCHER_PLAN_ID == dispatcher_plan_id
+            )
+
+        if que_name:
+            query = query.filter(
+                TestDispatcherData.QUE_NAME.like(f"%{que_name}%")
+            )
+
+        if exe_machine:
+            query = query.filter(
+                TestDispatcherData.EXE_MACHINE.like(f"%{exe_machine}%")
+            )
+
+        if plan_id is not None:
+            query = query.filter(
+                TestDispatcherData.PLAN_ID == plan_id
+            )
+
+        if batch_name:
+            query = query.filter(
+                TestDispatcherData.BATCH_NAME.like(f"%{batch_name}%")
+            )
+
+        if explanation:
+            query = query.filter(
+                TestDispatcherData.EXPLANATION.like(f"%{explanation}%")
+            )
+
+        if update_jira:
+            query = query.filter(
+                TestDispatcherData.UPDATE_JIRA.like(f"%{update_jira}%")
+            )
+
+        if create_bug:
+            query = query.filter(
+                TestDispatcherData.CREATE_BUG.like(f"%{create_bug}%")
+            )
+
+        if uipath_exe_machone:
+            query = query.filter(
+                TestDispatcherData.UIPATH_EXE_MACHONE.like(f"%{uipath_exe_machone}%")
+            )
+
+        # ===== 排序 =====
+        sort_column = {
+            "dispatcher_plan_id": TestDispatcherData.DISPATCHER_PLAN_ID,
+            "que_name": TestDispatcherData.QUE_NAME,
+            "exe_machine": TestDispatcherData.EXE_MACHINE,
+            "plan_id": TestDispatcherData.PLAN_ID,
+            "batch_name": TestDispatcherData.BATCH_NAME,
+            "explanation": TestDispatcherData.EXPLANATION,
+            "create_date": TestDispatcherData.CREATE_DATE,
+            "update_jira": TestDispatcherData.UPDATE_JIRA,
+            "create_bug": TestDispatcherData.CREATE_BUG,
+            "uipath_exe_machone": TestDispatcherData.UIPATH_EXE_MACHONE,
+        }.get(sort_field.lower(), TestDispatcherData.DISPATCHER_PLAN_ID)
+
+        if sort_order == "asc":
+            query = query.order_by(asc(sort_column), asc(TestDispatcherData.DISPATCHER_PLAN_ID))
+        else:
+            query = query.order_by(desc(sort_column), desc(TestDispatcherData.DISPATCHER_PLAN_ID))
+
+        total = query.count()
+
+        rows = query.offset((page - 1) * page_size).limit(page_size).all()
+
+        return {
+            "total": total,
+            "data": [
+                {
+                    "dispatcher_plan_id": x.DISPATCHER_PLAN_ID,
+                    "que_name": x.QUE_NAME,
+                    "exe_machine": x.EXE_MACHINE,
+                    "plan_id": x.PLAN_ID if x.PLAN_ID is not None else 0,
+                    "batch_name": x.BATCH_NAME,
+
+                    "send_email": x.SEND_EMAIL if x.SEND_EMAIL is not None else 0,
+                    "pass_rate_switch": x.PASS_RATE_SWITCH if x.PASS_RATE_SWITCH is not None else 0,
+                    "pass_rate": x.PASS_RATE,
+
+                    "default_msg_to_list": x.DEFAULT_MSG_TO_LIST,
+                    "msg_cc_list": x.MSG_CC_LIST,
+                    "msg_to_list": x.MSG_TO_LIST,
+
+                    "case_list": x.CASE_LIST,
+                    "actual_case_list": x.ACTUAL_CASE_LIST,
+
+                    "explanation": x.EXPLANATION,
+
+                    "update_jira": x.UPDATE_JIRA,
+                    "create_bug": x.CREATE_BUG,
+
+                    "uipath_exe_machone": x.UIPATH_EXE_MACHONE,
+
+                    "create_date": x.CREATE_DATE,
+                    "expire_date": x.EXPIRE_DATE
+                }
+                for x in rows
+            ]
+        }
+
+    finally:
+        db.close()
+
+
+@router.get("/{dispatcher_plan_id}", response_model=TestDispatcherDetailResponse)
+def get_test_dispatcher_detail(dispatcher_plan_id: int):
+    db = SessionLocal()
+    try:
+        item = db.query(TestDispatcherData).filter(
+            TestDispatcherData.DISPATCHER_PLAN_ID == dispatcher_plan_id
+        ).first()
+
+        if not item:
+            raise HTTPException(status_code=404, detail="Test dispatcher not found")
+
+        return {
+            "dispatcher_plan_id": item.DISPATCHER_PLAN_ID,
+            "que_name": item.QUE_NAME,
+            "exe_machine": item.EXE_MACHINE,
+            "plan_id": item.PLAN_ID if item.PLAN_ID is not None else 0,
+            "batch_name": item.BATCH_NAME,
+
+            "send_email": item.SEND_EMAIL if item.SEND_EMAIL is not None else 0,
+            "pass_rate_switch": item.PASS_RATE_SWITCH if item.PASS_RATE_SWITCH is not None else 0,
+            "pass_rate": item.PASS_RATE,
+
+            "default_msg_to_list": item.DEFAULT_MSG_TO_LIST,
+            "msg_cc_list": item.MSG_CC_LIST,
+            "msg_to_list": item.MSG_TO_LIST,
+
+            "case_list": item.CASE_LIST,
+            "actual_case_list": item.ACTUAL_CASE_LIST,
+
+            "explanation": item.EXPLANATION,
+
+            "update_jira": item.UPDATE_JIRA,
+            "create_bug": item.CREATE_BUG,
+
+            "uipath_exe_machone": item.UIPATH_EXE_MACHONE,
+
+            "create_date": item.CREATE_DATE,
+            "expire_date": item.EXPIRE_DATE
+        }
+
+    finally:
+        db.close()
+
+
+@router.put("/{dispatcher_plan_id}")
+def update_test_dispatcher(dispatcher_plan_id: int, req: TestDispatcherUpdateRequest):
+    db = SessionLocal()
+    try:
+        item = db.query(TestDispatcherData).filter(
+            TestDispatcherData.DISPATCHER_PLAN_ID == dispatcher_plan_id
+        ).first()
+
+        if not item:
+            raise HTTPException(status_code=404, detail="Test dispatcher not found")
+
+        item.QUE_NAME = req.que_name
+        item.EXE_MACHINE = req.exe_machine
+        item.PLAN_ID = req.plan_id if req.plan_id is not None else 0
+        item.BATCH_NAME = req.batch_name
+
+        item.SEND_EMAIL = req.send_email if req.send_email is not None else 0
+        item.PASS_RATE_SWITCH = req.pass_rate_switch if req.pass_rate_switch is not None else 0
+        item.PASS_RATE = req.pass_rate
+
+        item.DEFAULT_MSG_TO_LIST = req.default_msg_to_list
+        item.MSG_CC_LIST = req.msg_cc_list
+        item.MSG_TO_LIST = req.msg_to_list
+
+        item.CASE_LIST = req.case_list
+        item.ACTUAL_CASE_LIST = req.actual_case_list
+
+        item.EXPLANATION = req.explanation
+
+        item.UPDATE_JIRA = req.update_jira
+        item.CREATE_BUG = req.create_bug
+
+        item.UIPATH_EXE_MACHONE = req.uipath_exe_machone
+
+        db.commit()
+
+        return {
+            "message": "updated",
+            "dispatcher_plan_id": dispatcher_plan_id
+        }
+
+    except Exception as e:
+        db.rollback()
+        raise HTTPException(status_code=500, detail=str(e))
+
+    finally:
+        db.close()
+
+
+@router.delete("/{dispatcher_plan_id}")
+def delete_test_dispatcher(dispatcher_plan_id: int):
+    db = SessionLocal()
+    try:
+        item = db.query(TestDispatcherData).filter(
+            TestDispatcherData.DISPATCHER_PLAN_ID == dispatcher_plan_id
+        ).first()
+
+        if not item:
+            raise HTTPException(status_code=404, detail="Test dispatcher not found")
+
+        db.delete(item)
+        db.commit()
+
+        return {
+            "message": "deleted",
+            "dispatcher_plan_id": dispatcher_plan_id
+        }
+
+    except Exception as e:
+        db.rollback()
+        raise HTTPException(status_code=500, detail=str(e))
+
+    finally:
+        db.close()
+
+===== 文件路径: backend\app\api\test_plan_api.py =====
+from fastapi import APIRouter
+from sqlalchemy import asc, desc
+from datetime import datetime
+
+from app.database import SessionLocal
+from app.models.test_plan_model import TestPlan
+from app.schemas.test_plan_schema import TestPlanListResponse
+
+router = APIRouter(prefix="/test-plans", tags=["Test Plans"])
+
+
+@router.get("", response_model=TestPlanListResponse)
+def get_test_plan_list(
+    batch_id: int = None,
+    batch_name: str = None,
+    plan_id: int = None,
+    execution_machine: str = None,
+    task_status: int = None,
+    status: int = None,
+    create_date_from: str = None,
+    create_date_to: str = None,
+    page: int = 1,
+    page_size: int = 10,
+    sort_field: str = "batch_id",
+    sort_order: str = "desc"
+):
+    db = SessionLocal()
+    try:
+        query = db.query(TestPlan)
+
+        # ===== 查询条件 =====
+        if batch_id:
+            query = query.filter(TestPlan.BATCH_ID == batch_id)
+
+        if batch_name:
+            query = query.filter(TestPlan.BATCH_NAME.like(f"%{batch_name}%"))
+
+        if plan_id is not None:
+            query = query.filter(TestPlan.PLAN_ID == plan_id)
+
+        if execution_machine:
+            query = query.filter(TestPlan.EXECUTION_MACHINE.like(f"%{execution_machine}%"))
+
+        if task_status is not None:
+            query = query.filter(TestPlan.TASK_STATUS == task_status)
+
+        if status is not None:
+            query = query.filter(TestPlan.STATUS == status)
+
+        if create_date_from:
+            try:
+                dt_from = datetime.fromisoformat(create_date_from)
+                query = query.filter(TestPlan.CREATE_DATE >= dt_from)
+            except ValueError:
+                pass
+
+        if create_date_to:
+            try:
+                dt_to = datetime.fromisoformat(create_date_to)
+                query = query.filter(TestPlan.CREATE_DATE <= dt_to)
+            except ValueError:
+                pass
+
+        # ===== 排序 =====
+        sort_column = {
+            "batch_id": TestPlan.BATCH_ID,
+            "batch_name": TestPlan.BATCH_NAME,
+            "plan_id": TestPlan.PLAN_ID,
+            "execution_machine": TestPlan.EXECUTION_MACHINE,
+            "task_status": TestPlan.TASK_STATUS,
+            "status": TestPlan.STATUS,
+            "pass_rate": TestPlan.PASS_RATE,
+            "re_run": TestPlan.RE_RUN,
+            "create_date": TestPlan.CREATE_DATE,
+            "finish_date": TestPlan.FINISH_DATE,
+        }.get(sort_field.lower(), TestPlan.BATCH_ID)
+
+        if sort_order == "asc":
+            query = query.order_by(asc(sort_column), asc(TestPlan.BATCH_ID))
+        else:
+            query = query.order_by(desc(sort_column), desc(TestPlan.BATCH_ID))
+
+        total = query.count()
+        rows = query.offset((page - 1) * page_size).limit(page_size).all()
+
+        return {
+            "total": total,
+            "data": [
+                {
+                    "batch_id": x.BATCH_ID,
+                    "batch_name": x.BATCH_NAME,
+                    "task_status": x.TASK_STATUS if x.TASK_STATUS is not None else 0,
+                    "status": x.STATUS if x.STATUS is not None else 0,
+                    "send_email": x.SEND_EMAIL if x.SEND_EMAIL is not None else 0,
+                    "plan_id": x.PLAN_ID if x.PLAN_ID is not None else 0,
+                    "omp_batch_id": x.OMP_BATCH_ID if x.OMP_BATCH_ID is not None else 0,
+                    "pass_rate_switch": x.PASS_RATE_SWITCH if x.PASS_RATE_SWITCH is not None else 0,
+                    "pass_rate": x.PASS_RATE,
+                    "re_run": x.RE_RUN if x.RE_RUN is not None else 0,
+                    "default_msg_to_list": x.DEFAULT_MSG_TO_LIST,
+                    "msg_cc_list": x.MSG_CC_LIST,
+                    "msg_to_list": x.MSG_TO_LIST,
+                    "execution_machine": x.EXECUTION_MACHINE,
+                    "create_date": x.CREATE_DATE,
+                    "finish_date": x.FINISH_DATE,
+                    "update_jira": x.update_jira,
+                    "billing_issue": x.billing_issue if x.billing_issue is not None else 0,
+                    "create_bug": x.CREATE_BUG,
+                }
+                for x in rows
+            ]
+        }
+
+    finally:
+        db.close()
+
+===== 文件路径: backend\app\api\__init__.py =====
+
+
+===== 文件路径: backend\app\models\auto_data_sql_uipath_model.py =====
+from sqlalchemy import Column, String
+from app.database import Base
+
+
+class AutoDataSqlUipath(Base):
+
+    __tablename__ = "AUTO_DATA_SQL_UIPATH"
+
+    SQL_NAME = Column(String(127), primary_key=True)
+
+    DB = Column(String(45))
+    SQL_CONTENT = Column(String(10239))
+
+===== 文件路径: backend\app\models\batch_detail_model.py =====
+from sqlalchemy import Column, Integer, DateTime
+from app.database import Base
+
+
+class BatchDetail(Base):
+
+    __tablename__ = "batch_detail"
+
+    BATCH_DETAIL_ID = Column(Integer, primary_key=True, index=True)
+
+    BATCH_ID = Column(Integer)
+    CFG_ID = Column(Integer)
+
+    UIPATH_CASE_EXE_ID = Column(Integer)
+    ORDER_CASE_EXE_ID = Column(Integer)
+    VERIFY_CASE_EXE_ID = Column(Integer)
+
+    STATUS = Column(Integer)
+    TASK_STATUS = Column(Integer)
+
+    CREATE_DATE = Column(DateTime)
+    FINISH_DATE = Column(DateTime)
+
+===== 文件路径: backend\app\models\billing_data_pool_model.py =====
+from sqlalchemy import Column, BigInteger, String, Integer, DateTime
+from app.database import Base
+
+
+class BillingTestDataPool(Base):
+
+    __tablename__ = "Billing_test_data_pool"
+
+    id = Column(BigInteger, primary_key=True, index=True)
+
+    cfg_id = Column(String(50), index=True)
+
+    testCaseName_str = Column(String(200))
+
+    cust_id = Column(String(50), unique=True)
+    account_id = Column(String(50))
+    order_id = Column(String(50))
+
+    status = Column(Integer, default=0)
+
+    create_time = Column(DateTime)
+    update_time = Column(DateTime)
+    used_time = Column(DateTime)
+
+===== 文件路径: backend\app\models\cfg_test_case_data_model.py =====
+from sqlalchemy import Column, BigInteger, String, DateTime, Text
+from app.database import Base
+
+
+class TestCaseData(Base):
+
+    __tablename__ = "cfg_test_case_data"
+
+    CFG_DATA_ID = Column(BigInteger, primary_key=True, index=True)
+
+    CFG_ID = Column(BigInteger)
+
+    TEST_CASE_TEMPLATE_ID = Column(BigInteger)
+
+    TEST_DATA = Column(Text)
+
+    TENANT_ID = Column(String(6))
+    STATE = Column(BigInteger)
+
+    UIPATH_FLAG = Column(BigInteger)
+
+    CREATE_DATE = Column(DateTime)
+    EXPIRE_DATE = Column(DateTime)
+
+===== 文件路径: backend\app\models\cfg_test_case_task_model.py =====
+from sqlalchemy import Column, BigInteger, String, DateTime
+from app.database import Base
+
+
+class TestCaseTask(Base):
+
+    __tablename__ = "cfg_test_case_task"
+
+    CFG_ID = Column(BigInteger, primary_key=True, index=True)
+
+    TEST_CASE_TEMPLATE_ID = Column(BigInteger)
+    TEST_CASE_NAME = Column(String(200))
+
+    VERIFY_TEST_CASE_TEMPLATE_ID = Column(BigInteger)
+    VERIFY_TEST_CASE_NAME = Column(String(50))
+
+    TRIGGER_MODE = Column(BigInteger)
+    CRON_EXPRESSION = Column(String(20))
+
+    TASK_STATUS = Column(BigInteger)
+
+    TENANT_ID = Column(String(6))
+    STATE = Column(BigInteger)
+
+    CREATE_DATE = Column(DateTime)
+    EXPIRE_DATE = Column(DateTime)
+
+    TEST_INST_ID = Column(String(50))
+
+    EXECUTION_ENVIRONMENT = Column(String(10))
+    EXECUTION_MACHINE = Column(String(20))
+
+    UIPATH_ENTRY = Column(String(200))
+    UIPATH_CASE_NAME = Column(String(100))
+
+    CASE_ID = Column(String(100))
+
+===== 文件路径: backend\app\models\pre_cfg_relation_model.py =====
+from sqlalchemy import Column, String
+from app.database import Base
+
+
+class PreCfgRelation(Base):
+
+    __tablename__ = "pre_cfg_relation"
+
+    preCfgId = Column(String(50), primary_key=True)
+    cfgId = Column(String(50), primary_key=True)
+
+===== 文件路径: backend\app\models\test_case_component_model.py =====
+from sqlalchemy import Column, BigInteger, String, DateTime
+from app.database import Base
+
+
+class TestCaseComponent(Base):
+
+    __tablename__ = "test_case_component"
+
+    TEST_CASE_COMPONENT_ID = Column(BigInteger, primary_key=True, autoincrement=True)
+
+    TEST_CASE_TEMPLATE_ID = Column(BigInteger)
+    TEST_COMPONENT_ID = Column(BigInteger)
+
+    SORT = Column(BigInteger)
+    WAIT_TIME = Column(BigInteger)
+    LOOP_NUM = Column(BigInteger)
+
+    IS_SUSPEND = Column(String(10))
+    REMARK = Column(String(400))
+    TENANT_ID = Column(String(6))
+    STATE = Column(BigInteger)
+
+    CREATE_DATE = Column(DateTime)
+    EXPIRE_DATE = Column(DateTime)
+    UPDATE_DATE = Column(DateTime)
+
+===== 文件路径: backend\app\models\test_case_execution_model.py =====
+from sqlalchemy import Column, BigInteger, String, DateTime, Text
+from app.database import Base
+
+
+class TestCaseExecution(Base):
+
+    __tablename__ = "test_case_execution"
+
+    TEST_CASE_EXE_ID = Column(BigInteger, primary_key=True, index=True)
+
+    REL_CASE_EXE_ID = Column(BigInteger)
+    CFG_ID = Column(BigInteger)
+    TEST_CASE_TEMPLATE_ID = Column(BigInteger)
+
+    TEST_CASE_NAME = Column(String(100))
+    TEST_INST_ID = Column(String(50))
+
+    EXECUTION_ENVIRONMENT = Column(String(10))
+    EXECUTION_MACHINE = Column(String(20))
+
+    IS_PRE_TASK = Column(BigInteger)
+    STATE = Column(BigInteger)
+
+    OMP_BATCH_ID = Column(BigInteger)
+
+    SOURCE_DATA = Column(Text)
+    TEST_RESULT_DATA = Column(Text)
+    ERROR_MESSAGE = Column(Text)
+
+    TENANT_ID = Column(String(6))
+
+    CREATE_DATE = Column(DateTime)
+    FINISH_DATE = Column(DateTime)
+
+    CASE_ID = Column(BigInteger)
+    PLAN_ID = Column(BigInteger)
+    TASK_STATUS = Column(BigInteger)
+
+===== 文件路径: backend\app\models\test_case_template_model.py =====
+from sqlalchemy import Column, BigInteger, String, DateTime
+from app.database import Base
+
+
+class TestCaseTemplate(Base):
+
+    __tablename__ = "test_case_template"
+
+    TEST_CASE_TEMPLATE_ID = Column(BigInteger, primary_key=True, autoincrement=True)
+
+    TEST_CASE_NAME = Column(String(50))
+    TEST_CASE_TYPE = Column(String(10))
+    MODULE = Column(String(50))
+    IS_BROWSER = Column(BigInteger)
+    REMARK = Column(String(400))
+    TENANT_ID = Column(String(6))
+    STATE = Column(BigInteger)
+
+    CREATE_DATE = Column(DateTime)
+    EXPIRE_DATE = Column(DateTime)
+    UPDATE_DATE = Column(DateTime)
+
+===== 文件路径: backend\app\models\test_case_template_rel_model.py =====
+from sqlalchemy import Column, Integer, DateTime
+from app.database import Base
+
+
+class TestCaseTemplateRel(Base):
+    __tablename__ = "test_case_template_rel"
+
+    TEST_CASE_TEMPLATE_REL_ID = Column(Integer, primary_key=True, index=True)
+    TEST_CASE_TEMPLATE_ID = Column(Integer)
+    PRE_TEST_CASE_TEMPLATE_ID = Column(Integer)
+    TENANT_ID = Column(Integer)
+    STATE = Column(Integer)
+    CREATE_DATE = Column(DateTime)
+    EXPIRE_DATE = Column(DateTime)
+
+===== 文件路径: backend\app\models\test_component_execution_model.py =====
+from sqlalchemy import Column, BigInteger, String, DateTime, Text
+from app.database import Base
+
+
+class TestComponentExecution(Base):
+
+    __tablename__ = "test_component_execution"
+
+    TEST_COMPONENT_EXE_ID = Column(BigInteger, primary_key=True, index=True)
+
+    TEST_CASE_EXE_ID = Column(BigInteger, index=True)
+    TEST_CASE_TEMPLATE_ID = Column(BigInteger)
+
+    TEST_COMPONENT_ID = Column(BigInteger)
+    TEST_COMPONENT_NAME = Column(String(50))
+
+    STATE = Column(BigInteger)
+
+    COMPONENT_IN_PARAM = Column(Text)
+    COMPONENT_RESULT_DATA = Column(Text)
+
+    PYTHON_ERROR_MESSAGE = Column(Text)
+    SYSTEM_ERROR_MESSAGE = Column(Text)
+
+    TENANT_ID = Column(String(6))
+
+    CREATE_DATE = Column(DateTime)
+    FINISH_DATE = Column(DateTime)
+
+===== 文件路径: backend\app\models\test_component_model.py =====
+from sqlalchemy import Column, BigInteger, String, DateTime
+from app.database import Base
+
+
+class TestComponent(Base):
+
+    __tablename__ = "test_component"
+
+    TEST_COMPONENT_ID = Column(BigInteger, primary_key=True, index=True)
+
+    TEST_COMPONENT_NAME = Column(String(50))
+    TEST_COMPONENT_TYPE = Column(String(10))
+    TEST_COMPONENT_FILE = Column(String(200))
+
+    REMARK = Column(String(400))
+
+    TENANT_ID = Column(String(6))
+    STATE = Column(BigInteger, default=1)
+
+    CREATE_DATE = Column(DateTime)
+    EXPIRE_DATE = Column(DateTime)
+    UPDATE_DATE = Column(DateTime)
+
+===== 文件路径: backend\app\models\test_component_parameter_model.py =====
+from sqlalchemy import Column, BigInteger, String, DateTime
+from app.database import Base
+
+
+class TestComponentParameter(Base):
+
+    __tablename__ = "test_component_parameter"
+
+    TEST_COMPONENT_PARAMETER_ID = Column(BigInteger, primary_key=True, index=True)
+
+    TEST_COMPONENT_ID = Column(BigInteger)
+    TEST_PARAMETER_ID = Column(BigInteger)
+
+    SORT = Column(BigInteger)
+
+    REMARK = Column(String(400))
+
+    TENANT_ID = Column(String(6))
+    STATE = Column(BigInteger, default=1)
+
+    CREATE_DATE = Column(DateTime)
+    EXPIRE_DATE = Column(DateTime)
+    UPDATE_DATE = Column(DateTime)
+
+===== 文件路径: backend\app\models\test_dispatcher_model.py =====
+from sqlalchemy import Column, BigInteger, String, DateTime, Text
+from app.database import Base
+
+
+class TestDispatcherData(Base):
+
+    __tablename__ = "test_dispatcher_data"
+
+    DISPATCHER_PLAN_ID = Column(BigInteger, primary_key=True, index=True)
+
+    QUE_NAME = Column(String(100))
+    EXE_MACHINE = Column(String(100))
+    PLAN_ID = Column(BigInteger, default=0)
+
+    BATCH_NAME = Column(String(100))
+
+    SEND_EMAIL = Column(BigInteger)
+    PASS_RATE_SWITCH = Column(BigInteger)
+    PASS_RATE = Column(String(6))
+
+    DEFAULT_MSG_TO_LIST = Column(String(255))
+    MSG_CC_LIST = Column(String(255))
+    MSG_TO_LIST = Column(String(255))
+
+    CASE_LIST = Column(Text)
+    ACTUAL_CASE_LIST = Column(Text)
+
+    EXPLANATION = Column(String(100))
+
+    CREATE_DATE = Column(DateTime)
+    EXPIRE_DATE = Column(DateTime)
+
+    UPDATE_JIRA = Column(String(10))
+    CREATE_BUG = Column(String(6))
+
+    UIPATH_EXE_MACHONE = Column(String(20))
+
+===== 文件路径: backend\app\models\test_parameter_model.py =====
+from sqlalchemy import Column, BigInteger, String, DateTime
+from app.database import Base
+
+
+class TestParameter(Base):
+
+    __tablename__ = "test_parameter"
+
+    TEST_PARAMETER_ID = Column(BigInteger, primary_key=True, index=True)
+
+    TEST_PARAMETER_NAME = Column(String(50))
+    PARAMETER_PATH = Column(String(200))
+
+    TEST_PARAMETER_TYPE = Column(String(10))
+    DEFAULT_VALUE = Column(String(100))
+
+    REMARK = Column(String(400))
+
+    TENANT_ID = Column(String(6))
+    STATE = Column(BigInteger, default=1)
+
+    CREATE_DATE = Column(DateTime)
+    EXPIRE_DATE = Column(DateTime)
+    UPDATE_DATE = Column(DateTime)
+
+===== 文件路径: backend\app\models\test_plan_model.py =====
+from sqlalchemy import Column, Integer, String, DateTime, BigInteger
+from app.database import Base
+
+
+class TestPlan(Base):
+
+    __tablename__ = "test_plan"
+
+    BATCH_ID = Column(Integer, primary_key=True, index=True)
+
+    BATCH_NAME = Column(String(100))
+
+    TASK_STATUS = Column(Integer)
+    STATUS = Column(Integer)
+
+    SEND_EMAIL = Column(Integer)
+
+    PLAN_ID = Column(BigInteger, default=0)
+    OMP_BATCH_ID = Column(BigInteger, default=0)
+
+    PASS_RATE_SWITCH = Column(BigInteger, default=0)
+    PASS_RATE = Column(String(6))
+
+    RE_RUN = Column(BigInteger, default=0)
+
+    DEFAULT_MSG_TO_LIST = Column(String(255))
+    MSG_CC_LIST = Column(String(255))
+    MSG_TO_LIST = Column(String(255))
+
+    EXECUTION_MACHINE = Column(String(20))
+
+    CREATE_DATE = Column(DateTime)
+    FINISH_DATE = Column(DateTime)
+
+    update_jira = Column(String(10))
+    billing_issue = Column(Integer, default=0)
+
+    CREATE_BUG = Column(String(10))
+
+===== 文件路径: backend\app\models\test_provision_parameter_model.py =====
+from sqlalchemy import Column, Integer, String
+from app.database import Base
+
+
+class TestProvisionParameter(Base):
+
+    __tablename__ = "TEST_PROVISION_PARAMETER"
+
+    provision_seq_id = Column(Integer, primary_key=True, index=True)
+
+    action_id = Column(Integer)
+    platform_code = Column(String(20))
+    provision_type = Column(String(200))
+
+    provision_Mandatory_aram = Column(String(1000))
+    provision_optional_aram = Column(String(1000))
+
+    state = Column(String(2))
+
+    ext1 = Column(String(1000))
+    ext2 = Column(String(1000))
+    ext3 = Column(String(1000))
+
+    product_line = Column(String(20))
+    veris_code_status = Column(String(20))
+    platform = Column(String(20))
+
+===== 文件路径: backend\app\models\__init__.py =====
+
+
+===== 文件路径: backend\app\schemas\auto_data_sql_schema.py =====
+from pydantic import BaseModel
+from typing import Optional
+
+
+# ======================
+# 创建 SQL 模板
+# ======================
+class AutoSqlCreateRequest(BaseModel):
+
+    sql_name: str
+    db: str
+    sql_content: str
+
+    class Config:
+        from_attributes = True
+        extra = "ignore"
+
+
+# ======================
+# 返回项
+# ======================
+class AutoSqlItem(BaseModel):
+
+    sql_name: str
+    db: str
+    sql_content: str
+
+    class Config:
+        from_attributes = True
+
+
+# ======================
+# 列表返回
+# ======================
+class AutoSqlListResponse(BaseModel):
+
+    total: int
+    data: list[AutoSqlItem]
+
+
+# ======================
+# 单个返回
+# ======================
+class AutoSqlDetailResponse(BaseModel):
+
+    sql_name: str
+    db: str
+    sql_content: str
+
+    class Config:
+        from_attributes = True
+
+===== 文件路径: backend\app\schemas\batch_detail_schema.py =====
+from pydantic import BaseModel
+from typing import Optional, List
+from datetime import datetime
+
+
+class BatchDetailListItem(BaseModel):
+    batch_detail_id: int
+    batch_id: Optional[int] = None
+    cfg_id: Optional[int] = None
+
+    uipath_case_exe_id: Optional[int] = None
+    order_case_exe_id: Optional[int] = None
+    verify_case_exe_id: Optional[int] = None
+
+    status: Optional[int] = 0
+    task_status: Optional[int] = 0
+
+    create_date: Optional[datetime] = None
+    finish_date: Optional[datetime] = None
+
+
+class BatchDetailListResponse(BaseModel):
+    total: int
+    data: List[BatchDetailListItem]
+
+===== 文件路径: backend\app\schemas\billing_data_pool_schema.py =====
+from pydantic import BaseModel
+from typing import Optional
+from datetime import datetime
+
+
+# ======================
+# 创建
+# ======================
+class BillingDataCreateRequest(BaseModel):
+
+    cfg_id: str
+    test_case_name: Optional[str] = ""
+
+    cust_id: str
+    account_id: Optional[str] = ""
+    order_id: Optional[str] = ""
+
+    class Config:
+        from_attributes = True
+        extra = "ignore"
+
+
+# ======================
+# 返回项
+# ======================
+class BillingDataItem(BaseModel):
+
+    id: int
+
+    cfg_id: str
+    test_case_name: Optional[str]
+
+    cust_id: str
+    account_id: Optional[str]
+    order_id: Optional[str]
+
+    status: int
+    used: bool
+
+    create_time: Optional[datetime]
+    used_time: Optional[datetime]
+
+    class Config:
+        from_attributes = True
+
+
+# ======================
+# 列表
+# ======================
+class BillingDataListResponse(BaseModel):
+
+    total: int
+    data: list[BillingDataItem]
+
+===== 文件路径: backend\app\schemas\case_task_schema.py =====
+from pydantic import BaseModel
+from typing import Optional, Dict, Any
+
+
+class CaseCreateRequest(BaseModel):
+
+
+    template_id: Optional[int] = 0
+    test_case_name: Optional[str] = ""
+    verify_template_id: Optional[int] = 0
+    verify_template_name: Optional[str] = ""
+
+    trigger_mode: Optional[int] = 2
+    cron_expression: Optional[str] = ""
+
+    task_status: Optional[int] = 1
+
+    environment: Optional[str] = ""
+    machine: Optional[str] = ""
+
+    tenant_id: Optional[str] = ""
+    state: Optional[int] = 1
+
+    inst_id: Optional[str] = ""
+
+    uipath_case_name: Optional[str] = ""
+    uipath_entry: Optional[str] = ""
+
+    case_id: Optional[str] = ""
+
+    # 前端只维护一份 UiPath JSON
+    test_data: Optional[Dict[str, Any]] = {}
+
+    # 这两个字段保留兼容旧接口；如果前端不传，后端自动复制 test_data
+    order_test_data: Optional[Dict[str, Any]] = None
+    verify_test_data: Optional[Dict[str, Any]] = None
+
+    class Config:
+        from_attributes = True
+        extra = "ignore"
+
+
+class CaseUpdateRequest(BaseModel):
+    template_id: Optional[int] = 0
+    test_case_name: Optional[str] = ""
+    verify_template_id: Optional[int] = 0
+    verify_template_name: Optional[str] = ""
+
+    trigger_mode: Optional[int] = 2
+    cron_expression: Optional[str] = ""
+
+    task_status: Optional[int] = 1
+
+    environment: Optional[str] = ""
+    machine: Optional[str] = ""
+
+    tenant_id: Optional[str] = ""
+    state: Optional[int] = 1
+
+    inst_id: Optional[str] = ""
+
+    uipath_case_name: Optional[str] = ""
+    uipath_entry: Optional[str] = ""
+
+    case_id: Optional[str] = ""
+
+    test_data: Optional[Dict[str, Any]] = {}
+
+    order_test_data: Optional[Dict[str, Any]] = None
+    verify_test_data: Optional[Dict[str, Any]] = None
+
+    class Config:
+        from_attributes = True
+        extra = "ignore"
+
+===== 文件路径: backend\app\schemas\component_parameter_schema.py =====
+from pydantic import BaseModel
+from typing import Optional
+from datetime import datetime
+
+
+class ComponentParameterCreateRequest(BaseModel):
+    component_id: int
+    parameter_id: int
+    sort: Optional[int] = 1
+    remark: Optional[str] = ""
+    tenant_id: Optional[str] = ""
+    state: Optional[int] = 1
+
+    class Config:
+        from_attributes = True
+        extra = "ignore"
+
+
+class ComponentParameterUpdateRequest(BaseModel):
+    component_id: int
+    parameter_id: int
+    sort: Optional[int] = 1
+    remark: Optional[str] = ""
+    tenant_id: Optional[str] = ""
+    state: Optional[int] = 1
+
+    class Config:
+        from_attributes = True
+        extra = "ignore"
+
+
+class ComponentParameterItem(BaseModel):
+    id: int
+    component_id: int
+    parameter_id: int
+    sort: Optional[int]
+    remark: Optional[str]
+    tenant_id: Optional[str]
+    state: int
+    active: bool
+    create_date: Optional[datetime]
+
+    class Config:
+        from_attributes = True
+
+
+class ComponentParameterListResponse(BaseModel):
+    total: int
+    data: list[ComponentParameterItem]
+
+
+class ComponentParameterDetailResponse(BaseModel):
+    id: int
+    component_id: int
+    parameter_id: int
+    sort: Optional[int]
+    remark: Optional[str]
+    tenant_id: Optional[str]
+    state: Optional[int]
+    create_date: Optional[datetime]
+    update_date: Optional[datetime]
+
+    class Config:
+        from_attributes = True
+
+===== 文件路径: backend\app\schemas\component_schema.py =====
+from pydantic import BaseModel
+from typing import Optional
+from datetime import datetime
+
+
+class ComponentCreateRequest(BaseModel):
+    component_name: str
+    component_type: Optional[str] = ""
+    component_file: Optional[str] = ""
+    remark: Optional[str] = ""
+    tenant_id: Optional[str] = ""
+    state: Optional[int] = 1
+
+    class Config:
+        from_attributes = True
+        extra = "ignore"
+
+
+class ComponentUpdateRequest(BaseModel):
+    component_name: str
+    component_type: Optional[str] = ""
+    component_file: Optional[str] = ""
+    remark: Optional[str] = ""
+    tenant_id: Optional[str] = ""
+    state: Optional[int] = 1
+
+    class Config:
+        from_attributes = True
+        extra = "ignore"
+
+
+class ComponentItem(BaseModel):
+    component_id: int
+    component_name: str
+    component_type: Optional[str]
+    component_file: Optional[str]
+    remark: Optional[str]
+    tenant_id: Optional[str]
+    state: int
+    active: bool
+    create_date: Optional[datetime]
+
+    class Config:
+        from_attributes = True
+
+
+class ComponentListResponse(BaseModel):
+    total: int
+    data: list[ComponentItem]
+
+
+class ComponentDetailResponse(BaseModel):
+    component_id: int
+    component_name: str
+    component_type: Optional[str]
+    component_file: Optional[str]
+    remark: Optional[str]
+    tenant_id: Optional[str]
+    state: int
+    create_date: Optional[datetime]
+    update_date: Optional[datetime]
+
+    class Config:
+        from_attributes = True
+
+===== 文件路径: backend\app\schemas\parameter_schema.py =====
+from pydantic import BaseModel
+from typing import Optional
+from datetime import datetime
+
+
+class ParameterCreateRequest(BaseModel):
+    parameter_name: str
+    parameter_path: Optional[str] = ""
+    parameter_type: Optional[str] = ""
+    default_value: Optional[str] = ""
+    remark: Optional[str] = ""
+    tenant_id: Optional[str] = ""
+    state: Optional[int] = 1
+
+    class Config:
+        from_attributes = True
+        extra = "ignore"
+
+
+class ParameterUpdateRequest(BaseModel):
+    parameter_name: str
+    parameter_path: Optional[str] = ""
+    parameter_type: Optional[str] = ""
+    default_value: Optional[str] = ""
+    remark: Optional[str] = ""
+    tenant_id: Optional[str] = ""
+    state: Optional[int] = 1
+
+    class Config:
+        from_attributes = True
+        extra = "ignore"
+
+
+class ParameterItem(BaseModel):
+    parameter_id: int
+    parameter_name: str
+    parameter_path: Optional[str]
+    parameter_type: Optional[str]
+    default_value: Optional[str]
+    remark: Optional[str]
+    tenant_id: Optional[str]
+    state: int
+    active: bool
+    create_date: Optional[datetime]
+
+    class Config:
+        from_attributes = True
+
+
+class ParameterListResponse(BaseModel):
+    total: int
+    data: list[ParameterItem]
+
+
+class ParameterDetailResponse(BaseModel):
+    parameter_id: int
+    parameter_name: str
+    parameter_path: Optional[str]
+    parameter_type: Optional[str]
+    default_value: Optional[str]
+    remark: Optional[str]
+    tenant_id: Optional[str]
+    state: int
+    create_date: Optional[datetime]
+    update_date: Optional[datetime]
+
+    class Config:
+        from_attributes = True
+
+===== 文件路径: backend\app\schemas\pre_cfg_relation_schema.py =====
+from pydantic import BaseModel
+from typing import Optional
+
+
+# ======================
+# 创建关系
+# ======================
+class PreCfgRelationCreateRequest(BaseModel):
+
+    pre_cfg_id: str
+    cfg_id: str
+
+    class Config:
+        from_attributes = True
+        extra = "ignore"
+
+
+# ======================
+# 返回项
+# ======================
+class PreCfgRelationItem(BaseModel):
+
+    pre_cfg_id: str
+    cfg_id: str
+
+    class Config:
+        from_attributes = True
+
+
+# ======================
+# 列表
+# ======================
+class PreCfgRelationListResponse(BaseModel):
+
+    total: int
+    data: list[PreCfgRelationItem]
+
+===== 文件路径: backend\app\schemas\provision_parameter_schema.py =====
+from pydantic import BaseModel
+from typing import Optional
+
+
+# ======================
+# 创建
+# ======================
+class ProvisionParameterCreateRequest(BaseModel):
+
+    action_id: Optional[int] = None
+    platform_code: Optional[str] = ""
+
+    provision_type: Optional[str] = ""
+
+    provision_mandatory_param: Optional[str] = ""
+    provision_optional_param: Optional[str] = ""
+
+    state: Optional[str] = "U"
+
+    ext1: Optional[str] = ""
+    ext2: Optional[str] = ""
+    ext3: Optional[str] = ""
+
+    product_line: Optional[str] = ""
+    veris_code_status: Optional[str] = ""
+    platform: Optional[str] = ""
+
+    class Config:
+        from_attributes = True
+        extra = "ignore"
+
+
+# ======================
+# 返回项
+# ======================
+class ProvisionParameterItem(BaseModel):
+
+    id: int
+    action_id: Optional[int]
+
+    platform_code: Optional[str]
+    provision_type: Optional[str]
+
+    mandatory: Optional[str]
+    optional: Optional[str]
+
+    state: Optional[str]
+    active: bool
+
+    product_line: Optional[str]
+
+    class Config:
+        from_attributes = True
+
+
+# ======================
+# 列表
+# ======================
+class ProvisionParameterListResponse(BaseModel):
+
+    total: int
+    data: list[ProvisionParameterItem]
+
+
+# ======================
+# 详情
+# ======================
+class ProvisionParameterDetailResponse(BaseModel):
+
+    id: int
+    action_id: Optional[int]
+
+    platform_code: Optional[str]
+    provision_type: Optional[str]
+
+    mandatory: Optional[str]
+    optional: Optional[str]
+
+    state: Optional[str]
+
+    ext1: Optional[str]
+    ext2: Optional[str]
+    ext3: Optional[str]
+
+    product_line: Optional[str]
+    veris_code_status: Optional[str]
+    platform: Optional[str]
+
+    class Config:
+        from_attributes = True
+
+===== 文件路径: backend\app\schemas\template_rel_schema.py =====
+from pydantic import BaseModel
+from typing import Optional, List
+from datetime import datetime
+
+
+class TemplateRelCreateRequest(BaseModel):
+    test_case_template_id: int
+    pre_test_case_template_id: int
+    tenant_id: Optional[int] = 21
+    state: Optional[int] = 1
+
+
+class TemplateRelUpdateRequest(BaseModel):
+    test_case_template_id: int
+    pre_test_case_template_id: int
+    tenant_id: Optional[int] = 21
+    state: Optional[int] = 1
+
+
+class TemplateRelItem(BaseModel):
+    rel_id: int
+    test_case_template_id: int
+    pre_test_case_template_id: int
+    tenant_id: Optional[int] = None
+    state: Optional[int] = 0
+    create_date: Optional[datetime] = None
+
+    class Config:
+        from_attributes = True
+
+
+class TemplateRelListResponse(BaseModel):
+    total: int
+    data: List[TemplateRelItem]
+
+
+class TemplateRelDetailResponse(BaseModel):
+    rel_id: int
+    test_case_template_id: int
+    pre_test_case_template_id: int
+    tenant_id: Optional[int] = None
+    state: Optional[int] = 0
+    create_date: Optional[datetime] = None
+
+    class Config:
+        from_attributes = True
+
+===== 文件路径: backend\app\schemas\template_schema.py =====
+from pydantic import BaseModel
+from typing import List, Optional
+
+
+class ComponentItem(BaseModel):
+    component_id: int
+    sort: int
+    wait_time: int = 5
+    loop_num: int = 1
+    is_suspend: str = "Y"
+    remark: Optional[str] = ""
+
+
+class TemplateCreateRequest(BaseModel):
+    template_name: str
+    module: str
+
+    test_case_type: str = "1"
+    is_browser: int = 0
+    tenant_id: str = "21"
+    state: int = 1
+    remark: Optional[str] = ""
+
+    components: List[ComponentItem]
+
+    class Config:
+        extra = "ignore"
+
+
+class TemplateUpdateRequest(BaseModel):
+    template_name: str
+    module: str
+
+    test_case_type: str = "1"
+    is_browser: int = 0
+    tenant_id: str = "21"
+    state: int = 1
+    remark: Optional[str] = ""
+
+    components: List[ComponentItem]
+
+    class Config:
+        extra = "ignore"
+
+===== 文件路径: backend\app\schemas\test_case_execution_schema.py =====
+from pydantic import BaseModel
+from typing import Optional
+from datetime import datetime
+
+
+class ExecutionBase(BaseModel):
+    TEST_CASE_EXE_ID: Optional[int]
+    CFG_ID: Optional[int]
+    TEST_CASE_NAME: Optional[str]
+    EXECUTION_MACHINE: Optional[str]
+    STATE: Optional[int]
+    TASK_STATUS: Optional[int]
+    CREATE_DATE: Optional[datetime]
+    FINISH_DATE: Optional[datetime]
+
+    class Config:
+        from_attributes = True   # ✅ Pydantic v2 写法
+
+
+# ✅ 查询
+class ExecutionQueryRequest(BaseModel):
+    test_case_exe_id: Optional[int]
+    cfg_id: Optional[int]
+    test_case_name: Optional[str]
+    execution_machine: Optional[str]
+    state: Optional[int]
+
+    page: int = 1
+    page_size: int = 10
+
+
+# ✅ 返回
+class ExecutionListResponse(BaseModel):
+    total: int
+    data: list[ExecutionBase]
+
+
+# ❗ 如果你 API 里用了 create（但其实你现在不需要）
+class ExecutionCreateRequest(BaseModel):
+    TEST_CASE_NAME: Optional[str]
+
+===== 文件路径: backend\app\schemas\test_component_execution_schema.py =====
+from pydantic import BaseModel
+from typing import Optional
+from datetime import datetime
+
+
+class ComponentExecutionOut(BaseModel):
+    TEST_COMPONENT_EXE_ID: int
+    TEST_CASE_EXE_ID: Optional[int]
+    TEST_COMPONENT_ID: Optional[int]
+    TEST_COMPONENT_NAME: Optional[str]
+    STATE: Optional[int]
+
+    CREATE_DATE: Optional[datetime]
+    FINISH_DATE: Optional[datetime]
+
+    class Config:
+        from_attributes = True
+
+
+class ComponentExecutionListResponse(BaseModel):
+    total: int
+    data: list[ComponentExecutionOut]
+
+===== 文件路径: backend\app\schemas\test_dispatcher_schema.py =====
+from pydantic import BaseModel
+from typing import Optional, List
+from datetime import datetime
+
+
+class TestDispatcherBase(BaseModel):
+    que_name: Optional[str] = None
+    exe_machine: Optional[str] = None
+    plan_id: Optional[int] = 0
+    batch_name: Optional[str] = None
+
+    send_email: Optional[int] = 0
+    pass_rate_switch: Optional[int] = 0
+    pass_rate: Optional[str] = None
+
+    default_msg_to_list: Optional[str] = None
+    msg_cc_list: Optional[str] = None
+    msg_to_list: Optional[str] = None
+
+    case_list: Optional[str] = None
+    actual_case_list: Optional[str] = None
+
+    explanation: Optional[str] = None
+
+    update_jira: Optional[str] = None
+    create_bug: Optional[str] = None
+
+    uipath_exe_machone: Optional[str] = None
+
+
+class TestDispatcherCreateRequest(TestDispatcherBase):
+    pass
+
+
+class TestDispatcherUpdateRequest(TestDispatcherBase):
+    pass
+
+
+class TestDispatcherDetailResponse(TestDispatcherBase):
+    dispatcher_plan_id: int
+    create_date: Optional[datetime] = None
+    expire_date: Optional[datetime] = None
+
+    class Config:
+        from_attributes = True
+
+
+class TestDispatcherListItem(BaseModel):
+    dispatcher_plan_id: int
+    que_name: Optional[str] = None
+    exe_machine: Optional[str] = None
+    plan_id: Optional[int] = 0
+    batch_name: Optional[str] = None
+
+    send_email: Optional[int] = 0
+    pass_rate_switch: Optional[int] = 0
+    pass_rate: Optional[str] = None
+
+    default_msg_to_list: Optional[str] = None
+    msg_cc_list: Optional[str] = None
+    msg_to_list: Optional[str] = None
+
+    case_list: Optional[str] = None
+    actual_case_list: Optional[str] = None
+
+    explanation: Optional[str] = None
+
+    update_jira: Optional[str] = None
+    create_bug: Optional[str] = None
+
+    uipath_exe_machone: Optional[str] = None
+
+    create_date: Optional[datetime] = None
+    expire_date: Optional[datetime] = None
+
+
+class TestDispatcherListResponse(BaseModel):
+    total: int
+    data: List[TestDispatcherListItem]
+
+===== 文件路径: backend\app\schemas\test_plan_schema.py =====
+from pydantic import BaseModel
+from typing import Optional, List
+from datetime import datetime
+
+
+class TestPlanListItem(BaseModel):
+    batch_id: int
+    batch_name: Optional[str] = None
+    task_status: Optional[int] = 0
+    status: Optional[int] = 0
+    send_email: Optional[int] = 0
+    plan_id: Optional[int] = 0
+    omp_batch_id: Optional[int] = 0
+    pass_rate_switch: Optional[int] = 0
+    pass_rate: Optional[str] = None
+    re_run: Optional[int] = 0
+    default_msg_to_list: Optional[str] = None
+    msg_cc_list: Optional[str] = None
+    msg_to_list: Optional[str] = None
+    execution_machine: Optional[str] = None
+    create_date: Optional[datetime] = None
+    finish_date: Optional[datetime] = None
+    update_jira: Optional[str] = None
+    billing_issue: Optional[int] = 0
+    create_bug: Optional[str] = None
+
+
+class TestPlanListResponse(BaseModel):
+    total: int
+    data: List[TestPlanListItem]
+
+===== 文件路径: backend\app\schemas\__init__.py =====
+
+

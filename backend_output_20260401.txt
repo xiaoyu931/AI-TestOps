@@ -1,0 +1,3254 @@
+===== 文件路径: backend\app\database.py =====
+from sqlalchemy import create_engine
+from sqlalchemy.orm import sessionmaker, declarative_base
+# T0
+# DATABASE_URL = "mysql+pymysql://autotest_data:auto1234@10.1.248.187:3306/autotest_data"
+# Local
+DATABASE_URL = "mysql+pymysql://root:Yuhongyi850623!@localhost:3306/autotest_data"
+
+engine = create_engine(
+    DATABASE_URL,
+    pool_pre_ping=True
+)
+
+SessionLocal = sessionmaker(
+    autocommit=False,
+    autoflush=False,
+    bind=engine
+)
+
+Base = declarative_base()
+
+===== 文件路径: backend\app\main.py =====
+# 浏览器默认 不允许不同域名之间互相请求数据，例如前端和后端，这就是“跨域”，会被浏览器拦截
+from fastapi.middleware.cors import CORSMiddleware # 导入 FastAPI 提供的 CORS 中间件
+from fastapi import FastAPI
+from app.api.execution_api import router as execution_router2
+from app.api.case_task_api import router as case_task_router
+from app.api.template_api import router as template_router
+from app.api.template_rel_api import router as template_rel_router
+from app.api.component_api import router as component_router
+from app.api.parameter_api import router as parameter_router
+from app.api.component_parameter_api import router as component_parameter_router
+from app.api.auto_data_sql_api import router as auto_sql_router
+from app.api.provision_parameter_api import router as provision_router
+from app.api.pre_cfg_relation_api import router as pre_relation_router
+from app.api.billing_data_pool_api import router as billing_router
+from app.api.test_dispatcher_api import router as dispatcher_router
+from app.api.test_plan_api import router as plan_router
+from app.api.batch_detail_api import router as batch_detail_router
+from app.api.test_case_execution_api import router as execution_router
+from app.api.test_component_execution_api import router as component_execution_router
+# 创建一个 FastAPI 应用实例  可以理解为：app = API服务器， 所有接口都会挂在这个 app 上。
+app = FastAPI()
+# 给 FastAPI 应用添加一个“中间件”（middleware），中间件作用：在请求进入接口之前/之后处理一些事情（比如权限、日志、CORS）
+#  CORSMiddleware,指定使用 CORS 中间件
+# 允许任何网站访问你的 FastAPI 后端接口（完全开放 CORS）
+app.add_middleware(
+    CORSMiddleware,
+    allow_origins=["*"], # 允许所有网站访问 （开发环境常用）生产环境建议写具体地址，例如 ["http://localhost:3000", "https://yourdomain.com"]
+    allow_credentials=True, #是否允许发送“凭证”
+    allow_methods=["*"], # 允许哪些 HTTP 方法  "*" = 全部允许（GET, POST, PUT, DELETE 等）
+    allow_headers=["*"],  # 允许哪些请求头（headers）  比如：Content-Type Authorization
+)
+
+# 把 case_api.py 里的接口 注册到主应用。
+app.include_router(case_task_router)
+app.include_router(template_rel_router)
+app.include_router(template_router)
+app.include_router(component_router)
+app.include_router(parameter_router)
+app.include_router(component_parameter_router)
+app.include_router(auto_sql_router)
+app.include_router(provision_router)
+app.include_router(pre_relation_router)
+app.include_router(billing_router)
+app.include_router(dispatcher_router)
+app.include_router(plan_router)
+app.include_router(batch_detail_router)
+app.include_router(execution_router)
+# app.include_router(execution_router2)
+app.include_router(component_execution_router)
+# 定义首页接口，这是 根路径接口
+# 访问：http://localhost:8000/  执行：home()
+@app.get("/")
+def home():
+    # 用来确认 API 服务启动成功
+    return {"message": "AI TestOps Platform Running"}
+
+===== 文件路径: backend\app\__init__.py =====
+
+
+===== 文件路径: backend\app\api\auto_data_sql_api.py =====
+from fastapi import APIRouter, HTTPException
+from app.database import SessionLocal
+from app.models.auto_data_sql_uipath_model import AutoDataSqlUipath
+from app.schemas.auto_data_sql_schema import (
+    AutoSqlCreateRequest,
+    AutoSqlListResponse,
+    AutoSqlDetailResponse
+)
+
+router = APIRouter(prefix="/auto-sql", tags=["Auto SQL"])
+
+
+@router.post("")
+def create_sql(req: AutoSqlCreateRequest):
+
+    db = SessionLocal()
+
+    try:
+        existing = db.query(AutoDataSqlUipath).filter(
+            AutoDataSqlUipath.SQL_NAME == req.sql_name
+        ).first()
+
+        if existing:
+            raise HTTPException(status_code=400, detail="SQL_NAME already exists")
+
+        new_sql = AutoDataSqlUipath(
+            SQL_NAME=req.sql_name,
+            DB=req.db,
+            SQL_CONTENT=req.sql_content
+        )
+
+        db.add(new_sql)
+        db.commit()
+
+        return {"message": "created"}
+
+    except Exception as e:
+        db.rollback()
+        raise HTTPException(status_code=500, detail=str(e))
+
+    finally:
+        db.close()
+
+@router.get("", response_model=AutoSqlListResponse)
+def get_sql_list():
+
+    db = SessionLocal()
+
+    try:
+        items = db.query(AutoDataSqlUipath).all()
+
+        result = []
+
+        for i in items:
+            result.append({
+                "sql_name": i.SQL_NAME,
+                "db": i.DB,
+                "sql_content": i.SQL_CONTENT
+            })
+
+        return {
+            "total": len(result),
+            "data": result
+        }
+
+    finally:
+        db.close()
+
+@router.get("/{sql_name}", response_model=AutoSqlDetailResponse)
+def get_sql(sql_name: str):
+
+    db = SessionLocal()
+
+    try:
+        item = db.query(AutoDataSqlUipath).filter(
+            AutoDataSqlUipath.SQL_NAME == sql_name
+        ).first()
+
+        if not item:
+            raise HTTPException(status_code=404, detail="Not found")
+
+        return {
+            "sql_name": item.SQL_NAME,
+            "db": item.DB,
+            "sql_content": item.SQL_CONTENT
+        }
+
+    finally:
+        db.close()
+
+===== 文件路径: backend\app\api\batch_detail_api.py =====
+from fastapi import APIRouter, HTTPException
+from app.database import SessionLocal
+from app.models.batch_detail_model import BatchDetail
+from app.schemas.batch_detail_schema import (
+    BatchDetailCreateRequest,
+    BatchDetailListResponse
+)
+from datetime import datetime
+router = APIRouter(prefix="/batch-details", tags=["Batch Detail"])
+
+@router.post("")
+def create_batch_detail(req: BatchDetailCreateRequest):
+
+    db = SessionLocal()
+
+    try:
+        item = BatchDetail(
+            BATCH_ID=req.batch_id,
+            CFG_ID=req.cfg_id,
+
+            UIPATH_CASE_EXE_ID=req.uipath_case_exe_id,
+            ORDER_CASE_EXE_ID=req.order_case_exe_id,
+            VERIFY_CASE_EXE_ID=req.verify_case_exe_id,
+
+            STATUS=req.status,
+            TASK_STATUS=req.task_status,
+
+            CREATE_DATE=datetime.now()
+        )
+
+        db.add(item)
+        db.commit()
+
+        return {
+            "message": "Batch detail created",
+            "id": item.BATCH_DETAIL_ID
+        }
+
+    except Exception as e:
+        db.rollback()
+        raise HTTPException(status_code=500, detail=str(e))
+
+    finally:
+        db.close()
+
+@router.get("/batch/{batch_id}", response_model=BatchDetailListResponse)
+def get_by_batch(batch_id: int):
+
+    db = SessionLocal()
+
+    try:
+        items = db.query(BatchDetail).filter(
+            BatchDetail.BATCH_ID == batch_id
+        ).all()
+
+        result = []
+
+        for i in items:
+            result.append({
+                "batch_detail_id": i.BATCH_DETAIL_ID,
+                "batch_id": i.BATCH_ID,
+                "cfg_id": i.CFG_ID,
+                "status": i.STATUS,
+                "task_status": i.TASK_STATUS,
+                "uipath_case_exe_id": i.UIPATH_CASE_EXE_ID,
+                "order_case_exe_id": i.ORDER_CASE_EXE_ID,
+                "verify_case_exe_id": i.VERIFY_CASE_EXE_ID,
+                "create_date": i.CREATE_DATE,
+                "finish_date": i.FINISH_DATE
+            })
+
+        return {
+            "total": len(result),
+            "data": result
+        }
+
+    finally:
+        db.close()
+
+@router.get("/{id}")
+def get_one(id: int):
+
+    db = SessionLocal()
+
+    try:
+        item = db.query(BatchDetail).filter(
+            BatchDetail.BATCH_DETAIL_ID == id
+        ).first()
+
+        if not item:
+            raise HTTPException(status_code=404, detail="Not found")
+
+        return {
+            "batch_detail_id": item.BATCH_DETAIL_ID,
+            "batch_id": item.BATCH_ID,
+            "cfg_id": item.CFG_ID,
+            "status": item.STATUS,
+            "task_status": item.TASK_STATUS
+        }
+
+    finally:
+        db.close()
+
+===== 文件路径: backend\app\api\billing_data_pool_api.py =====
+from fastapi import APIRouter, HTTPException
+from app.database import SessionLocal
+from app.models.billing_data_pool_model import BillingTestDataPool
+from app.schemas.billing_data_pool_schema import (
+    BillingDataCreateRequest,
+    BillingDataListResponse
+)
+from datetime import datetime
+router = APIRouter(prefix="/billing-pool", tags=["Billing Data Pool"])
+
+@router.post("")
+def create_data(req: BillingDataCreateRequest):
+
+    db = SessionLocal()
+
+    try:
+        existing = db.query(BillingTestDataPool).filter(
+            BillingTestDataPool.cust_id == req.cust_id
+        ).first()
+
+        if existing:
+            raise HTTPException(status_code=400, detail="cust_id already exists")
+
+        new_data = BillingTestDataPool(
+            cfg_id=req.cfg_id,
+            testCaseName_str=req.test_case_name,
+            cust_id=req.cust_id,
+            account_id=req.account_id,
+            order_id=req.order_id,
+            status=0,
+            create_time=datetime.now()
+        )
+
+        db.add(new_data)
+        db.commit()
+
+        return {"message": "created"}
+
+    except Exception as e:
+        db.rollback()
+        raise HTTPException(status_code=500, detail=str(e))
+
+    finally:
+        db.close()
+
+@router.get("", response_model=BillingDataListResponse)
+def get_list(cfg_id: str = None, status: int = None):
+
+    db = SessionLocal()
+
+    try:
+        query = db.query(BillingTestDataPool)
+
+        if cfg_id:
+            query = query.filter(BillingTestDataPool.cfg_id == cfg_id)
+
+        if status is not None:
+            query = query.filter(BillingTestDataPool.status == status)
+
+        items = query.all()
+
+        result = []
+
+        for i in items:
+            result.append({
+                "id": i.id,
+                "cfg_id": i.cfg_id,
+                "test_case_name": i.testCaseName_str,
+                "cust_id": i.cust_id,
+                "account_id": i.account_id,
+                "order_id": i.order_id,
+                "status": i.status,
+                "used": i.status == 1,
+                "create_time": i.create_time,
+                "used_time": i.used_time
+            })
+
+        return {
+            "total": len(result),
+            "data": result
+        }
+
+    finally:
+        db.close()
+
+@router.get("/next")
+def get_next_data(cfg_id: str):
+
+    db = SessionLocal()
+
+    try:
+        data = db.query(BillingTestDataPool).filter(
+            BillingTestDataPool.cfg_id == cfg_id,
+            BillingTestDataPool.status == 0
+        ).first()
+
+        if not data:
+            raise HTTPException(status_code=404, detail="No available data")
+
+        # 标记为已使用
+        data.status = 1
+        data.used_time = datetime.now()
+
+        db.commit()
+
+        return {
+            "cust_id": data.cust_id,
+            "account_id": data.account_id,
+            "order_id": data.order_id
+        }
+
+    finally:
+        db.close()
+
+===== 文件路径: backend\app\api\case_task_api.py =====
+from fastapi import APIRouter, HTTPException
+from app.database import SessionLocal
+from app.models.cfg_test_case_task_model import TestCaseTask
+from app.models.cfg_test_case_data_model import TestCaseData
+from app.schemas.case_task_schema import CaseCreateRequest
+from datetime import datetime
+import json
+
+router = APIRouter(tags=["Case"])
+
+@router.post("/case-tasks")
+def create_case(case: CaseCreateRequest):
+
+    db = SessionLocal()
+
+    try:
+        print("🔥 创建 Case:", case.dict())
+
+        new_case = TestCaseTask(
+            TEST_CASE_TEMPLATE_ID=case.template_id,
+            TEST_CASE_NAME=case.case_name,
+            VERIFY_TEST_CASE_TEMPLATE_ID=case.verify_template_id,
+            VERIFY_TEST_CASE_NAME=case.verify_template_name,
+            TRIGGER_MODE=case.trigger_mode,
+            CRON_EXPRESSION=case.cron_expression,
+            TASK_STATUS=case.task_status,
+            EXECUTION_ENVIRONMENT=case.environment,
+            EXECUTION_MACHINE=case.machine,
+            TENANT_ID=case.tenant_id,
+            STATE=case.state,
+            CREATE_DATE=datetime.now(),
+            EXPIRE_DATE=datetime(2099, 12, 31, 23, 59, 59),
+            TEST_INST_ID=case.inst_id,
+            UIPATH_ENTRY=case.uipath_entry,
+            UIPATH_CASE_NAME=case.uipath_case_name,
+            CASE_ID=case.case_id
+        )
+
+        db.add(new_case)
+        db.flush()
+
+        cfg_id = new_case.CFG_ID
+
+        # =========================
+        # 1️⃣ UiPath 入参
+        # =========================
+        db.add(TestCaseData(
+            CFG_ID=cfg_id,
+            TEST_CASE_TEMPLATE_ID=None,
+            TEST_DATA=json.dumps(case.test_data),
+            TENANT_ID=case.tenant_id,
+            STATE=1,
+            UIPATH_FLAG=1,
+            CREATE_DATE=datetime.now()
+        ))
+
+        # =========================
+        # 2️⃣ Order 入参
+        # =========================
+        db.add(TestCaseData(
+            CFG_ID=cfg_id,
+            TEST_CASE_TEMPLATE_ID=case.template_id,
+            TEST_DATA=json.dumps(case.order_test_data),
+            TENANT_ID=case.tenant_id,
+            STATE=1,
+            UIPATH_FLAG=0,
+            CREATE_DATE=datetime.now()
+        ))
+
+        # =========================
+        # 3️⃣ Verify 入参
+        # =========================
+        db.add(TestCaseData(
+            CFG_ID=cfg_id,
+            TEST_CASE_TEMPLATE_ID=case.verify_template_id,
+            TEST_DATA=json.dumps(case.verify_test_data),
+            TENANT_ID=case.tenant_id,
+            STATE=1,
+            UIPATH_FLAG=0,
+            CREATE_DATE=datetime.now()
+        ))
+
+        db.commit()
+
+        return {
+            "message": "success",
+            "cfg_id": cfg_id
+        }
+
+    except Exception as e:
+        db.rollback()
+        raise HTTPException(status_code=500, detail=str(e))
+
+    finally:
+        db.close()
+
+@router.get("/case-tasks")
+def get_case_list():
+
+    db = SessionLocal()
+
+    try:
+        tasks = db.query(TestCaseTask).order_by(
+            TestCaseTask.CREATE_DATE.desc()
+        ).limit(50).all()
+
+        result = []
+
+        for t in tasks:
+            result.append({
+                "cfg_id": t.CFG_ID,
+                "case_name": t.TEST_CASE_NAME,
+                "environment": t.EXECUTION_ENVIRONMENT,
+                "machine": t.EXECUTION_MACHINE,
+                "status": t.TASK_STATUS,
+                "create_date": t.CREATE_DATE
+            })
+
+        return {
+            "total": len(result),
+            "data": result
+        }
+
+    finally:
+        db.close()
+
+@router.get("/case-tasks/{cfg_id}")
+def get_case_detail(cfg_id: int):
+
+    db = SessionLocal()
+
+    try:
+        task = db.query(TestCaseTask).filter(
+            TestCaseTask.CFG_ID == cfg_id
+        ).first()
+
+        if not task:
+            raise HTTPException(status_code=404, detail="Not found")
+
+        datas = db.query(TestCaseData).filter(
+            TestCaseData.CFG_ID == cfg_id
+        ).all()
+
+        uipath_data = None
+        order_data = None
+        verify_data = None
+
+        for d in datas:
+            if d.UIPATH_FLAG == 1:
+                uipath_data = json.loads(d.TEST_DATA)
+            elif d.TEST_CASE_TEMPLATE_ID == task.TEST_CASE_TEMPLATE_ID:
+                order_data = json.loads(d.TEST_DATA)
+            elif d.TEST_CASE_TEMPLATE_ID == task.VERIFY_TEST_CASE_TEMPLATE_ID:
+                verify_data = json.loads(d.TEST_DATA)
+
+        return {
+            "cfg_id": task.CFG_ID,
+            "case_name": task.TEST_CASE_NAME,
+            "uipath_entry": task.UIPATH_ENTRY,
+            "machine": task.EXECUTION_MACHINE,
+            "environment": task.EXECUTION_ENVIRONMENT,
+
+            "uipath_data": uipath_data,
+            "order_data": order_data,
+            "verify_data": verify_data
+        }
+
+    finally:
+        db.close()
+
+===== 文件路径: backend\app\api\component_api.py =====
+from fastapi import APIRouter, HTTPException
+from app.database import SessionLocal
+from app.models.test_component_model import TestComponent
+from app.schemas.component_schema import (
+    ComponentCreateRequest,
+    ComponentListResponse,
+    ComponentDetailResponse
+)
+from datetime import datetime
+
+router = APIRouter(prefix="/components", tags=["Components"])
+
+@router.post("")
+# req 参数名（request，请求数据）  ComponentCreateRequest 参数的类型（数据模型）
+# 这个函数需要接收一个 ComponentCreateRequest 类型的数据，并命名为 req
+def create_component(req: ComponentCreateRequest):
+
+    db = SessionLocal()
+
+    try:
+        new_component = TestComponent(
+            TEST_COMPONENT_NAME=req.component_name,
+            TEST_COMPONENT_TYPE=req.component_type,
+            TEST_COMPONENT_FILE=req.component_file,
+            REMARK=req.remark,
+            TENANT_ID=req.tenant_id,
+            STATE=req.state,
+            CREATE_DATE=datetime.now(),
+            EXPIRE_DATE=datetime(2099, 12, 31, 23, 59, 59)
+        )
+
+        db.add(new_component)
+        db.commit()
+        db.refresh(new_component)
+
+        return {
+            "message": "success",
+            "component_id": new_component.TEST_COMPONENT_ID
+        }
+
+    except Exception as e:
+        db.rollback()
+        raise HTTPException(status_code=500, detail=str(e))
+
+    finally:
+        db.close()
+
+# response_model指定返回数据的结构
+@router.get("", response_model=ComponentListResponse)
+def get_components():
+
+    db = SessionLocal()
+
+    try:
+        components = db.query(TestComponent).filter(
+            TestComponent.STATE == 1   # ⭐ 只查有效组件
+        ).order_by(TestComponent.CREATE_DATE.desc()).all()
+
+        result = []
+
+        for c in components:
+            result.append({
+                "component_id": c.TEST_COMPONENT_ID,
+                "component_name": c.TEST_COMPONENT_NAME,
+                "component_type": c.TEST_COMPONENT_TYPE,
+                "component_file": c.TEST_COMPONENT_FILE,
+                "remark": c.REMARK,
+                "tenant_id": c.TENANT_ID,
+                "state": c.STATE,
+                "active": c.STATE == 1,
+                "create_date": c.CREATE_DATE
+            })
+
+        return {
+            "total": len(result),
+            "data": result
+        }
+
+    finally:
+        db.close()
+
+@router.get("/{component_id}", response_model=ComponentDetailResponse)
+def get_component_detail(component_id: int):
+
+    db = SessionLocal()
+
+    try:
+        c = db.query(TestComponent).filter(
+            TestComponent.TEST_COMPONENT_ID == component_id
+        ).first()
+
+        if not c:
+            raise HTTPException(status_code=404, detail="Component not found")
+
+        return {
+            "component_id": c.TEST_COMPONENT_ID,
+            "component_name": c.TEST_COMPONENT_NAME,
+            "component_type": c.TEST_COMPONENT_TYPE,
+            "component_file": c.TEST_COMPONENT_FILE,
+            "remark": c.REMARK,
+            "tenant_id": c.TENANT_ID,
+            "state": c.STATE,
+            "create_date": c.CREATE_DATE,
+            "update_date": c.UPDATE_DATE
+        }
+
+    finally:
+        db.close()
+
+===== 文件路径: backend\app\api\component_parameter_api.py =====
+from fastapi import APIRouter, HTTPException
+from app.database import SessionLocal
+from app.models.test_component_parameter_model import TestComponentParameter
+from app.schemas.component_parameter_schema import (
+    ComponentParameterCreateRequest,
+    ComponentParameterListResponse,
+    ComponentParameterDetailResponse
+)
+from datetime import datetime
+
+router = APIRouter(prefix="/component-parameters", tags=["Component Parameters"])
+
+@router.post("")
+def create_component_parameter(req: ComponentParameterCreateRequest):
+
+    db = SessionLocal()
+
+    try:
+        new_item = TestComponentParameter(
+            TEST_COMPONENT_ID=req.component_id,
+            TEST_PARAMETER_ID=req.parameter_id,
+            SORT=req.sort,
+            REMARK=req.remark,
+            TENANT_ID=req.tenant_id,
+            STATE=req.state,
+            CREATE_DATE=datetime.now(),
+            EXPIRE_DATE=datetime(2099, 12, 31, 23, 59, 59)
+        )
+
+        db.add(new_item)
+        db.commit()
+        db.refresh(new_item)
+
+        return {
+            "message": "success",
+            "id": new_item.TEST_COMPONENT_PARAMETER_ID
+        }
+
+    except Exception as e:
+        db.rollback()
+        raise HTTPException(status_code=500, detail=str(e))
+
+    finally:
+        db.close()
+
+@router.get("", response_model=ComponentParameterListResponse)
+def get_component_parameters(component_id: int = None):
+
+    db = SessionLocal()
+
+    try:
+        query = db.query(TestComponentParameter).filter(
+            TestComponentParameter.STATE == 1
+        )
+
+        if component_id:
+            query = query.filter(
+                TestComponentParameter.TEST_COMPONENT_ID == component_id
+            )
+
+        items = query.order_by(TestComponentParameter.SORT.asc()).all()
+
+        result = []
+
+        for i in items:
+            result.append({
+                "id": i.TEST_COMPONENT_PARAMETER_ID,
+                "component_id": i.TEST_COMPONENT_ID,
+                "parameter_id": i.TEST_PARAMETER_ID,
+                "sort": i.SORT,
+                "remark": i.REMARK,
+                "tenant_id": i.TENANT_ID,
+                "state": i.STATE,
+                "active": i.STATE == 1,
+                "create_date": i.CREATE_DATE
+            })
+
+        return {
+            "total": len(result),
+            "data": result
+        }
+
+    finally:
+        db.close()
+
+@router.get("/{id}", response_model=ComponentParameterDetailResponse)
+def get_component_parameter(id: int):
+
+    db = SessionLocal()
+
+    try:
+        item = db.query(TestComponentParameter).filter(
+            TestComponentParameter.TEST_COMPONENT_PARAMETER_ID == id
+        ).first()
+
+        if not item:
+            raise HTTPException(status_code=404, detail="Not found")
+
+        return {
+            "id": item.TEST_COMPONENT_PARAMETER_ID,
+            "component_id": item.TEST_COMPONENT_ID,
+            "parameter_id": item.TEST_PARAMETER_ID,
+            "sort": item.SORT,
+            "remark": item.REMARK,
+            "tenant_id": item.TENANT_ID,
+            "state": item.STATE,
+            "create_date": item.CREATE_DATE,
+            "update_date": item.UPDATE_DATE
+        }
+
+    finally:
+        db.close()
+
+===== 文件路径: backend\app\api\execution_api.py =====
+from fastapi import APIRouter
+from sqlalchemy.orm import Session
+from sqlalchemy import func
+
+from app.database import SessionLocal
+from app.models.test_plan_model import TestPlan
+from app.models.batch_detail_model import BatchDetail
+
+# 创建一个 API 路由组
+router = APIRouter()
+
+# 定义API接口 创建一个 GET接口
+@router.get("/executions")
+def get_executions():
+
+    # 数据库会话,用来执行 SQL 查询
+    db= SessionLocal()
+    try:
+        # 查询最近10个执行批次
+        # plans = db.query(TestPlan).order_by(TestPlan.CREATE_DATE.desc()).limit(10).all()
+        regression_list = [
+            "Regression 1 Mobile Automation",
+            "Regression 2 OpennetNewOM Automation",
+            "Regression 3 WS Automation",
+            "Regression 4 NewOmMobile Automation"
+        ]
+
+        plans = db.query(TestPlan).filter(
+            TestPlan.BATCH_NAME.in_(regression_list)
+        ).order_by(
+            TestPlan.CREATE_DATE.desc()
+        ).limit(10).all()
+
+        result = []
+
+        for p in plans:
+            # 统计总测试用例
+            total = db.query(BatchDetail).filter(
+                BatchDetail.BATCH_ID == p.BATCH_ID
+            ).count()
+            # 统计成功用例
+            passed = db.query(BatchDetail).filter(
+                BatchDetail.BATCH_ID == p.BATCH_ID,
+                BatchDetail.STATUS.in_([5,13,14])
+            ).count()
+            # 统计失败用例
+            failed = db.query(BatchDetail).filter(
+                BatchDetail.BATCH_ID == p.BATCH_ID,
+                BatchDetail.STATUS.in_([3,6,11])
+            ).count()
+
+            success_rate = 0
+            # 计算成功率
+            if total > 0:
+                success_rate = round(passed / total * 100, 2)
+            # 组装结果，生成一个 JSON 对象
+            result.append({
+                "batch_id": p.BATCH_ID,
+                "time": p.CREATE_DATE,
+                "batch_name": p.BATCH_NAME,
+                "total_cases": total,
+                "passed": passed,
+                "failed": failed,
+                "success_rate": f"{success_rate}%"
+            })
+
+        return result
+    finally:
+        db.close()
+
+===== 文件路径: backend\app\api\parameter_api.py =====
+from fastapi import APIRouter, HTTPException
+from app.database import SessionLocal
+from app.models.test_parameter_model import TestParameter
+from app.schemas.parameter_schema import (
+    ParameterCreateRequest,
+    ParameterListResponse,
+    ParameterDetailResponse
+)
+from datetime import datetime
+
+router = APIRouter(prefix="/parameters", tags=["Parameters"])
+
+@router.post("")
+def create_parameter(req: ParameterCreateRequest):
+
+    db = SessionLocal()
+
+    try:
+        new_param = TestParameter(
+            TEST_PARAMETER_NAME=req.parameter_name,
+            PARAMETER_PATH=req.parameter_path,
+            TEST_PARAMETER_TYPE=req.parameter_type,
+            DEFAULT_VALUE=req.default_value,
+            REMARK=req.remark,
+            TENANT_ID=req.tenant_id,
+            STATE=req.state,
+            CREATE_DATE=datetime.now(),
+            EXPIRE_DATE=datetime(2099, 12, 31, 23, 59, 59)
+        )
+
+        db.add(new_param)
+        db.commit()
+        db.refresh(new_param)
+
+        return {
+            "message": "success",
+            "parameter_id": new_param.TEST_PARAMETER_ID
+        }
+
+    except Exception as e:
+        db.rollback()
+        raise HTTPException(status_code=500, detail=str(e))
+
+    finally:
+        db.close()
+
+@router.get("", response_model=ParameterListResponse)
+def get_parameters():
+
+    db = SessionLocal()
+
+    try:
+        params = db.query(TestParameter).filter(
+            TestParameter.STATE == 1
+        ).order_by(TestParameter.CREATE_DATE.desc()).all()
+
+        result = []
+
+        for p in params:
+            result.append({
+                "parameter_id": p.TEST_PARAMETER_ID,
+                "parameter_name": p.TEST_PARAMETER_NAME,
+                "parameter_path": p.PARAMETER_PATH,
+                "parameter_type": p.TEST_PARAMETER_TYPE,
+                "default_value": p.DEFAULT_VALUE,
+                "remark": p.REMARK,
+                "tenant_id": p.TENANT_ID,
+                "state": p.STATE,
+                "active": p.STATE == 1,
+                "create_date": p.CREATE_DATE
+            })
+
+        return {
+            "total": len(result),
+            "data": result
+        }
+
+    finally:
+        db.close()
+
+@router.get("/{parameter_id}", response_model=ParameterDetailResponse)
+def get_parameter_detail(parameter_id: int):
+
+    db = SessionLocal()
+
+    try:
+        p = db.query(TestParameter).filter(
+            TestParameter.TEST_PARAMETER_ID == parameter_id
+        ).first()
+
+        if not p:
+            raise HTTPException(status_code=404, detail="Parameter not found")
+
+        return {
+            "parameter_id": p.TEST_PARAMETER_ID,
+            "parameter_name": p.TEST_PARAMETER_NAME,
+            "parameter_path": p.PARAMETER_PATH,
+            "parameter_type": p.TEST_PARAMETER_TYPE,
+            "default_value": p.DEFAULT_VALUE,
+            "remark": p.REMARK,
+            "tenant_id": p.TENANT_ID,
+            "state": p.STATE,
+            "create_date": p.CREATE_DATE,
+            "update_date": p.UPDATE_DATE
+        }
+
+    finally:
+        db.close()
+
+===== 文件路径: backend\app\api\pre_cfg_relation_api.py =====
+from fastapi import APIRouter, HTTPException
+from app.database import SessionLocal
+from app.models.pre_cfg_relation_model import PreCfgRelation
+from app.schemas.pre_cfg_relation_schema import (
+    PreCfgRelationCreateRequest,
+    PreCfgRelationListResponse
+)
+router = APIRouter(prefix="/pre-relations", tags=["Pre CFG Relation"])
+
+@router.post("")
+def create_relation(req: PreCfgRelationCreateRequest):
+
+    db = SessionLocal()
+
+    try:
+        existing = db.query(PreCfgRelation).filter(
+            PreCfgRelation.preCfgId == req.pre_cfg_id,
+            PreCfgRelation.cfgId == req.cfg_id
+        ).first()
+
+        if existing:
+            raise HTTPException(status_code=400, detail="Relation already exists")
+
+        relation = PreCfgRelation(
+            preCfgId=req.pre_cfg_id,
+            cfgId=req.cfg_id
+        )
+
+        db.add(relation)
+        db.commit()
+
+        return {"message": "success"}
+
+    except Exception as e:
+        db.rollback()
+        raise HTTPException(status_code=500, detail=str(e))
+
+    finally:
+        db.close()
+
+@router.get("", response_model=PreCfgRelationListResponse)
+def get_relations(cfg_id: str = None):
+
+    db = SessionLocal()
+
+    try:
+        query = db.query(PreCfgRelation)
+
+        if cfg_id:
+            query = query.filter(PreCfgRelation.cfgId == cfg_id)
+
+        items = query.all()
+
+        result = []
+
+        for i in items:
+            result.append({
+                "pre_cfg_id": i.preCfgId,
+                "cfg_id": i.cfgId
+            })
+
+        return {
+            "total": len(result),
+            "data": result
+        }
+
+    finally:
+        db.close()
+
+@router.delete("")
+def delete_relation(pre_cfg_id: str, cfg_id: str):
+
+    db = SessionLocal()
+
+    try:
+        relation = db.query(PreCfgRelation).filter(
+            PreCfgRelation.preCfgId == pre_cfg_id,
+            PreCfgRelation.cfgId == cfg_id
+        ).first()
+
+        if not relation:
+            raise HTTPException(status_code=404, detail="Not found")
+
+        db.delete(relation)
+        db.commit()
+
+        return {"message": "deleted"}
+
+    finally:
+        db.close()
+
+===== 文件路径: backend\app\api\provision_parameter_api.py =====
+from fastapi import APIRouter, HTTPException
+from app.database import SessionLocal
+from app.models.test_provision_parameter_model import TestProvisionParameter
+from app.schemas.provision_parameter_schema import (
+    ProvisionParameterCreateRequest,
+    ProvisionParameterListResponse,
+    ProvisionParameterDetailResponse
+)
+router = APIRouter(prefix="/provision-params", tags=["Provision Parameters"])
+
+@router.post("")
+def create_provision_param(req: ProvisionParameterCreateRequest):
+
+    db = SessionLocal()
+
+    try:
+        new_item = TestProvisionParameter(
+            action_id=req.action_id,
+            platform_code=req.platform_code,
+            provision_type=req.provision_type,
+            provision_Mandatory_aram=req.provision_mandatory_param,
+            provision_optional_aram=req.provision_optional_param,
+            state=req.state,
+            ext1=req.ext1,
+            ext2=req.ext2,
+            ext3=req.ext3,
+            product_line=req.product_line,
+            veris_code_status=req.veris_code_status,
+            platform=req.platform
+        )
+
+        db.add(new_item)
+        db.commit()
+        db.refresh(new_item)
+
+        return {
+            "message": "success",
+            "id": new_item.provision_seq_id
+        }
+
+    except Exception as e:
+        db.rollback()
+        raise HTTPException(status_code=500, detail=str(e))
+
+    finally:
+        db.close()
+
+@router.get("", response_model=ProvisionParameterListResponse)
+def get_list(product_line: str = None, platform_code: str = None):
+
+    db = SessionLocal()
+
+    try:
+        query = db.query(TestProvisionParameter)
+
+        if product_line:
+            query = query.filter(TestProvisionParameter.product_line == product_line)
+
+        if platform_code:
+            query = query.filter(TestProvisionParameter.platform_code == platform_code)
+
+        items = query.all()
+
+        result = []
+
+        for i in items:
+            result.append({
+                "id": i.provision_seq_id,
+                "action_id": i.action_id,
+                "platform_code": i.platform_code,
+                "provision_type": i.provision_type,
+                "mandatory": i.provision_Mandatory_aram,
+                "optional": i.provision_optional_aram,
+                "state": i.state,
+                "active": i.state == "U",
+                "product_line": i.product_line
+            })
+
+        return {
+            "total": len(result),
+            "data": result
+        }
+
+    finally:
+        db.close()
+
+@router.get("/{id}", response_model=ProvisionParameterDetailResponse)
+def get_one(id: int):
+
+    db = SessionLocal()
+
+    try:
+        item = db.query(TestProvisionParameter).filter(
+            TestProvisionParameter.provision_seq_id == id
+        ).first()
+
+        if not item:
+            raise HTTPException(status_code=404, detail="Not found")
+
+        return {
+            "id": item.provision_seq_id,
+            "action_id": item.action_id,
+            "platform_code": item.platform_code,
+            "provision_type": item.provision_type,
+            "mandatory": item.provision_Mandatory_aram,
+            "optional": item.provision_optional_aram,
+            "state": item.state,
+            "ext1": item.ext1,
+            "ext2": item.ext2,
+            "ext3": item.ext3,
+            "product_line": item.product_line,
+            "veris_code_status": item.veris_code_status,
+            "platform": item.platform
+        }
+
+    finally:
+        db.close()
+
+===== 文件路径: backend\app\api\template_api.py =====
+from fastapi import APIRouter, HTTPException
+from app.database import SessionLocal
+from datetime import datetime
+
+from app.models.test_case_template_model import TestCaseTemplate
+from app.models.test_case_component_model import TestCaseComponent
+from app.schemas.template_schema import TemplateCreateRequest
+
+router = APIRouter(tags=["Template"])
+
+
+@router.post("/templates")
+def create_template(req: TemplateCreateRequest):
+    db = SessionLocal()
+
+    try:
+        print("🚀 CREATE TEMPLATE START")
+        print("📥 入参:", req.dict())
+
+        if not req.components:
+            raise HTTPException(status_code=400, detail="components cannot be empty")
+
+        template = TestCaseTemplate(
+            TEST_CASE_NAME=req.template_name,
+            TEST_CASE_TYPE=req.test_case_type,
+            MODULE=req.module,
+            IS_BROWSER=req.is_browser,
+            REMARK=req.remark,
+            TENANT_ID=req.tenant_id,
+            STATE=req.state,
+            CREATE_DATE=datetime.now(),
+            EXPIRE_DATE=datetime(2099, 12, 31, 23, 59, 59),
+            UPDATE_DATE=datetime.now()
+        )
+
+        db.add(template)
+        db.flush()
+
+        print(f"✅ TEMPLATE_ID: {template.TEST_CASE_TEMPLATE_ID}")
+
+        for comp in req.components:
+            print("👉 插入组件:", comp.dict())
+
+            relation = TestCaseComponent(
+                TEST_CASE_TEMPLATE_ID=template.TEST_CASE_TEMPLATE_ID,
+                TEST_COMPONENT_ID=comp.component_id,
+                SORT=comp.sort,
+                WAIT_TIME=comp.wait_time,
+                LOOP_NUM=comp.loop_num,
+                IS_SUSPEND=comp.is_suspend,
+                REMARK=comp.remark,
+                TENANT_ID=req.tenant_id,
+                STATE=req.state,
+                CREATE_DATE=datetime.now(),
+                EXPIRE_DATE=datetime(2099, 12, 31, 23, 59, 59),
+                UPDATE_DATE=datetime.now()
+            )
+
+            db.add(relation)
+
+        db.commit()
+
+        return {
+            "message": "Template created successfully",
+            "template_id": template.TEST_CASE_TEMPLATE_ID
+        }
+
+    except HTTPException:
+        db.rollback()
+        raise
+    except Exception as e:
+        db.rollback()
+        print("❌ ERROR:", str(e))
+        raise HTTPException(status_code=500, detail=str(e))
+
+    finally:
+        db.close()
+
+# 获取模板列表
+@router.get("/templates")
+def get_templates():
+
+    db = SessionLocal()
+
+    try:
+        templates = db.query(TestCaseTemplate).order_by(
+            TestCaseTemplate.CREATE_DATE.desc()
+        ).all()
+
+        result = []
+
+        for t in templates:
+            result.append({
+                "template_id": t.TEST_CASE_TEMPLATE_ID,
+                "template_name": t.TEST_CASE_NAME,
+                "test_case_type": t.TEST_CASE_TYPE,
+                "module": t.MODULE,
+                "is_browser": t.IS_BROWSER,
+                "tenant_id": t.TENANT_ID,
+                "state": t.STATE,
+                "create_date": t.CREATE_DATE
+            })
+
+        return {
+            "total": len(result),
+            "data": result
+        }
+
+    finally:
+        db.close()
+
+# 获取模板详情
+@router.get("/templates/{template_id}")
+def get_template_detail(template_id: int):
+
+    db = SessionLocal()
+
+    try:
+        # =========================
+        # 1️⃣ 查模板
+        # =========================
+        template = db.query(TestCaseTemplate).filter(
+            TestCaseTemplate.TEST_CASE_TEMPLATE_ID == template_id
+        ).first()
+
+        if not template:
+            raise HTTPException(status_code=404, detail="Template not found")
+
+        # =========================
+        # 2️⃣ 查组件
+        # =========================
+        components = db.query(TestCaseComponent).filter(
+            TestCaseComponent.TEST_CASE_TEMPLATE_ID == template_id
+        ).order_by(TestCaseComponent.SORT.asc()).all()
+
+        component_list = []
+
+        for c in components:
+            component_list.append({
+                "test_case_component_id": c.TEST_CASE_COMPONENT_ID,
+                "component_id": c.TEST_COMPONENT_ID,
+                "sort": c.SORT,
+                "wait_time": c.WAIT_TIME,
+                "loop_num": c.LOOP_NUM,
+                "is_suspend": c.IS_SUSPEND,
+                "remark": c.REMARK
+            })
+
+        # =========================
+        # 3️⃣ 返回结构（重点🔥）
+        # =========================
+        return {
+            "template_id": template.TEST_CASE_TEMPLATE_ID,
+            "template_name": template.TEST_CASE_NAME,
+            "test_case_type": template.TEST_CASE_TYPE,
+            "module": template.MODULE,
+            "is_browser": template.IS_BROWSER,
+            "remark": template.REMARK,
+            "tenant_id": template.TENANT_ID,
+            "state": template.STATE,
+            "create_date": template.CREATE_DATE,
+
+            "components": component_list
+        }
+
+    finally:
+        db.close()
+
+===== 文件路径: backend\app\api\template_rel_api.py =====
+from fastapi import APIRouter, HTTPException
+from app.database import SessionLocal
+from app.models.test_case_template_rel_model import TestCaseTemplateRel
+from app.schemas.template_rel_schema import (
+    TemplateRelCreateRequest,
+    TemplateRelListResponse,
+    TemplateRelDetailResponse
+)
+from datetime import datetime
+
+# 所有这个 router 下面的接口，都会自动加上这个前缀/template-rels  prefix = 统一的URL开头
+# ags=["Template Relations"] 是给接口打标签（用于接口文档）  tags = 接口的“分类名字”
+router = APIRouter(prefix="/template-rels", tags=["Template Relations"])
+
+@router.post("")
+def create_template_rel(req: TemplateRelCreateRequest):
+
+    db = SessionLocal()
+
+    try:
+        new_rel = TestCaseTemplateRel(
+            TEST_CASE_TEMPLATE_ID=req.template_id,
+            PRE_TEST_CASE_TEMPLATE_ID=req.pre_template_id,
+            TENANT_ID=req.tenant_id,
+            STATE=req.state,
+            CREATE_DATE=datetime.now(),
+            EXPIRE_DATE=datetime(2099, 12, 31, 23, 59, 59)
+        )
+
+        db.add(new_rel)
+        db.commit()
+        db.refresh(new_rel)
+
+        return {
+            "message": "success",
+            "rel_id": new_rel.TEST_CASE_TEMPLATE_REL_ID
+        }
+
+    except Exception as e:
+        db.rollback()
+        raise HTTPException(status_code=500, detail=str(e))
+
+    finally:
+        db.close()
+
+@router.get("/{template_id}", response_model=TemplateRelListResponse)
+def get_template_rel(template_id: int):
+
+    db = SessionLocal()
+
+    try:
+        rels = db.query(TestCaseTemplateRel).filter(
+            TestCaseTemplateRel.TEST_CASE_TEMPLATE_ID == template_id,
+            TestCaseTemplateRel.STATE == 1   # ⭐ 核心优化
+        ).order_by(TestCaseTemplateRel.CREATE_DATE).all()
+
+        result = []
+
+        for r in rels:
+            result.append({
+                "rel_id": r.TEST_CASE_TEMPLATE_REL_ID,
+                "template_id": r.TEST_CASE_TEMPLATE_ID,
+                "pre_template_id": r.PRE_TEST_CASE_TEMPLATE_ID,
+                "tenant_id": r.TENANT_ID or "",
+                "state": r.STATE,
+                "active": r.STATE == 1,
+                "create_date": r.CREATE_DATE
+            })
+
+        return {
+            "total": len(result),
+            "data": result
+        }
+
+    finally:
+        db.close()
+
+@router.get("/detail/{rel_id}", response_model=TemplateRelDetailResponse)
+def get_single_rel(rel_id: int):
+
+    db = SessionLocal()
+
+    try:
+        rel = db.query(TestCaseTemplateRel).filter(
+            TestCaseTemplateRel.TEST_CASE_TEMPLATE_REL_ID == rel_id
+        ).first()
+
+        if not rel:
+            raise HTTPException(status_code=404, detail="Not found")
+
+        return {
+            "rel_id": rel.TEST_CASE_TEMPLATE_REL_ID,
+            "template_id": rel.TEST_CASE_TEMPLATE_ID,
+            "pre_template_id": rel.PRE_TEST_CASE_TEMPLATE_ID,
+            "tenant_id": rel.TENANT_ID or "",
+            "state": rel.STATE,
+            "create_date": rel.CREATE_DATE
+        }
+
+    finally:
+        db.close()
+
+===== 文件路径: backend\app\api\test_case_execution_api.py =====
+from fastapi import APIRouter, HTTPException
+from app.database import SessionLocal
+from app.models.test_case_execution_model import TestCaseExecution
+from app.schemas.test_case_execution_schema import (
+    ExecutionCreateRequest,
+    ExecutionListResponse
+)
+from datetime import datetime
+import json
+router = APIRouter(prefix="/executions", tags=["Execution"])
+
+@router.post("")
+def create_execution(req: ExecutionCreateRequest):
+
+    db = SessionLocal()
+
+    try:
+        item = TestCaseExecution(
+            CFG_ID=req.cfg_id,
+            TEST_CASE_TEMPLATE_ID=req.template_id,
+            TEST_CASE_NAME=req.case_name,
+            TEST_INST_ID=req.test_inst_id,
+
+            EXECUTION_ENVIRONMENT=req.environment,
+            EXECUTION_MACHINE=req.machine,
+
+            REL_CASE_EXE_ID=req.rel_case_exe_id,
+            IS_PRE_TASK=req.is_pre_task,
+
+            STATE=req.state,
+            TENANT_ID=req.tenant_id,
+
+            SOURCE_DATA=req.source_data,
+
+            CASE_ID=req.case_id,
+            PLAN_ID=req.plan_id,
+
+            CREATE_DATE=datetime.now()
+        )
+
+        db.add(item)
+        db.commit()
+
+        return {
+            "message": "Execution created",
+            "test_case_exe_id": item.TEST_CASE_EXE_ID
+        }
+
+    except Exception as e:
+        db.rollback()
+        raise HTTPException(status_code=500, detail=str(e))
+
+    finally:
+        db.close()
+
+@router.get("/cfg/{cfg_id}", response_model=ExecutionListResponse)
+def get_by_cfg(cfg_id: int):
+
+    db = SessionLocal()
+
+    try:
+        items = db.query(TestCaseExecution).filter(
+            TestCaseExecution.CFG_ID == cfg_id
+        ).order_by(
+            TestCaseExecution.CREATE_DATE.desc()
+        ).limit(100).all()
+
+        result = []
+
+        for i in items:
+            result.append({
+                "test_case_exe_id": i.TEST_CASE_EXE_ID,
+                "rel_case_exe_id": i.REL_CASE_EXE_ID,
+                "cfg_id": i.CFG_ID,
+                "state": i.STATE,
+                "test_case_name": i.TEST_CASE_NAME,
+                "create_date": i.CREATE_DATE,
+                "finish_date": i.FINISH_DATE
+            })
+
+        return {
+            "total": len(result),
+            "data": result
+        }
+
+    finally:
+        db.close()
+
+@router.get("/{exe_id}")
+def get_one(exe_id: int):
+
+    db = SessionLocal()
+
+    try:
+        item = db.query(TestCaseExecution).filter(
+            TestCaseExecution.TEST_CASE_EXE_ID == exe_id
+        ).first()
+
+        if not item:
+            raise HTTPException(status_code=404, detail="Not found")
+
+        return {
+            "test_case_exe_id": item.TEST_CASE_EXE_ID,
+            "state": item.STATE,
+            "result": item.TEST_RESULT_DATA,
+            "error": item.ERROR_MESSAGE
+        }
+
+    finally:
+        db.close()
+
+===== 文件路径: backend\app\api\test_component_execution_api.py =====
+from fastapi import APIRouter, HTTPException
+from app.database import SessionLocal
+from app.models.test_component_execution_model import TestComponentExecution
+from app.schemas.test_component_execution_schema import (
+    ComponentExecutionCreateRequest,
+    ComponentExecutionListResponse
+)
+from datetime import datetime
+import json
+router = APIRouter(prefix="/component-executions", tags=["Component Execution"])
+
+@router.post("")
+def create_component_execution(req: ComponentExecutionCreateRequest):
+
+    db = SessionLocal()
+
+    try:
+        item = TestComponentExecution(
+            TEST_CASE_EXE_ID=req.test_case_exe_id,
+            TEST_CASE_TEMPLATE_ID=req.template_id,
+
+            TEST_COMPONENT_ID=req.component_id,
+            TEST_COMPONENT_NAME=req.component_name,
+
+            STATE=req.state,
+            COMPONENT_IN_PARAM=req.input_param,
+
+            TENANT_ID=req.tenant_id,
+            CREATE_DATE=datetime.now()
+        )
+
+        db.add(item)
+        db.commit()
+
+        return {
+            "message": "Component execution created",
+            "id": item.TEST_COMPONENT_EXE_ID
+        }
+
+    except Exception as e:
+        db.rollback()
+        raise HTTPException(status_code=500, detail=str(e))
+
+    finally:
+        db.close()
+
+@router.put("/{exe_id}/finish")
+def finish_component_execution(exe_id: int, result: dict):
+
+    db = SessionLocal()
+
+    try:
+        item = db.query(TestComponentExecution).filter(
+            TestComponentExecution.TEST_COMPONENT_EXE_ID == exe_id
+        ).first()
+
+        if not item:
+            raise HTTPException(status_code=404, detail="Not found")
+
+        item.STATE = result.get("state", 5)
+        item.COMPONENT_RESULT_DATA = json.dumps(result.get("data", {}))
+        item.PYTHON_ERROR_MESSAGE = result.get("python_error", "")
+        item.SYSTEM_ERROR_MESSAGE = result.get("system_error", "")
+
+        item.FINISH_DATE = datetime.now()
+
+        db.commit()
+
+        return {"message": "updated"}
+
+    finally:
+        db.close()
+
+@router.get("/case/{case_exe_id}", response_model=ComponentExecutionListResponse)
+def get_by_case(case_exe_id: int):
+
+    db = SessionLocal()
+
+    try:
+        items = db.query(TestComponentExecution).filter(
+            TestComponentExecution.TEST_CASE_EXE_ID == case_exe_id
+        ).all()
+
+        result = []
+
+        for i in items:
+            result.append({
+                "test_component_exe_id": i.TEST_COMPONENT_EXE_ID,
+                "test_case_exe_id": i.TEST_CASE_EXE_ID,
+                "component_name": i.TEST_COMPONENT_NAME,
+                "state": i.STATE,
+                "create_date": i.CREATE_DATE,
+                "finish_date": i.FINISH_DATE
+            })
+
+        return {
+            "total": len(result),
+            "data": result
+        }
+
+    finally:
+        db.close()
+
+===== 文件路径: backend\app\api\test_dispatcher_api.py =====
+from fastapi import APIRouter, HTTPException
+from app.database import SessionLocal
+from app.models.test_dispatcher_model import TestDispatcherData
+from app.schemas.test_dispatcher_schema import (
+    DispatcherCreateRequest,
+    DispatcherListResponse
+)
+from datetime import datetime
+import json
+
+router = APIRouter(prefix="/dispatcher", tags=["Dispatcher"])
+
+@router.post("")
+def create_dispatcher(req: DispatcherCreateRequest):
+
+    db = SessionLocal()
+
+    try:
+        new_plan = TestDispatcherData(
+            QUE_NAME=req.que_name,
+            EXE_MACHINE=req.exe_machine,
+            BATCH_NAME=req.batch_name,
+
+            SEND_EMAIL=req.send_email,
+            PASS_RATE_SWITCH=req.pass_rate_switch,
+            PASS_RATE=req.pass_rate,
+
+            MSG_TO_LIST=req.msg_to_list,
+            MSG_CC_LIST=req.msg_cc_list,
+
+            CASE_LIST=json.dumps(req.case_list),
+
+            EXPLANATION=req.explanation,
+
+            CREATE_DATE=datetime.now(),
+            EXPIRE_DATE=datetime(2099, 12, 31, 23, 59, 59),
+
+            UIPATH_EXE_MACHONE=req.uipath_machine
+        )
+
+        db.add(new_plan)
+        db.commit()
+
+        return {
+            "message": "Dispatcher created",
+            "plan_id": new_plan.DISPATCHER_PLAN_ID
+        }
+
+    except Exception as e:
+        db.rollback()
+        raise HTTPException(status_code=500, detail=str(e))
+
+    finally:
+        db.close()
+
+@router.get("", response_model=DispatcherListResponse)
+def get_dispatchers():
+
+    db = SessionLocal()
+
+    try:
+        items = db.query(TestDispatcherData).all()
+
+        result = []
+
+        for i in items:
+            result.append({
+                "dispatcher_plan_id": i.DISPATCHER_PLAN_ID,
+                "batch_name": i.BATCH_NAME,
+                "que_name": i.QUE_NAME,
+                "exe_machine": i.EXE_MACHINE,
+                "case_list": i.CASE_LIST,
+                "explanation": i.EXPLANATION,
+                "create_date": i.CREATE_DATE
+            })
+
+        return {
+            "total": len(result),
+            "data": result
+        }
+
+    finally:
+        db.close()
+
+@router.get("/{plan_id}")
+def get_dispatcher(plan_id: int):
+
+    db = SessionLocal()
+
+    try:
+        item = db.query(TestDispatcherData).filter(
+            TestDispatcherData.DISPATCHER_PLAN_ID == plan_id
+        ).first()
+
+        if not item:
+            raise HTTPException(status_code=404, detail="Not found")
+
+        return {
+            "dispatcher_plan_id": item.DISPATCHER_PLAN_ID,
+            "batch_name": item.BATCH_NAME,
+            "case_list": item.CASE_LIST,
+            "exe_machine": item.EXE_MACHINE,
+            "explanation": item.EXPLANATION
+        }
+
+    finally:
+        db.close()
+
+===== 文件路径: backend\app\api\test_plan_api.py =====
+from fastapi import APIRouter, HTTPException
+from app.database import SessionLocal
+from app.models.test_plan_model import TestPlan
+from app.schemas.test_plan_schema import (
+    TestPlanCreateRequest,
+    TestPlanListResponse
+)
+from datetime import datetime
+router = APIRouter(prefix="/plans", tags=["Test Plan"])
+
+@router.post("")
+def create_plan(req: TestPlanCreateRequest):
+
+    db = SessionLocal()
+
+    try:
+        new_plan = TestPlan(
+            BATCH_NAME=req.batch_name,
+
+            TASK_STATUS=req.task_status,
+            STATUS=req.status,
+
+            SEND_EMAIL=req.send_email,
+
+            PASS_RATE_SWITCH=req.pass_rate_switch,
+            PASS_RATE=req.pass_rate,
+
+            RE_RUN=req.re_run,
+
+            MSG_TO_LIST=req.msg_to_list,
+            MSG_CC_LIST=req.msg_cc_list,
+
+            EXECUTION_MACHINE=req.execution_machine,
+
+            CREATE_DATE=datetime.now(),
+
+            update_jira=req.update_jira,
+            CREATE_BUG=req.create_bug
+        )
+
+        db.add(new_plan)
+        db.commit()
+
+        return {
+            "message": "Plan created",
+            "batch_id": new_plan.BATCH_ID
+        }
+
+    except Exception as e:
+        db.rollback()
+        raise HTTPException(status_code=500, detail=str(e))
+
+    finally:
+        db.close()
+
+@router.get("", response_model=TestPlanListResponse)
+def get_plans():
+
+    db = SessionLocal()
+
+    try:
+        plans = db.query(TestPlan).order_by(
+            TestPlan.CREATE_DATE.desc()
+        ).limit(100).all()
+
+        result = []
+
+        for p in plans:
+            result.append({
+                "batch_id": p.BATCH_ID,
+                "batch_name": p.BATCH_NAME,
+                "task_status": p.TASK_STATUS,
+                "status": p.STATUS,
+                "execution_machine": p.EXECUTION_MACHINE,
+                "create_date": p.CREATE_DATE,
+                "finish_date": p.FINISH_DATE
+            })
+
+        return {
+            "total": len(result),
+            "data": result
+        }
+
+    finally:
+        db.close()
+
+@router.get("/{batch_id}")
+def get_plan(batch_id: int):
+
+    db = SessionLocal()
+
+    try:
+        p = db.query(TestPlan).filter(
+            TestPlan.BATCH_ID == batch_id
+        ).first()
+
+        if not p:
+            raise HTTPException(status_code=404, detail="Not found")
+
+        return {
+            "batch_id": p.BATCH_ID,
+            "batch_name": p.BATCH_NAME,
+            "task_status": p.TASK_STATUS,
+            "status": p.STATUS,
+            "execution_machine": p.EXECUTION_MACHINE,
+            "create_date": p.CREATE_DATE,
+            "finish_date": p.FINISH_DATE
+        }
+
+    finally:
+        db.close()
+
+===== 文件路径: backend\app\api\__init__.py =====
+
+
+===== 文件路径: backend\app\models\auto_data_sql_uipath_model.py =====
+from sqlalchemy import Column, String
+from app.database import Base
+
+
+class AutoDataSqlUipath(Base):
+
+    __tablename__ = "AUTO_DATA_SQL_UIPATH"
+
+    SQL_NAME = Column(String(127), primary_key=True)
+
+    DB = Column(String(45))
+    SQL_CONTENT = Column(String(10239))
+
+===== 文件路径: backend\app\models\batch_detail_model.py =====
+from sqlalchemy import Column, Integer, DateTime
+from app.database import Base
+
+
+class BatchDetail(Base):
+
+    __tablename__ = "batch_detail"
+
+    BATCH_DETAIL_ID = Column(Integer, primary_key=True, index=True)
+
+    BATCH_ID = Column(Integer)
+    CFG_ID = Column(Integer)
+
+    UIPATH_CASE_EXE_ID = Column(Integer)
+    ORDER_CASE_EXE_ID = Column(Integer)
+    VERIFY_CASE_EXE_ID = Column(Integer)
+
+    STATUS = Column(Integer)
+    TASK_STATUS = Column(Integer)
+
+    CREATE_DATE = Column(DateTime)
+    FINISH_DATE = Column(DateTime)
+
+===== 文件路径: backend\app\models\billing_data_pool_model.py =====
+from sqlalchemy import Column, BigInteger, String, Integer, DateTime
+from app.database import Base
+
+
+class BillingTestDataPool(Base):
+
+    __tablename__ = "Billing_test_data_pool"
+
+    id = Column(BigInteger, primary_key=True, index=True)
+
+    cfg_id = Column(String(50), index=True)
+
+    testCaseName_str = Column(String(200))
+
+    cust_id = Column(String(50), unique=True)
+    account_id = Column(String(50))
+    order_id = Column(String(50))
+
+    status = Column(Integer, default=0)
+
+    create_time = Column(DateTime)
+    update_time = Column(DateTime)
+    used_time = Column(DateTime)
+
+===== 文件路径: backend\app\models\cfg_test_case_data_model.py =====
+from sqlalchemy import Column, BigInteger, String, DateTime, Text
+from app.database import Base
+
+
+class TestCaseData(Base):
+
+    __tablename__ = "cfg_test_case_data"
+
+    CFG_DATA_ID = Column(BigInteger, primary_key=True, index=True)
+
+    CFG_ID = Column(BigInteger)
+
+    TEST_CASE_TEMPLATE_ID = Column(BigInteger)
+
+    TEST_DATA = Column(Text)
+
+    TENANT_ID = Column(String(6))
+    STATE = Column(BigInteger)
+
+    UIPATH_FLAG = Column(BigInteger)
+
+    CREATE_DATE = Column(DateTime)
+    EXPIRE_DATE = Column(DateTime)
+
+===== 文件路径: backend\app\models\cfg_test_case_task_model.py =====
+from sqlalchemy import Column, BigInteger, String, DateTime
+from app.database import Base
+
+
+class TestCaseTask(Base):
+
+    __tablename__ = "cfg_test_case_task"
+
+    CFG_ID = Column(BigInteger, primary_key=True, index=True)
+
+    TEST_CASE_TEMPLATE_ID = Column(BigInteger)
+    TEST_CASE_NAME = Column(String(200))
+
+    VERIFY_TEST_CASE_TEMPLATE_ID = Column(BigInteger)
+    VERIFY_TEST_CASE_NAME = Column(String(50))
+
+    TRIGGER_MODE = Column(BigInteger)
+    CRON_EXPRESSION = Column(String(20))
+
+    TASK_STATUS = Column(BigInteger)
+
+    TENANT_ID = Column(String(6))
+    STATE = Column(BigInteger)
+
+    CREATE_DATE = Column(DateTime)
+    EXPIRE_DATE = Column(DateTime)
+
+    TEST_INST_ID = Column(String(50))
+
+    EXECUTION_ENVIRONMENT = Column(String(10))
+    EXECUTION_MACHINE = Column(String(20))
+
+    UIPATH_ENTRY = Column(String(200))
+    UIPATH_CASE_NAME = Column(String(100))
+
+    CASE_ID = Column(String(100))
+
+===== 文件路径: backend\app\models\pre_cfg_relation_model.py =====
+from sqlalchemy import Column, String
+from app.database import Base
+
+
+class PreCfgRelation(Base):
+
+    __tablename__ = "pre_cfg_relation"
+
+    preCfgId = Column(String(50), primary_key=True)
+    cfgId = Column(String(50), primary_key=True)
+
+===== 文件路径: backend\app\models\test_case_component_model.py =====
+from sqlalchemy import Column, BigInteger, String, DateTime
+from app.database import Base
+
+
+class TestCaseComponent(Base):
+
+    __tablename__ = "test_case_component"
+
+    TEST_CASE_COMPONENT_ID = Column(BigInteger, primary_key=True, autoincrement=True)
+
+    TEST_CASE_TEMPLATE_ID = Column(BigInteger)
+    TEST_COMPONENT_ID = Column(BigInteger)
+
+    SORT = Column(BigInteger)
+    WAIT_TIME = Column(BigInteger)
+    LOOP_NUM = Column(BigInteger)
+
+    IS_SUSPEND = Column(String(10))
+    REMARK = Column(String(400))
+    TENANT_ID = Column(String(6))
+    STATE = Column(BigInteger)
+
+    CREATE_DATE = Column(DateTime)
+    EXPIRE_DATE = Column(DateTime)
+    UPDATE_DATE = Column(DateTime)
+
+===== 文件路径: backend\app\models\test_case_execution_model.py =====
+from sqlalchemy import Column, BigInteger, String, DateTime, Text
+from app.database import Base
+
+
+class TestCaseExecution(Base):
+
+    __tablename__ = "test_case_execution"
+
+    TEST_CASE_EXE_ID = Column(BigInteger, primary_key=True, index=True)
+
+    REL_CASE_EXE_ID = Column(BigInteger)
+    CFG_ID = Column(BigInteger)
+    TEST_CASE_TEMPLATE_ID = Column(BigInteger)
+
+    TEST_CASE_NAME = Column(String(100))
+    TEST_INST_ID = Column(String(50))
+
+    EXECUTION_ENVIRONMENT = Column(String(10))
+    EXECUTION_MACHINE = Column(String(20))
+
+    IS_PRE_TASK = Column(BigInteger)
+    STATE = Column(BigInteger)
+
+    OMP_BATCH_ID = Column(BigInteger)
+
+    SOURCE_DATA = Column(Text)
+    TEST_RESULT_DATA = Column(Text)
+    ERROR_MESSAGE = Column(Text)
+
+    TENANT_ID = Column(String(6))
+
+    CREATE_DATE = Column(DateTime)
+    FINISH_DATE = Column(DateTime)
+
+    CASE_ID = Column(BigInteger)
+    PLAN_ID = Column(BigInteger)
+    TASK_STATUS = Column(BigInteger)
+
+===== 文件路径: backend\app\models\test_case_template_model.py =====
+from sqlalchemy import Column, BigInteger, String, DateTime
+from app.database import Base
+
+
+class TestCaseTemplate(Base):
+
+    __tablename__ = "test_case_template"
+
+    TEST_CASE_TEMPLATE_ID = Column(BigInteger, primary_key=True, autoincrement=True)
+
+    TEST_CASE_NAME = Column(String(50))
+    TEST_CASE_TYPE = Column(String(10))
+    MODULE = Column(String(50))
+    IS_BROWSER = Column(BigInteger)
+    REMARK = Column(String(400))
+    TENANT_ID = Column(String(6))
+    STATE = Column(BigInteger)
+
+    CREATE_DATE = Column(DateTime)
+    EXPIRE_DATE = Column(DateTime)
+    UPDATE_DATE = Column(DateTime)
+
+===== 文件路径: backend\app\models\test_case_template_rel_model.py =====
+from sqlalchemy import Column, BigInteger, String, DateTime
+from app.database import Base
+
+
+class TestCaseTemplateRel(Base):
+
+    __tablename__ = "test_case_template_rel"
+
+    TEST_CASE_TEMPLATE_REL_ID = Column(BigInteger, primary_key=True, index=True)
+
+    TEST_CASE_TEMPLATE_ID = Column(BigInteger, index=True)
+    PRE_TEST_CASE_TEMPLATE_ID = Column(BigInteger)
+
+    TENANT_ID = Column(String(6))
+    STATE = Column(BigInteger, default=1)
+
+    CREATE_DATE = Column(DateTime)
+    EXPIRE_DATE = Column(DateTime)
+
+===== 文件路径: backend\app\models\test_component_execution_model.py =====
+from sqlalchemy import Column, BigInteger, String, DateTime, Text
+from app.database import Base
+
+
+class TestComponentExecution(Base):
+
+    __tablename__ = "test_component_execution"
+
+    TEST_COMPONENT_EXE_ID = Column(BigInteger, primary_key=True, index=True)
+
+    TEST_CASE_EXE_ID = Column(BigInteger, index=True)
+    TEST_CASE_TEMPLATE_ID = Column(BigInteger)
+
+    TEST_COMPONENT_ID = Column(BigInteger)
+    TEST_COMPONENT_NAME = Column(String(50))
+
+    STATE = Column(BigInteger)
+
+    COMPONENT_IN_PARAM = Column(Text)
+    COMPONENT_RESULT_DATA = Column(Text)
+
+    PYTHON_ERROR_MESSAGE = Column(Text)
+    SYSTEM_ERROR_MESSAGE = Column(Text)
+
+    TENANT_ID = Column(String(6))
+
+    CREATE_DATE = Column(DateTime)
+    FINISH_DATE = Column(DateTime)
+
+===== 文件路径: backend\app\models\test_component_model.py =====
+from sqlalchemy import Column, BigInteger, String, DateTime
+from app.database import Base
+
+
+class TestComponent(Base):
+
+    __tablename__ = "test_component"
+
+    TEST_COMPONENT_ID = Column(BigInteger, primary_key=True, index=True)
+
+    TEST_COMPONENT_NAME = Column(String(50))
+    TEST_COMPONENT_TYPE = Column(String(10))
+    TEST_COMPONENT_FILE = Column(String(200))
+
+    REMARK = Column(String(400))
+
+    TENANT_ID = Column(String(6))
+    STATE = Column(BigInteger, default=1)
+
+    CREATE_DATE = Column(DateTime)
+    EXPIRE_DATE = Column(DateTime)
+    UPDATE_DATE = Column(DateTime)
+
+===== 文件路径: backend\app\models\test_component_parameter_model.py =====
+from sqlalchemy import Column, BigInteger, String, DateTime
+from app.database import Base
+
+
+class TestComponentParameter(Base):
+
+    __tablename__ = "test_component_parameter"
+
+    TEST_COMPONENT_PARAMETER_ID = Column(BigInteger, primary_key=True, index=True)
+
+    TEST_COMPONENT_ID = Column(BigInteger)
+    TEST_PARAMETER_ID = Column(BigInteger)
+
+    SORT = Column(BigInteger)
+
+    REMARK = Column(String(400))
+
+    TENANT_ID = Column(String(6))
+    STATE = Column(BigInteger, default=1)
+
+    CREATE_DATE = Column(DateTime)
+    EXPIRE_DATE = Column(DateTime)
+    UPDATE_DATE = Column(DateTime)
+
+===== 文件路径: backend\app\models\test_dispatcher_model.py =====
+from sqlalchemy import Column, BigInteger, String, DateTime, Text
+from app.database import Base
+
+
+class TestDispatcherData(Base):
+
+    __tablename__ = "test_dispatcher_data"
+
+    DISPATCHER_PLAN_ID = Column(BigInteger, primary_key=True, index=True)
+
+    QUE_NAME = Column(String(100))
+    EXE_MACHINE = Column(String(100))
+    PLAN_ID = Column(BigInteger, default=0)
+
+    BATCH_NAME = Column(String(100))
+
+    SEND_EMAIL = Column(BigInteger)
+    PASS_RATE_SWITCH = Column(BigInteger)
+    PASS_RATE = Column(String(6))
+
+    DEFAULT_MSG_TO_LIST = Column(String(255))
+    MSG_CC_LIST = Column(String(255))
+    MSG_TO_LIST = Column(String(255))
+
+    CASE_LIST = Column(Text)
+    ACTUAL_CASE_LIST = Column(Text)
+
+    EXPLANATION = Column(String(100))
+
+    CREATE_DATE = Column(DateTime)
+    EXPIRE_DATE = Column(DateTime)
+
+    UPDATE_JIRA = Column(String(10))
+    CREATE_BUG = Column(String(6))
+
+    UIPATH_EXE_MACHONE = Column(String(20))
+
+===== 文件路径: backend\app\models\test_parameter_model.py =====
+from sqlalchemy import Column, BigInteger, String, DateTime
+from app.database import Base
+
+
+class TestParameter(Base):
+
+    __tablename__ = "test_parameter"
+
+    TEST_PARAMETER_ID = Column(BigInteger, primary_key=True, index=True)
+
+    TEST_PARAMETER_NAME = Column(String(50))
+    PARAMETER_PATH = Column(String(200))
+
+    TEST_PARAMETER_TYPE = Column(String(10))
+    DEFAULT_VALUE = Column(String(100))
+
+    REMARK = Column(String(400))
+
+    TENANT_ID = Column(String(6))
+    STATE = Column(BigInteger, default=1)
+
+    CREATE_DATE = Column(DateTime)
+    EXPIRE_DATE = Column(DateTime)
+    UPDATE_DATE = Column(DateTime)
+
+===== 文件路径: backend\app\models\test_plan_model.py =====
+from sqlalchemy import Column, Integer, String, DateTime, BigInteger
+from app.database import Base
+
+
+class TestPlan(Base):
+
+    __tablename__ = "test_plan"
+
+    BATCH_ID = Column(Integer, primary_key=True, index=True)
+
+    BATCH_NAME = Column(String(100))
+
+    TASK_STATUS = Column(Integer)
+    STATUS = Column(Integer)
+
+    SEND_EMAIL = Column(Integer)
+
+    PLAN_ID = Column(BigInteger, default=0)
+    OMP_BATCH_ID = Column(BigInteger, default=0)
+
+    PASS_RATE_SWITCH = Column(BigInteger, default=0)
+    PASS_RATE = Column(String(6))
+
+    RE_RUN = Column(BigInteger, default=0)
+
+    DEFAULT_MSG_TO_LIST = Column(String(255))
+    MSG_CC_LIST = Column(String(255))
+    MSG_TO_LIST = Column(String(255))
+
+    EXECUTION_MACHINE = Column(String(20))
+
+    CREATE_DATE = Column(DateTime)
+    FINISH_DATE = Column(DateTime)
+
+    update_jira = Column(String(10))
+    billing_issue = Column(Integer, default=0)
+
+    CREATE_BUG = Column(String(10))
+
+===== 文件路径: backend\app\models\test_provision_parameter_model.py =====
+from sqlalchemy import Column, Integer, String
+from app.database import Base
+
+
+class TestProvisionParameter(Base):
+
+    __tablename__ = "TEST_PROVISION_PARAMETER"
+
+    provision_seq_id = Column(Integer, primary_key=True, index=True)
+
+    action_id = Column(Integer)
+    platform_code = Column(String(20))
+    provision_type = Column(String(200))
+
+    provision_Mandatory_aram = Column(String(1000))
+    provision_optional_aram = Column(String(1000))
+
+    state = Column(String(2))
+
+    ext1 = Column(String(1000))
+    ext2 = Column(String(1000))
+    ext3 = Column(String(1000))
+
+    product_line = Column(String(20))
+    veris_code_status = Column(String(20))
+    platform = Column(String(20))
+
+===== 文件路径: backend\app\models\__init__.py =====
+
+
+===== 文件路径: backend\app\schemas\auto_data_sql_schema.py =====
+from pydantic import BaseModel
+from typing import Optional
+
+
+# ======================
+# 创建 SQL 模板
+# ======================
+class AutoSqlCreateRequest(BaseModel):
+
+    sql_name: str
+    db: str
+    sql_content: str
+
+    class Config:
+        from_attributes = True
+        extra = "ignore"
+
+
+# ======================
+# 返回项
+# ======================
+class AutoSqlItem(BaseModel):
+
+    sql_name: str
+    db: str
+    sql_content: str
+
+    class Config:
+        from_attributes = True
+
+
+# ======================
+# 列表返回
+# ======================
+class AutoSqlListResponse(BaseModel):
+
+    total: int
+    data: list[AutoSqlItem]
+
+
+# ======================
+# 单个返回
+# ======================
+class AutoSqlDetailResponse(BaseModel):
+
+    sql_name: str
+    db: str
+    sql_content: str
+
+    class Config:
+        from_attributes = True
+
+===== 文件路径: backend\app\schemas\batch_detail_schema.py =====
+from pydantic import BaseModel
+from typing import Optional
+from datetime import datetime
+
+
+# ======================
+# 创建
+# ======================
+class BatchDetailCreateRequest(BaseModel):
+
+    batch_id: int
+    cfg_id: int
+
+    uipath_case_exe_id: Optional[int] = None
+    order_case_exe_id: Optional[int] = None
+    verify_case_exe_id: Optional[int] = None
+
+    status: Optional[int] = 0
+    task_status: Optional[int] = 0
+
+    class Config:
+        from_attributes = True
+        extra = "ignore"
+
+
+# ======================
+# 返回
+# ======================
+class BatchDetailItem(BaseModel):
+
+    batch_detail_id: int
+    batch_id: int
+    cfg_id: int
+
+    status: Optional[int] = 0
+    task_status: Optional[int] = 0
+
+    uipath_case_exe_id: Optional[int]
+    order_case_exe_id: Optional[int]
+    verify_case_exe_id: Optional[int]
+
+    create_date: Optional[datetime]
+    finish_date: Optional[datetime]
+
+    class Config:
+        from_attributes = True
+
+
+# ======================
+# 列表
+# ======================
+class BatchDetailListResponse(BaseModel):
+
+    total: int
+    data: list[BatchDetailItem]
+
+===== 文件路径: backend\app\schemas\billing_data_pool_schema.py =====
+from pydantic import BaseModel
+from typing import Optional
+from datetime import datetime
+
+
+# ======================
+# 创建
+# ======================
+class BillingDataCreateRequest(BaseModel):
+
+    cfg_id: str
+    test_case_name: Optional[str] = ""
+
+    cust_id: str
+    account_id: Optional[str] = ""
+    order_id: Optional[str] = ""
+
+    class Config:
+        from_attributes = True
+        extra = "ignore"
+
+
+# ======================
+# 返回项
+# ======================
+class BillingDataItem(BaseModel):
+
+    id: int
+
+    cfg_id: str
+    test_case_name: Optional[str]
+
+    cust_id: str
+    account_id: Optional[str]
+    order_id: Optional[str]
+
+    status: int
+    used: bool
+
+    create_time: Optional[datetime]
+    used_time: Optional[datetime]
+
+    class Config:
+        from_attributes = True
+
+
+# ======================
+# 列表
+# ======================
+class BillingDataListResponse(BaseModel):
+
+    total: int
+    data: list[BillingDataItem]
+
+===== 文件路径: backend\app\schemas\case_task_schema.py =====
+from pydantic import BaseModel, Field
+from typing import Optional, Dict, Any
+
+
+class CaseCreateRequest(BaseModel):
+
+    case_name: str
+    template_id: Optional[int] = 0
+    verify_template_id: Optional[int] = 0
+    verify_template_name: Optional[str] = ""
+
+    trigger_mode: Optional[int] = 2
+    cron_expression: Optional[str] = ""
+
+    task_status: Optional[int] = 1
+
+    environment: Optional[str] = ""
+    machine: Optional[str] = ""
+
+    tenant_id: Optional[str] = ""
+    state: Optional[int] = 1
+
+    inst_id: Optional[str] = ""
+
+    uipath_case_name: Optional[str] = ""
+    uipath_entry: Optional[str] = ""
+
+    case_id: Optional[str] = ""
+
+    # ⭐ 三阶段数据
+    test_data: Optional[Dict[str, Any]] = {}
+    order_test_data: Optional[Dict[str, Any]] = {}
+    verify_test_data: Optional[Dict[str, Any]] = {}
+
+    class Config:
+        from_attributes = True
+        extra = "ignore"
+
+===== 文件路径: backend\app\schemas\component_parameter_schema.py =====
+from pydantic import BaseModel
+from typing import Optional
+from datetime import datetime
+
+
+# ======================
+# 创建绑定关系
+# ======================
+class ComponentParameterCreateRequest(BaseModel):
+
+    component_id: int
+    parameter_id: int
+
+    sort: Optional[int] = 1
+    remark: Optional[str] = ""
+
+    tenant_id: Optional[str] = ""
+    state: Optional[int] = 1
+
+    class Config:
+        from_attributes = True
+        extra = "ignore"
+
+
+# ======================
+# 列表项
+# ======================
+class ComponentParameterItem(BaseModel):
+
+    id: int
+
+    component_id: int
+    parameter_id: int
+
+    sort: Optional[int]
+    remark: Optional[str]
+
+    tenant_id: Optional[str]
+
+    state: int
+    active: bool
+
+    create_date: Optional[datetime]
+
+    class Config:
+        from_attributes = True
+
+
+# ======================
+# 列表返回
+# ======================
+class ComponentParameterListResponse(BaseModel):
+
+    total: int
+    data: list[ComponentParameterItem]
+
+
+# ======================
+# 详情
+# ======================
+class ComponentParameterDetailResponse(BaseModel):
+
+    id: int
+
+    component_id: int
+    parameter_id: int
+
+    sort: Optional[int]
+    remark: Optional[str]
+
+    tenant_id: Optional[str]
+
+    state: int
+
+    create_date: Optional[datetime]
+    update_date: Optional[datetime]
+
+    class Config:
+        from_attributes = True
+
+===== 文件路径: backend\app\schemas\component_schema.py =====
+from pydantic import BaseModel
+from typing import Optional
+from datetime import datetime
+
+
+# ======================
+# 创建组件
+# ======================
+class ComponentCreateRequest(BaseModel):
+
+    component_name: str
+    component_type: Optional[str] = ""
+    component_file: Optional[str] = ""
+
+    remark: Optional[str] = ""
+
+    tenant_id: Optional[str] = ""
+    state: Optional[int] = 1
+
+    class Config:
+        from_attributes = True
+        extra = "ignore"
+
+
+# ======================
+# 返回结构（列表项）
+# ======================
+class ComponentItem(BaseModel):
+
+    component_id: int
+    component_name: str
+    component_type: Optional[str]
+    component_file: Optional[str]
+
+    remark: Optional[str]
+    tenant_id: Optional[str]
+
+    state: int
+    active: bool
+
+    create_date: Optional[datetime]
+
+    class Config:
+        from_attributes = True
+
+
+# ======================
+# 列表返回
+# ======================
+class ComponentListResponse(BaseModel):
+
+    total: int
+    data: list[ComponentItem]
+
+
+# ======================
+# 单个详情
+# ======================
+class ComponentDetailResponse(BaseModel):
+
+    component_id: int
+    component_name: str
+    component_type: Optional[str]
+    component_file: Optional[str]
+
+    remark: Optional[str]
+    tenant_id: Optional[str]
+
+    state: int
+
+    create_date: Optional[datetime]
+    update_date: Optional[datetime]
+
+    class Config:
+        from_attributes = True
+
+===== 文件路径: backend\app\schemas\parameter_schema.py =====
+from pydantic import BaseModel
+from typing import Optional
+from datetime import datetime
+
+
+# ======================
+# 创建参数
+# ======================
+class ParameterCreateRequest(BaseModel):
+
+    parameter_name: str
+    parameter_path: Optional[str] = ""
+
+    parameter_type: Optional[str] = ""
+    default_value: Optional[str] = ""
+
+    remark: Optional[str] = ""
+
+    tenant_id: Optional[str] = ""
+    state: Optional[int] = 1
+
+    class Config:
+        from_attributes = True
+        extra = "ignore"
+
+
+# ======================
+# 列表项
+# ======================
+class ParameterItem(BaseModel):
+
+    parameter_id: int
+    parameter_name: str
+    parameter_path: Optional[str]
+
+    parameter_type: Optional[str]
+    default_value: Optional[str]
+
+    remark: Optional[str]
+    tenant_id: Optional[str]
+
+    state: int
+    active: bool
+
+    create_date: Optional[datetime]
+
+    class Config:
+        from_attributes = True
+
+
+# ======================
+# 列表返回
+# ======================
+class ParameterListResponse(BaseModel):
+
+    total: int
+    data: list[ParameterItem]
+
+
+# ======================
+# 详情
+# ======================
+class ParameterDetailResponse(BaseModel):
+
+    parameter_id: int
+    parameter_name: str
+    parameter_path: Optional[str]
+
+    parameter_type: Optional[str]
+    default_value: Optional[str]
+
+    remark: Optional[str]
+    tenant_id: Optional[str]
+
+    state: int
+
+    create_date: Optional[datetime]
+    update_date: Optional[datetime]
+
+    class Config:
+        from_attributes = True
+
+===== 文件路径: backend\app\schemas\pre_cfg_relation_schema.py =====
+from pydantic import BaseModel
+from typing import Optional
+
+
+# ======================
+# 创建关系
+# ======================
+class PreCfgRelationCreateRequest(BaseModel):
+
+    pre_cfg_id: str
+    cfg_id: str
+
+    class Config:
+        from_attributes = True
+        extra = "ignore"
+
+
+# ======================
+# 返回项
+# ======================
+class PreCfgRelationItem(BaseModel):
+
+    pre_cfg_id: str
+    cfg_id: str
+
+    class Config:
+        from_attributes = True
+
+
+# ======================
+# 列表
+# ======================
+class PreCfgRelationListResponse(BaseModel):
+
+    total: int
+    data: list[PreCfgRelationItem]
+
+===== 文件路径: backend\app\schemas\provision_parameter_schema.py =====
+from pydantic import BaseModel
+from typing import Optional
+
+
+# ======================
+# 创建
+# ======================
+class ProvisionParameterCreateRequest(BaseModel):
+
+    action_id: Optional[int] = None
+    platform_code: Optional[str] = ""
+
+    provision_type: Optional[str] = ""
+
+    provision_mandatory_param: Optional[str] = ""
+    provision_optional_param: Optional[str] = ""
+
+    state: Optional[str] = "U"
+
+    ext1: Optional[str] = ""
+    ext2: Optional[str] = ""
+    ext3: Optional[str] = ""
+
+    product_line: Optional[str] = ""
+    veris_code_status: Optional[str] = ""
+    platform: Optional[str] = ""
+
+    class Config:
+        from_attributes = True
+        extra = "ignore"
+
+
+# ======================
+# 返回项
+# ======================
+class ProvisionParameterItem(BaseModel):
+
+    id: int
+    action_id: Optional[int]
+
+    platform_code: Optional[str]
+    provision_type: Optional[str]
+
+    mandatory: Optional[str]
+    optional: Optional[str]
+
+    state: Optional[str]
+    active: bool
+
+    product_line: Optional[str]
+
+    class Config:
+        from_attributes = True
+
+
+# ======================
+# 列表
+# ======================
+class ProvisionParameterListResponse(BaseModel):
+
+    total: int
+    data: list[ProvisionParameterItem]
+
+
+# ======================
+# 详情
+# ======================
+class ProvisionParameterDetailResponse(BaseModel):
+
+    id: int
+    action_id: Optional[int]
+
+    platform_code: Optional[str]
+    provision_type: Optional[str]
+
+    mandatory: Optional[str]
+    optional: Optional[str]
+
+    state: Optional[str]
+
+    ext1: Optional[str]
+    ext2: Optional[str]
+    ext3: Optional[str]
+
+    product_line: Optional[str]
+    veris_code_status: Optional[str]
+    platform: Optional[str]
+
+    class Config:
+        from_attributes = True
+
+===== 文件路径: backend\app\schemas\template_rel_schema.py =====
+from pydantic import BaseModel
+from typing import Optional
+from datetime import datetime
+
+
+# ======================
+# 创建请求
+# ======================
+class TemplateRelCreateRequest(BaseModel):
+
+    template_id: int
+    pre_template_id: int
+
+    tenant_id: Optional[str] = ""
+    state: Optional[int] = 1
+
+    class Config:
+        from_attributes = True
+        extra = "ignore"
+
+
+# ======================
+# 返回结构（列表）
+# ======================
+class TemplateRelItem(BaseModel):
+
+    rel_id: int
+    template_id: int
+    pre_template_id: int
+    tenant_id: str
+    state: int
+    active: bool
+    create_date: Optional[datetime]
+
+    class Config:
+        from_attributes = True
+
+
+# ======================
+# 列表返回
+# ======================
+class TemplateRelListResponse(BaseModel):
+
+    total: int
+    data: list[TemplateRelItem]
+
+
+# ======================
+# 单个返回
+# ======================
+class TemplateRelDetailResponse(BaseModel):
+
+    rel_id: int
+    template_id: int
+    pre_template_id: int
+    tenant_id: str
+    state: int
+    create_date: Optional[datetime]
+
+    class Config:
+        from_attributes = True
+
+===== 文件路径: backend\app\schemas\template_schema.py =====
+from pydantic import BaseModel, Field
+from typing import List, Optional
+
+
+class ComponentItem(BaseModel):
+    component_id: int
+    sort: int
+    wait_time: int = 5
+    loop_num: int = 1
+    is_suspend: str = "Y"
+    remark: Optional[str] = ""
+
+
+class TemplateCreateRequest(BaseModel):
+    template_name: str
+    module: str
+
+    test_case_type: str = "1"
+    is_browser: int = 0
+    tenant_id: str = "21"
+    state: int = 1
+    remark: Optional[str] = ""
+
+    components: List[ComponentItem]
+
+    class Config:
+        extra = "ignore"
+
+===== 文件路径: backend\app\schemas\test_case_execution_schema.py =====
+from pydantic import BaseModel
+from typing import Optional
+from datetime import datetime
+
+
+# ======================
+# 创建
+# ======================
+class ExecutionCreateRequest(BaseModel):
+
+    cfg_id: int
+    template_id: Optional[int] = None
+    case_name: Optional[str] = ""
+    test_inst_id: Optional[str] = ""
+
+    environment: Optional[str] = ""
+    machine: Optional[str] = ""
+
+    rel_case_exe_id: Optional[int] = None
+    is_pre_task: Optional[int] = 0
+
+    state: Optional[int] = 1  # 默认执行中
+    tenant_id: Optional[str] = ""
+
+    source_data: Optional[str] = ""
+    case_id: Optional[int] = 0
+    plan_id: Optional[int] = 0
+
+
+# ======================
+# 返回
+# ======================
+class ExecutionItem(BaseModel):
+
+    test_case_exe_id: int
+    rel_case_exe_id: Optional[int]
+    cfg_id: Optional[int]
+
+    state: Optional[int]
+    test_case_name: Optional[str]
+
+    create_date: Optional[datetime]
+    finish_date: Optional[datetime]
+
+    class Config:
+        from_attributes = True
+
+
+# ======================
+# 列表
+# ======================
+class ExecutionListResponse(BaseModel):
+
+    total: int
+    data: list[ExecutionItem]
+
+===== 文件路径: backend\app\schemas\test_component_execution_schema.py =====
+from pydantic import BaseModel
+from typing import Optional
+from datetime import datetime
+
+
+# ======================
+# 创建
+# ======================
+class ComponentExecutionCreateRequest(BaseModel):
+
+    test_case_exe_id: int
+    template_id: Optional[int] = None
+
+    component_id: Optional[int] = None
+    component_name: Optional[str] = ""
+
+    state: Optional[int] = 4  # 默认执行中
+
+    input_param: Optional[str] = ""
+    tenant_id: Optional[str] = ""
+
+
+# ======================
+# 返回
+# ======================
+class ComponentExecutionItem(BaseModel):
+
+    test_component_exe_id: int
+    test_case_exe_id: int
+
+    component_name: Optional[str]
+    state: Optional[int]
+
+    create_date: Optional[datetime]
+    finish_date: Optional[datetime]
+
+    class Config:
+        from_attributes = True
+
+
+# ======================
+# 列表
+# ======================
+class ComponentExecutionListResponse(BaseModel):
+
+    total: int
+    data: list[ComponentExecutionItem]
+
+===== 文件路径: backend\app\schemas\test_dispatcher_schema.py =====
+from pydantic import BaseModel
+from typing import Optional, List
+from datetime import datetime
+
+
+# ======================
+# 创建请求
+# ======================
+class DispatcherCreateRequest(BaseModel):
+
+    que_name: Optional[str] = ""
+    exe_machine: Optional[str] = ""
+    batch_name: Optional[str] = ""
+
+    send_email: Optional[int] = 0
+    pass_rate_switch: Optional[int] = 0
+    pass_rate: Optional[str] = "0"
+
+    msg_to_list: Optional[str] = ""
+    msg_cc_list: Optional[str] = ""
+
+    case_list: List[int]
+
+    explanation: Optional[str] = ""
+
+    uipath_machine: Optional[str] = ""
+
+    class Config:
+        from_attributes = True
+        extra = "ignore"
+
+
+# ======================
+# 返回
+# ======================
+class DispatcherItem(BaseModel):
+
+    dispatcher_plan_id: int
+    batch_name: Optional[str]
+
+    que_name: Optional[str]
+    exe_machine: Optional[str]
+
+    case_list: Optional[str]
+
+    explanation: Optional[str]
+
+    create_date: Optional[datetime]
+
+    class Config:
+        from_attributes = True
+
+
+# ======================
+# 列表
+# ======================
+class DispatcherListResponse(BaseModel):
+
+    total: int
+    data: list[DispatcherItem]
+
+===== 文件路径: backend\app\schemas\test_plan_schema.py =====
+from pydantic import BaseModel
+from typing import Optional
+from datetime import datetime
+
+
+# ======================
+# 创建请求
+# ======================
+class TestPlanCreateRequest(BaseModel):
+
+    batch_name: str
+
+    task_status: Optional[int] = 0
+    status: Optional[int] = 1
+
+    send_email: Optional[int] = 0
+
+    pass_rate_switch: Optional[int] = 0
+    pass_rate: Optional[str] = "0"
+
+    re_run: Optional[int] = 0
+
+    msg_to_list: Optional[str] = ""
+    msg_cc_list: Optional[str] = ""
+
+    execution_machine: Optional[str] = ""
+
+    update_jira: Optional[str] = "NO"
+    create_bug: Optional[str] = "NO"
+
+    class Config:
+        from_attributes = True
+        extra = "ignore"
+
+
+# ======================
+# 返回对象
+# ======================
+class TestPlanItem(BaseModel):
+
+    batch_id: int
+    batch_name: Optional[str] = ""
+
+    task_status: Optional[int]
+    status: Optional[int]
+
+    execution_machine: Optional[str]
+
+    create_date: Optional[datetime]
+    finish_date: Optional[datetime]
+
+    class Config:
+        from_attributes = True
+
+
+# ======================
+# 列表返回
+# ======================
+class TestPlanListResponse(BaseModel):
+
+    total: int
+    data: list[TestPlanItem]
+
+===== 文件路径: backend\app\schemas\__init__.py =====
+
+
