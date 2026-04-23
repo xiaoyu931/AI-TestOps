@@ -25,6 +25,8 @@ from app.api.template_rel_api import router as template_rel_router
 from app.api import test_plan_api
 from app.api.test_component_execution_api import router as component_execution_router
 from app.api.failure_analysis_api import router as failure_analysis_router
+from app.api.test_plan_health_api import router as test_plan_health_router
+
 
 # 创建一个 FastAPI 应用实例  可以理解为：app = API服务器， 所有接口都会挂在这个 app 上。
 app = FastAPI()
@@ -66,6 +68,7 @@ app.include_router(template_rel_router)
 app.include_router(test_plan_api.router)
 app.include_router(component_execution_router)
 app.include_router(failure_analysis_router)
+app.include_router(test_plan_health_router)
 # 定义首页接口，这是 根路径接口
 # 访问：http://localhost:8000/  执行：home()
 @app.get("/")
