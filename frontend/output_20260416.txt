@@ -1,0 +1,5290 @@
+
+===== src\App.tsx =====
+import { useState } from "react";
+
+import CaseListPage from "./pages/CaseListPage";
+import CaseFormPage from "./pages/CaseFormPage";
+
+import TemplateListPage from "./pages/TemplateListPage";
+import TemplateFormPage from "./pages/TemplateFormPage";
+
+import ComponentListPage from "./pages/ComponentListPage";
+import ComponentFormPage from "./pages/ComponentFormPage";
+
+import ParameterListPage from "./pages/ParameterListPage";
+import ParameterFormPage from "./pages/ParameterFormPage";
+
+import ComponentParameterListPage from "./pages/ComponentParameterListPage";
+import ComponentParameterFormPage from "./pages/ComponentParameterFormPage";
+
+import TemplateRelationListPage from "./pages/TemplateRelationListPage";
+import TemplateRelationFormPage from "./pages/TemplateRelationFormPage";
+
+// ⭐ Test Plan
+import TestDispatcherListPage from "./pages/TestDispatcherListPage";
+import PlanRunListPage from "./pages/PlanRunListPage";
+import BatchDetailPage from "./pages/BatchDetailPage";
+import TestDispatcherFormPage from "./pages/TestDispatcherFormPage";
+
+// ⭐ Execution
+import CaseExecutionListPage from "./pages/CaseExecutionListPage";
+import ComponentExecutionListPage from "./pages/ComponentExecutionListPage";
+
+
+type PageMode =
+  | "case_list" | "case_create" | "case_edit"
+  | "template_list" | "template_create" | "template_edit"
+  | "component_list" | "component_create" | "component_edit"
+  | "parameter_list" | "parameter_create" | "parameter_edit"
+  | "component_parameter_list" | "component_parameter_create" | "component_parameter_edit"
+  | "template_relation_list" | "template_relation_create" | "template_relation_edit"
+  | "dispatcher_list" | "dispatcher_create" | "dispatcher_edit"
+  | "plan_runs"
+  | "batch_detail"
+  | "case_execution"
+  | "component_execution";
+
+export default function App() {
+
+  const [pageMode, setPageMode] = useState<PageMode>("case_list");
+  const go = (mode: PageMode) => setPageMode(mode);
+
+
+  const [editId, setEditId] = useState<number | null>(null);
+  const [editCfgId, setEditCfgId] = useState<number | null>(null);
+  const [editTemplateId, setEditTemplateId] = useState<number | null>(null);
+  const [editComponentId, setEditComponentId] = useState<number | null>(null);
+  const [editParameterId, setEditParameterId] = useState<number | null>(null);
+  const [editMappingId, setEditMappingId] = useState<number | null>(null);
+  const [editTemplateRelationId, setEditTemplateRelationId] = useState<number | null>(null);
+
+  // ✅ ===== 高亮逻辑（核心优化）=====
+  const isCasePage = (mode: PageMode) =>
+    ["case_list", "case_create", "case_edit"].includes(mode);
+
+  const isDispatcherPage = (mode: PageMode) =>
+    ["dispatcher_list", "dispatcher_create", "dispatcher_edit"].includes(mode);
+
+  const isTemplatePage = (mode: PageMode) =>
+    ["template_list", "template_create", "template_edit"].includes(mode);
+
+  const isTemplateRelationPage = (mode: PageMode) =>
+    ["template_relation_list", "template_relation_create", "template_relation_edit"].includes(mode);
+
+  const isComponentPage = (mode: PageMode) =>
+    ["component_list", "component_create", "component_edit"].includes(mode);
+
+  const isParameterPage = (mode: PageMode) =>
+    ["parameter_list", "parameter_create", "parameter_edit"].includes(mode);
+
+  const isComponentParamPage = (mode: PageMode) =>
+    ["component_parameter_list", "component_parameter_create", "component_parameter_edit"].includes(mode);
+
+  return (
+    <div className="layout-shell">
+
+      {/* ================= SIDEBAR ================= */}
+      <div className="sidebar">
+
+        <div className="sidebar-logo">TestOps</div>
+
+        {/* ===== CASE ===== */}
+        <div className="sidebar-group-title">Case</div>
+        <div
+          className={`sidebar-item ${isCasePage(pageMode) ? "active" : ""}`}
+          onClick={() => go("case_list")}
+        >
+          Case Management
+        </div>
+
+        {/* ===== TEST PLAN ===== */}
+        <div className="sidebar-group-title">Test Plan</div>
+
+        <div
+          className={`sidebar-item ${isDispatcherPage(pageMode) ? "active" : ""}`}
+          onClick={() => go("dispatcher_list")}
+        >
+          Test Plan Config
+        </div>
+
+        <div
+          className={`sidebar-item ${pageMode === "plan_runs" ? "active" : ""}`}
+          onClick={() => go("plan_runs")}
+        >
+          Plan Runs
+        </div>
+
+        <div
+          className={`sidebar-item ${pageMode === "batch_detail" ? "active" : ""}`}
+          onClick={() => go("batch_detail")}
+        >
+          Execution Detail
+        </div>
+
+        {/* ===== EXECUTION ===== */}
+        <div className="sidebar-group-title">Execution</div>
+
+        <div
+          className={`sidebar-item ${pageMode === "case_execution" ? "active" : ""}`}
+          onClick={() => go("case_execution")}
+        >
+          Case Execution
+        </div>
+
+        <div
+          className={`sidebar-item ${pageMode === "component_execution" ? "active" : ""}`}
+          onClick={() => go("component_execution")}
+        >
+          Component Execution
+        </div>
+
+        {/* ===== TEMPLATE ===== */}
+        <div className="sidebar-group-title">Template Layer</div>
+
+        <div
+          className={`sidebar-item ${isTemplatePage(pageMode) ? "active" : ""}`}
+          onClick={() => go("template_list")}
+        >
+          Template Management
+        </div>
+
+        <div
+          className={`sidebar-item ${isTemplateRelationPage(pageMode) ? "active" : ""}`}
+          onClick={() => go("template_relation_list")}
+        >
+          Template Relation Management
+        </div>
+
+        <div
+          className={`sidebar-item ${isComponentPage(pageMode) ? "active" : ""}`}
+          onClick={() => go("component_list")}
+        >
+          Component Management
+        </div>
+
+        <div
+          className={`sidebar-item ${isParameterPage(pageMode) ? "active" : ""}`}
+          onClick={() => go("parameter_list")}
+        >
+          Parameter Management
+        </div>
+
+        <div
+          className={`sidebar-item ${isComponentParamPage(pageMode) ? "active" : ""}`}
+          onClick={() => go("component_parameter_list")}
+        >
+          Component Parameter Mapping
+        </div>
+
+      </div>
+
+      {/* ================= MAIN ================= */}
+      <div className="layout-main">
+
+        {/* ===== CASE ===== */}
+        {pageMode === "case_list" && (
+          <CaseListPage
+            onAdd={() => go("case_create")}
+            onEdit={(id: number) => {
+              setEditCfgId(id);
+              go("case_edit");
+            }}
+          />
+        )}
+
+        {pageMode === "case_create" && (
+          <CaseFormPage mode="create" cfgId={null}
+            onBack={() => go("case_list")}
+            onSaved={() => go("case_list")}
+          />
+        )}
+
+        {pageMode === "case_edit" && editCfgId !== null && (
+          <CaseFormPage mode="edit" cfgId={editCfgId}
+            onBack={() => go("case_list")}
+            onSaved={() => go("case_list")}
+          />
+        )}
+
+        {/* ===== TEST PLAN ===== */}
+        {pageMode === "dispatcher_list" && (
+          <TestDispatcherListPage
+            onAdd={() => go("dispatcher_create")}
+            onEdit={(id: number) => {
+              setEditId(id);
+              go("dispatcher_edit");
+            }}
+          />
+        )}
+
+        {pageMode === "dispatcher_create" && (
+          <TestDispatcherFormPage
+            id={null}
+            onBack={() => go("dispatcher_list")}
+          />
+        )}
+
+        {pageMode === "dispatcher_edit" && (
+          <TestDispatcherFormPage
+            id={editId}
+            onBack={() => go("dispatcher_list")}
+          />
+        )}
+
+        {pageMode === "plan_runs" && (
+          <PlanRunListPage
+            onView={(id: number) => {
+              setEditId(id);
+              go("batch_detail");
+            }}
+          />
+        )}
+
+        {pageMode === "batch_detail" && (
+          <BatchDetailPage batchId={editId} />
+        )}
+
+        {/* ===== EXECUTION ===== */}
+        {pageMode === "case_execution" && (
+          <CaseExecutionListPage
+            onView={(id: number) => {
+              setEditId(id);
+              go("component_execution");
+            }}
+          />
+        )}
+
+        {pageMode === "component_execution" && (
+          <ComponentExecutionListPage caseExeId={editId} />
+        )}
+
+        {/* ===== TEMPLATE ===== */}
+        {pageMode === "template_list" && (
+          <TemplateListPage
+            onAdd={() => go("template_create")}
+            onEdit={(id: number) => {
+              setEditTemplateId(id);
+              go("template_edit");
+            }}
+          />
+        )}
+
+        {pageMode === "template_create" && (
+          <TemplateFormPage
+            mode="create"
+            templateId={null}
+            onBack={() => go("template_list")}
+            onSaved={() => go("template_list")}
+          />
+        )}
+
+        {pageMode === "template_edit" && editTemplateId !== null && (
+          <TemplateFormPage
+            mode="edit"
+            templateId={editTemplateId}
+            onBack={() => go("template_list")}
+            onSaved={() => go("template_list")}
+          />
+        )}
+
+        {/* ===== TEMPLATE RELATION ===== */}
+        {pageMode === "template_relation_list" && (
+          <TemplateRelationListPage
+            onAdd={() => go("template_relation_create")}
+            onEdit={(id: number) => {
+              setEditTemplateRelationId(id);
+              go("template_relation_edit");
+            }}
+          />
+        )}
+
+        {pageMode === "template_relation_create" && (
+          <TemplateRelationFormPage
+            relId={null}
+            onBack={() => go("template_relation_list")}
+            onSaved={() => go("template_relation_list")}
+          />
+        )}
+
+        {pageMode === "template_relation_edit" && editTemplateRelationId !== null && (
+          <TemplateRelationFormPage
+            relId={editTemplateRelationId}
+            onBack={() => go("template_relation_list")}
+            onSaved={() => go("template_relation_list")}
+          />
+        )}
+
+        {/* ===== COMPONENT ===== */}
+        {pageMode === "component_list" && (
+          <ComponentListPage
+            onAdd={() => go("component_create")}
+            onEdit={(id: number) => {
+              setEditComponentId(id);
+              go("component_edit");
+            }}
+          />
+        )}
+
+        {pageMode === "component_create" && (
+          <ComponentFormPage mode="create" componentId={null}
+            onBack={() => go("component_list")}
+            onSaved={() => go("component_list")}
+          />
+        )}
+
+        {pageMode === "component_edit" && editComponentId !== null && (
+          <ComponentFormPage mode="edit" componentId={editComponentId}
+            onBack={() => go("component_list")}
+            onSaved={() => go("component_list")}
+          />
+        )}
+
+        {/* ===== PARAMETER ===== */}
+        {pageMode === "parameter_list" && (
+          <ParameterListPage
+            onAdd={() => go("parameter_create")}
+            onEdit={(id: number) => {
+              setEditParameterId(id);
+              go("parameter_edit");
+            }}
+          />
+        )}
+
+        {pageMode === "parameter_create" && (
+          <ParameterFormPage mode="create" parameterId={null}
+            onBack={() => go("parameter_list")}
+            onSaved={() => go("parameter_list")}
+          />
+        )}
+
+        {pageMode === "parameter_edit" && editParameterId !== null && (
+          <ParameterFormPage mode="edit" parameterId={editParameterId}
+            onBack={() => go("parameter_list")}
+            onSaved={() => go("parameter_list")}
+          />
+        )}
+
+        {/* ===== MAPPING ===== */}
+        {pageMode === "component_parameter_list" && (
+          <ComponentParameterListPage
+            onAdd={() => go("component_parameter_create")}
+            onEdit={(id: number) => {
+              setEditMappingId(id);
+              go("component_parameter_edit");
+            }}
+          />
+        )}
+
+        {pageMode === "component_parameter_create" && (
+          <ComponentParameterFormPage
+            onBack={() => go("component_parameter_list")}
+          />
+        )}
+
+        {pageMode === "component_parameter_edit" && (
+          <ComponentParameterFormPage
+            id={editMappingId}
+            onBack={() => go("component_parameter_list")}
+          />
+        )}
+
+      </div>
+    </div>
+  );
+}
+
+===== src\global.d.ts =====
+declare module "*.css";
+
+===== src\main.tsx =====
+import React from "react";
+import ReactDOM from "react-dom/client";
+import App from "./App";
+
+
+import "./styles.css";
+import "./styles/testops.css";
+
+ReactDOM.createRoot(document.getElementById("root")!).render(
+  <React.StrictMode>
+    <App />
+  </React.StrictMode>
+);
+
+===== src\styles.css =====
+body {
+  margin: 0;
+  font-family: Arial, Helvetica, sans-serif;
+  background: #f5f7fb;
+  color: #333;
+}
+
+* {
+  box-sizing: border-box;
+}
+
+.app-shell {
+  min-height: 100vh;
+}
+
+.page-container {
+  padding: 20px 24px;
+}
+
+.page-title {
+  font-size: 28px;
+  font-weight: 700;
+  margin-bottom: 18px;
+}
+
+.search-card,
+.table-card,
+.form-card {
+  background: #fff;
+  border-radius: 12px;
+  padding: 18px;
+  margin-bottom: 18px;
+  box-shadow: 0 2px 10px rgba(0, 0, 0, 0.06);
+}
+
+.search-card-title,
+.section-title {
+  font-size: 18px;
+  font-weight: 700;
+  margin-bottom: 16px;
+}
+
+.search-grid,
+.form-grid {
+  display: grid;
+  grid-template-columns: repeat(3, minmax(220px, 1fr));
+  gap: 16px;
+}
+
+.field {
+  display: flex;
+  flex-direction: column;
+  gap: 6px;
+}
+
+.field label {
+  font-size: 13px;
+  color: #666;
+}
+
+.field input,
+.field select {
+  height: 38px;
+  padding: 0 10px;
+  border: 1px solid #d9dfe8;
+  border-radius: 6px;
+  background: #fff;
+}
+
+.search-actions,
+.form-header-actions,
+.json-actions {
+  display: flex;
+  gap: 10px;
+  margin-top: 16px;
+}
+
+.form-header {
+  display: flex;
+  justify-content: space-between;
+  align-items: center;
+  margin-bottom: 18px;
+}
+
+.btn {
+  height: 36px;
+  padding: 0 14px;
+  border: none;
+  border-radius: 6px;
+  cursor: pointer;
+  font-weight: 600;
+}
+
+.btn-primary {
+  background: #f59e0b;
+  color: #fff;
+}
+
+.btn-secondary {
+  background: #eef2f7;
+  color: #333;
+}
+
+.btn-success {
+  background: #2563eb;
+  color: #fff;
+}
+
+.btn-link {
+  background: transparent;
+  color: #2563eb;
+  padding: 0;
+  height: auto;
+}
+
+.btn-link.danger {
+  color: #dc2626;
+}
+
+.table-header {
+  display: flex;
+  justify-content: space-between;
+  margin-bottom: 12px;
+  font-weight: 700;
+}
+
+.case-table {
+  width: 100%;
+  border-collapse: collapse;
+}
+
+.case-table th,
+.case-table td {
+  border-bottom: 1px solid #edf1f5;
+  padding: 12px 10px;
+  text-align: left;
+  font-size: 13px;
+  vertical-align: top;
+}
+
+.case-table th {
+  background: #fafbfd;
+  color: #666;
+}
+
+.action-buttons {
+  display: flex;
+  gap: 10px;
+}
+
+.empty-row,
+.loading-box {
+  text-align: center;
+  color: #888;
+  padding: 24px;
+}
+
+.json-editor {
+  width: 100%;
+  min-height: 420px;
+  padding: 12px;
+  border: 1px solid #d9dfe8;
+  border-radius: 8px;
+  font-family: Consolas, monospace;
+  font-size: 13px;
+  line-height: 1.5;
+  resize: vertical;
+}
+
+.tips-box {
+  margin-top: 16px;
+  padding: 12px;
+  background: #f8fbff;
+  border: 1px solid #d7e8ff;
+  border-radius: 8px;
+  color: #4b5563;
+  line-height: 1.8;
+}
+
+@media (max-width: 1200px) {
+  .search-grid,
+  .form-grid {
+    grid-template-columns: 1fr;
+  }
+
+  .form-header {
+    flex-direction: column;
+    align-items: flex-start;
+    gap: 12px;
+  }
+}
+
+
+.layout-shell {
+  display: flex;
+  min-height: 100vh;
+  background: #f5f7fb;
+}
+
+.sidebar {
+  width: 240px;
+  background: #ffffff;
+  border-right: 1px solid #e5e7eb;
+  padding: 20px 14px;
+  box-shadow: 2px 0 8px rgba(0, 0, 0, 0.03);
+}
+
+.sidebar-logo {
+  font-size: 24px;
+  font-weight: 800;
+  color: #111827;
+  margin-bottom: 24px;
+  padding: 0 10px;
+}
+
+.sidebar-group-title {
+  font-size: 12px;
+  color: #9ca3af;
+  margin: 16px 10px 8px;
+  text-transform: uppercase;
+  letter-spacing: 0.5px;
+}
+
+.sidebar-item {
+  padding: 12px 14px;
+  border-radius: 10px;
+  cursor: pointer;
+  color: #374151;
+  margin-bottom: 6px;
+  font-weight: 500;
+  transition: all 0.2s ease;
+}
+
+.sidebar-item:hover {
+  background: #f3f4f6;
+  color: #111827;
+}
+
+.sidebar-item.active {
+  background: #2563eb;
+  color: #fff;
+}
+
+.layout-main {
+  flex: 1;
+  min-width: 0;
+}
+
+.pagination-bar {
+  margin-top: 16px;
+  text-align: center;
+  display: flex;
+  gap: 12px;
+  align-items: center;
+  justify-content: center;
+}
+
+.pagination-bar button {
+  height: 32px;
+  padding: 0 12px;
+  border: 1px solid #d1d5db;
+  background: #fff;
+  border-radius: 6px;
+  cursor: pointer;
+}
+
+.pagination-bar button:disabled {
+  opacity: 0.5;
+  cursor: not-allowed;
+}
+
+
+.search-card,
+.form-card,
+.table-card {
+  background: #fff;
+  padding: 20px;
+  border-radius: 8px;
+  margin-bottom: 20px;
+}
+
+.search-grid,
+.form-grid {
+  display: grid;
+  grid-template-columns: repeat(2, 1fr);
+  gap: 20px;
+}
+
+.field label {
+  display: block;
+  margin-bottom: 6px;
+}
+
+.action-buttons {
+  display: flex;
+  gap: 12px;
+}
+
+.btn-link {
+  color: #1677ff;
+  cursor: pointer;
+}
+
+.btn-link.danger {
+  color: red;
+}
+
+
+
+
+===== src\api\testops.ts =====
+import axios from "axios";
+
+const API = axios.create({
+  baseURL: "http://127.0.0.1:8000",
+  timeout: 15000
+});
+
+export type CaseSearchParams = {
+  case_name?: string;
+  environment?: string;
+  machine?: string;
+  template_id?: number | "";
+  verify_template_id?: number | "";
+};
+
+export const testopsApi = {
+  // Case
+  getCases(params?: any) {
+    return API.get("/case-tasks", { params });
+  },
+
+  getCaseDetail(cfgId: number) {
+    return API.get(`/case-tasks/${cfgId}`);
+  },
+
+  createCase(data: any) {
+    return API.post("/case-tasks", data);
+  },
+
+  updateCase(cfgId: number, data: any) {
+    return API.put(`/case-tasks/${cfgId}`, data);
+  },
+
+  deleteCase(cfgId: number) {
+    return API.delete(`/case-tasks/${cfgId}`);
+  },
+
+    // Template
+  getTemplates(params?: any) {
+    return API.get("/templates", { params });
+  },
+
+  getTemplateDetail(templateId: number) {
+    return API.get(`/templates/${templateId}`);
+  },
+
+  createTemplate(data: any) {
+    return API.post("/templates", data);
+  },
+
+  updateTemplate(templateId: number, data: any) {
+    return API.put(`/templates/${templateId}`, data);
+  },
+
+  deleteTemplate(templateId: number) {
+    return API.delete(`/templates/${templateId}`);
+  },
+
+  //Template Rel
+  getTemplateRelations: (params: any) =>
+  API.get("/template-relations", { params }),
+
+  getTemplateRelationDetail: (relId: number) =>
+    API.get(`/template-relations/${relId}`),
+
+  createTemplateRelation: (data: any) =>
+    API.post("/template-relations", data),
+
+  updateTemplateRelation: (relId: number, data: any) =>
+    API.put(`/template-relations/${relId}`, data),
+
+  deleteTemplateRelation: (relId: number) =>
+    API.delete(`/template-relations/${relId}`),
+
+  // Component
+  getComponents(params?: any) {
+    return API.get("/components", { params });
+  },
+
+  getComponentDetail(componentId: number) {
+    return API.get(`/components/${componentId}`);
+  },
+
+  createComponent(data: any) {
+    return API.post("/components", data);
+  },
+
+  updateComponent(componentId: number, data: any) {
+    return API.put(`/components/${componentId}`, data);
+  },
+
+  deleteComponent(componentId: number) {
+    return API.delete(`/components/${componentId}`);
+  },
+
+  // Parameter
+  getParameters(params?: any) {
+    return API.get("/parameters", { params });
+  },
+
+  getParameterDetail(parameterId: number) {
+    return API.get(`/parameters/${parameterId}`);
+  },
+
+  createParameter(data: any) {
+    return API.post("/parameters", data);
+  },
+
+  updateParameter(parameterId: number, data: any) {
+    return API.put(`/parameters/${parameterId}`, data);
+  },
+
+  deleteParameter(parameterId: number) {
+    return API.delete(`/parameters/${parameterId}`);
+  },
+
+  // Component Parameter
+  getComponentParameters(params?: any) {
+    return API.get("/component-parameters", { params });
+  },
+
+  getComponentParameterDetail(id: number) {
+    return API.get(`/component-parameters/${id}`);
+  },
+
+  createComponentParameter(data: any) {
+    return API.post("/component-parameters", data);
+  },
+
+  updateComponentParameter(id: number, data: any) {
+    return API.put(`/component-parameters/${id}`, data);
+  },
+
+  deleteComponentParameter(id: number) {
+    return API.delete(`/component-parameters/${id}`);
+  },
+
+  // ===== Test Dispatcher / Test Plan Config =====
+  getTestDispatchers(params: any) {
+    return API.get("/test-dispatcher", { params });
+  },
+
+  getTestDispatcherDetail(dispatcherPlanId: number) {
+    return API.get(`/test-dispatcher/${dispatcherPlanId}`);
+  },
+
+  createTestDispatcher(data: any) {
+    return API.post("/test-dispatcher", data);
+  },
+
+  updateTestDispatcher(dispatcherPlanId: number, data: any) {
+    return API.put(`/test-dispatcher/${dispatcherPlanId}`, data);
+  },
+
+  deleteTestDispatcher(dispatcherPlanId: number) {
+    return API.delete(`/test-dispatcher/${dispatcherPlanId}`);
+  },
+
+  // ===== Plan Runs =====
+  getPlanRuns(params: any) {
+    return API.get("/test-plans", { params });
+  },
+
+    // ===== Batch Detail =====
+  getBatchDetails(params: any) {
+    return API.get("/batch-details", { params });
+  },
+
+  // ===== Component Execution =====
+  getComponentExecutions: (params: any) =>
+    API.get("/component-executions", { params }),
+
+  // ===== Case Executions =====
+  getCaseExecutions: (params: any) =>
+  API.get("/case-executions", { params })
+
+
+  
+};
+
+export async function getComponents() {
+  const res = await fetch("http://127.0.0.1:8000/components");
+  return res.json();
+}
+
+export async function getParameters() {
+  const res = await fetch("http://127.0.0.1:8000/parameters");
+  return res.json();
+}
+
+
+
+
+===== src\components\ExecutionTraceGraph.tsx =====
+export default function ExecutionTraceGraph({ executions }: any) {
+  return (
+    <div>
+      {executions.map((exe: any) => (
+        <div key={exe.execution}>
+          <h4>{exe.execution}</h4>
+          {exe.components.map((c: any) => (
+            <span key={c.name}> → {c.name}</span>
+          ))}
+        </div>
+      ))}
+    </div>
+  );
+}
+
+
+===== src\components\JsonEditor.tsx =====
+import { useState, useEffect } from "react";
+
+export default function JsonEditor({ label, value, onChange }: any) {
+  const [text, setText] = useState("");
+
+  useEffect(() => {
+    setText(JSON.stringify(value || {}, null, 2));
+  }, [value]);
+
+  return (
+    <div>
+      <label>{label}</label>
+      <textarea
+        value={text}
+        onChange={(e) => setText(e.target.value)}
+        onBlur={() => {
+          try {
+            onChange(JSON.parse(text));
+          } catch {
+            alert("JSON错误");
+          }
+        }}
+      />
+    </div>
+  );
+}
+
+===== src\components\TemplateExplorer.tsx =====
+import { useEffect, useState } from "react";
+import { testopsApi } from "../api/testops";
+
+export default function TemplateExplorer({ templateId }: any) {
+  const [data, setData] = useState<any>();
+
+  useEffect(() => {
+    if (!templateId) return;
+    testopsApi.getTemplateDetail(templateId).then((res: any) => {
+      setData(res.data);
+    });
+  }, [templateId]);
+
+  return (
+    <div>
+      <h3>模板结构</h3>
+      <pre>{JSON.stringify(data, null, 2)}</pre>
+    </div>
+  );
+}
+
+===== src\pages\BatchDetailPage.tsx =====
+import { useEffect, useState } from "react";
+import { testopsApi } from "../api/testops";
+
+type Props = {
+  batchId?: number | null;
+};
+
+type SearchForm = {
+  batch_detail_id: string;
+  batch_id: string;
+  cfg_id: string;
+  status: string;
+  task_status: string;
+  create_date_from: string;
+  create_date_to: string;
+};
+
+const initialSearchForm: SearchForm = {
+  batch_detail_id: "",
+  batch_id: "",
+  cfg_id: "",
+  status: "",
+  task_status: "",
+  create_date_from: "",
+  create_date_to: ""
+};
+
+function getStatusText(value: number) {
+  switch (value) {
+    case 1:
+      return "Processing";
+    case 2:
+      return "Success";
+    case 3:
+      return "UiPath Failed";
+    case 4:
+      return "Verifying";
+    case 5:
+      return "Verify Success";
+    case 6:
+      return "Verify Failed";
+    case 7:
+      return "Verify Triggered";
+    case 8:
+      return "UiPath Submitted";
+    case 9:
+      return "Ordering";
+    case 10:
+      return "Order Success";
+    case 11:
+      return "Order Failed";
+    case 12:
+      return "Order Triggered";
+    case 13:
+      return "No Order Needed";
+    case 14:
+      return "No Verify Needed";
+    default:
+      return String(value ?? "-");
+  }
+}
+
+function getTaskStatusText(value: number) {
+  switch (value) {
+    case 0:
+      return "⏳ Order Not Completed";
+
+    case 1:
+      return "✅ Order Completed";
+
+    case 2:
+      return "🏁 Finished";
+
+    default:
+      return value !== undefined && value !== null
+        ? String(value)
+        : "-";
+  }
+}
+
+export default function BatchDetailPage({ batchId }: Props) {
+  const [searchForm, setSearchForm] = useState<SearchForm>({
+    ...initialSearchForm,
+    batch_id: batchId ? String(batchId) : ""
+  });
+
+  const [rows, setRows] = useState<any[]>([]);
+  const [total, setTotal] = useState(0);
+  const [loading, setLoading] = useState(false);
+
+  const [page, setPage] = useState(1);
+  const pageSize = 10;
+
+  const loadData = async (targetPage = page, currentSearch = searchForm) => {
+    setLoading(true);
+    try {
+      const res = await testopsApi.getBatchDetails({
+        batch_detail_id: currentSearch.batch_detail_id
+          ? Number(currentSearch.batch_detail_id)
+          : undefined,
+        batch_id: currentSearch.batch_id ? Number(currentSearch.batch_id) : undefined,
+        cfg_id: currentSearch.cfg_id ? Number(currentSearch.cfg_id) : undefined,
+        status: currentSearch.status !== "" ? Number(currentSearch.status) : undefined,
+        task_status:
+          currentSearch.task_status !== "" ? Number(currentSearch.task_status) : undefined,
+        create_date_from: currentSearch.create_date_from || undefined,
+        create_date_to: currentSearch.create_date_to || undefined,
+        page: targetPage,
+        page_size: pageSize
+      });
+
+      setRows(res.data?.data || []);
+      setTotal(res.data?.total || 0);
+    } catch (e: any) {
+      console.error("Load batch details error:", e);
+      alert(e?.response?.data?.detail || "Failed to load data");
+    } finally {
+      setLoading(false);
+    }
+  };
+
+
+const [initDone, setInitDone] = useState(false);
+
+
+useEffect(() => {
+    if (batchId && !initDone) {
+      const nextSearch = {
+        ...initialSearchForm,
+        batch_id: String(batchId)
+      };
+
+      setSearchForm(nextSearch);
+      setPage(1);
+      loadData(1, nextSearch);
+
+      setInitDone(true); // 只执行一次
+    }
+  }, [batchId, initDone]);
+
+  const handleSearch = async () => {
+    setPage(1);
+    await loadData(1, searchForm);
+  };
+
+  const handleClear = async () => {
+    setInitDone(true); // 防止写回
+
+    const nextSearch = {
+      ...initialSearchForm
+    };
+
+    setSearchForm(nextSearch);
+    setPage(1);
+    await loadData(1, nextSearch);
+  };
+
+  return (
+    <div className="page-container">
+      <div className="page-title">Execution Detail</div>
+
+      <div className="search-card">
+        <div className="search-card-title">Search Condition</div>
+
+        <div className="search-grid">
+          <div className="field">
+            <label>Batch Detail ID</label>
+            <input
+              value={searchForm.batch_detail_id}
+              onChange={(e) =>
+                setSearchForm({ ...searchForm, batch_detail_id: e.target.value })
+              }
+              placeholder="Enter batch detail id"
+            />
+          </div>
+
+          <div className="field">
+            <label>Batch ID</label>
+            <input
+              value={searchForm.batch_id}
+              onChange={(e) =>
+                setSearchForm({ ...searchForm, batch_id: e.target.value })
+              }
+              placeholder="Enter batch id"
+            />
+          </div>
+
+          <div className="field">
+            <label>CFG ID</label>
+            <input
+              value={searchForm.cfg_id}
+              onChange={(e) =>
+                setSearchForm({ ...searchForm, cfg_id: e.target.value })
+              }
+              placeholder="Enter cfg id"
+            />
+          </div>
+
+          <div className="field">
+            <label>Status</label>
+            <select
+              value={searchForm.status}
+              onChange={(e) =>
+                setSearchForm({ ...searchForm, status: e.target.value })
+              }
+            >
+              <option value="">All</option>
+              <option value="1">Processing</option>
+              <option value="2">Success</option>
+              <option value="3">UiPath Failed</option>
+              <option value="4">Verifying</option>
+              <option value="5">Verify Success</option>
+              <option value="6">Verify Failed</option>
+              <option value="7">Verify Triggered</option>
+              <option value="8">UiPath Submitted</option>
+              <option value="9">Ordering</option>
+              <option value="10">Order Success</option>
+              <option value="11">Order Failed</option>
+              <option value="12">Order Triggered</option>
+              <option value="13">No Order Needed</option>
+              <option value="14">No Verify Needed</option>
+            </select>
+          </div>
+
+          <div className="field">
+            <label>Task Status</label>
+            <select
+              value={searchForm.task_status}
+              onChange={(e) =>
+                setSearchForm({ ...searchForm, task_status: e.target.value })
+              }
+            >
+                <option value="">All</option>
+
+                <option value="0">Order Not Completed</option>
+                <option value="1">Order Completed</option>
+                <option value="2">Finished</option>
+            </select>
+          </div>
+
+          <div className="field">
+            <label>Create Date From</label>
+            <input
+              type="datetime-local"
+              value={searchForm.create_date_from}
+              onChange={(e) =>
+                setSearchForm({ ...searchForm, create_date_from: e.target.value })
+              }
+            />
+          </div>
+
+          <div className="field">
+            <label>Create Date To</label>
+            <input
+              type="datetime-local"
+              value={searchForm.create_date_to}
+              onChange={(e) =>
+                setSearchForm({ ...searchForm, create_date_to: e.target.value })
+              }
+            />
+          </div>
+        </div>
+
+        <div className="search-actions">
+          <button className="btn btn-secondary" onClick={handleClear}>
+            Clear
+          </button>
+          <button className="btn btn-primary" onClick={handleSearch}>
+            Search
+          </button>
+        </div>
+      </div>
+
+      <div className="table-card">
+        <div className="table-header">
+          <div>Detail List</div>
+          <div>Total {total}</div>
+        </div>
+
+        {loading ? (
+          <div className="loading-box">Loading...</div>
+        ) : (
+          <table className="case-table">
+            <thead>
+              <tr>
+                <th>Batch Detail ID</th>
+                <th>Batch ID</th>
+                <th>CFG ID</th>
+                <th>UiPath Case Exe ID</th>
+                <th>Order Case Exe ID</th>
+                <th>Verify Case Exe ID</th>
+                <th>Status</th>
+                <th>Task Status</th>
+                <th>Create Date</th>
+                <th>Finish Date</th>
+              </tr>
+            </thead>
+
+            <tbody>
+              {rows.map((row) => (
+                <tr key={row.batch_detail_id}>
+                  <td>{row.batch_detail_id}</td>
+                  <td>{row.batch_id ?? "-"}</td>
+                  <td>{row.cfg_id ?? "-"}</td>
+                  <td>{row.uipath_case_exe_id ?? "-"}</td>
+                  <td>{row.order_case_exe_id ?? "-"}</td>
+                  <td>{row.verify_case_exe_id ?? "-"}</td>
+                  <td>{getStatusText(row.status)}</td>
+                  <td>{getTaskStatusText(row.task_status)}</td>
+                  <td>{row.create_date || "-"}</td>
+                  <td>{row.finish_date || "-"}</td>
+                </tr>
+              ))}
+
+              {rows.length === 0 && (
+                <tr>
+                  <td colSpan={10} className="empty-row">
+                    No Data
+                  </td>
+                </tr>
+              )}
+            </tbody>
+          </table>
+        )}
+
+        <div className="pagination-bar">
+          <button
+            onClick={() => setPage(page - 1)}
+            disabled={page === 1}
+          >
+            Prev
+          </button>
+
+          <span>
+            Page {page} / {Math.ceil(total / pageSize) || 1}
+          </span>
+
+          <button
+            onClick={() => setPage(page + 1)}
+            disabled={page >= Math.ceil(total / pageSize)}
+          >
+            Next
+          </button>
+        </div>
+      </div>
+    </div>
+  );
+}
+
+===== src\pages\CaseConfigPage.tsx =====
+import React, { useEffect, useState } from "react";
+import { testopsApi } from "../api/testops";
+import JsonEditor from "../components/JsonEditor";
+
+const initialForm = {
+  case_name: "",
+  template_id: 0,
+  verify_template_id: 0,
+  environment: "stage3",
+  machine: "",
+  tenant_id: "21",
+  uipath_entry: "",
+
+  test_data: {},
+  order_test_data: {},
+  verify_test_data: {}
+};
+
+export default function CaseConfigPage() {
+  const [templates, setTemplates] = useState<any[]>([]);
+  const [cases, setCases] = useState<any[]>([]);
+  const [form, setForm] = useState(initialForm);
+
+  useEffect(() => {
+    loadTemplates();
+    loadCases();
+  }, []);
+
+  const loadTemplates = async () => {
+    const res = await testopsApi.getTemplates();
+
+    console.log("模板接口返回：", res.data);
+
+    // 兼容不同后端结构
+    const list = Array.isArray(res.data)
+      ? res.data
+      : res.data?.data || res.data?.templates || [];
+
+    setTemplates(list);
+  };
+
+  const loadCases = async () => {
+    const res = await testopsApi.getCases();
+
+    const list = Array.isArray(res.data)
+      ? res.data
+      : res.data?.data || res.data?.cases || [];
+
+    setCases(list);
+  };
+
+  const createCase = async () => {
+    try {
+      await testopsApi.createCase(form);
+      alert("创建成功 ✅");
+      setForm(initialForm);
+      loadCases();
+    } catch (e) {
+      alert("创建失败 ❌");
+      console.error(e);
+    }
+  };
+
+  return (
+    <div style={{ padding: 20 }}>
+      <h2>Case配置</h2>
+
+      {/* 基础信息 */}
+      <div>
+        <input
+          placeholder="Case Name"
+          value={form.case_name}
+          onChange={(e) =>
+            setForm({ ...form, case_name: e.target.value })
+          }
+        />
+      </div>
+
+      <br />
+
+      {/* 模板选择 */}
+      <div>
+        <label>执行模板：</label>
+        <select
+          value={form.template_id}
+          onChange={(e) =>
+            setForm({ ...form, template_id: Number(e.target.value) })
+          }
+        >
+          <option value={0}>请选择模板</option>
+          {templates.map((t) => (
+            <option key={t.template_id} value={t.template_id}>
+              {t.template_name}
+            </option>
+          ))}
+        </select>
+      </div>
+
+      <br />
+
+      <div>
+        <label>校验模板：</label>
+        <select
+          value={form.verify_template_id}
+          onChange={(e) =>
+            setForm({
+              ...form,
+              verify_template_id: Number(e.target.value)
+            })
+          }
+        >
+          <option value={0}>请选择校验模板</option>
+          {templates.map((t) => (
+            <option key={t.template_id} value={t.template_id}>
+              {t.template_name}
+            </option>
+          ))}
+        </select>
+      </div>
+
+      <br />
+
+      {/* 环境信息 */}
+      <div>
+        <input
+          placeholder="Environment (stage3)"
+          value={form.environment}
+          onChange={(e) =>
+            setForm({ ...form, environment: e.target.value })
+          }
+        />
+      </div>
+
+      <br />
+
+      <div>
+        <input
+          placeholder="Machine"
+          value={form.machine}
+          onChange={(e) =>
+            setForm({ ...form, machine: e.target.value })
+          }
+        />
+      </div>
+
+      <br />
+
+      <div>
+        <input
+          placeholder="UiPath Entry"
+          value={form.uipath_entry}
+          onChange={(e) =>
+            setForm({ ...form, uipath_entry: e.target.value })
+          }
+        />
+      </div>
+
+      <br />
+
+      {/* JSON 参数 */}
+      <h3>Test Data</h3>
+      <JsonEditor
+        value={form.test_data}
+        onChange={(val: any) =>
+          setForm({ ...form, test_data: val })
+        }
+      />
+
+      <h3>Order Test Data</h3>
+      <JsonEditor
+        value={form.order_test_data}
+        onChange={(val: any) =>
+          setForm({ ...form, order_test_data: val })
+        }
+      />
+
+      <h3>Verify Test Data</h3>
+      <JsonEditor
+        value={form.verify_test_data}
+        onChange={(val: any) =>
+          setForm({ ...form, verify_test_data: val })
+        }
+      />
+
+      <br />
+
+      <button onClick={createCase}>🚀 创建Case</button>
+
+      <hr />
+
+      <h3>Case列表</h3>
+      {cases.map((c) => (
+        <div key={c.cfg_id}>
+          {c.case_name} - {c.cfg_id}
+        </div>
+      ))}
+    </div>
+  );
+}
+
+===== src\pages\CaseExecutionListPage.tsx =====
+import { useEffect, useState } from "react";
+import { testopsApi } from "../api/testops";
+import { getCaseExecutionStateText } from "../utils/status";
+
+export default function CaseExecutionListPage({ onView }: any) {
+  const initialSearchForm = {
+    test_case_exe_id: "",
+    cfg_id: "",
+    test_case_name: "",
+    execution_machine: "",
+    state: ""
+  };
+
+  const [searchForm, setSearchForm] = useState(initialSearchForm);
+  const [rows, setRows] = useState<any[]>([]);
+  const [total, setTotal] = useState(0);
+  const [loading, setLoading] = useState(false);
+
+  const [page, setPage] = useState(1);
+  const pageSize = 10;
+
+  const buildParams = (form = searchForm) => {
+    const params: any = {};
+
+    if (form.test_case_exe_id)
+      params.test_case_exe_id = Number(form.test_case_exe_id);
+
+    if (form.cfg_id)
+      params.cfg_id = Number(form.cfg_id);
+
+    if (form.test_case_name)
+      params.test_case_name = form.test_case_name;
+
+    if (form.execution_machine)
+      params.execution_machine = form.execution_machine;
+
+    if (form.state)
+      params.state = Number(form.state);
+
+    return params;
+  };
+
+  const loadData = async (targetPage = page, form = searchForm) => {
+    setLoading(true);
+    try {
+      const res = await testopsApi.getCaseExecutions({
+        ...buildParams(form),
+        page: targetPage,
+        page_size: pageSize
+      });
+
+      setRows(res.data?.data || []);
+      setTotal(res.data?.total || 0);
+    } catch (e: any) {
+      console.error("Load case executions error:", e);
+    } finally {
+      setLoading(false);
+    }
+  };
+
+  useEffect(() => {
+    loadData(page);
+  }, [page]);
+
+  const handleSearch = async () => {
+    setPage(1);
+    await loadData(1, searchForm);
+  };
+
+  const handleClear = async () => {
+    setSearchForm(initialSearchForm);
+    setPage(1);
+    await loadData(1, initialSearchForm);
+  };
+
+  const formatTime = (t: string) => {
+    if (!t) return "-";
+    return t.replace("T", " ").slice(0, 19);
+  };
+
+  const getStateColor = (value: number) => {
+    if ([2, 5, 10].includes(value)) return "#16a34a";
+    if ([3, 6, 11].includes(value)) return "#dc2626";
+    if ([1, 4, 9].includes(value)) return "#f59e0b";
+    return "#6b7280";
+  };
+
+  return (
+    <div className="page-container">
+      <div className="page-title">Case Execution</div>
+
+      {/* 🔍 查询 */}
+      <div className="search-card">
+        <div className="search-card-title">Search Condition</div>
+
+        <div className="search-grid">
+          <div className="field">
+            <label>Case Exe ID</label>
+            <input
+              value={searchForm.test_case_exe_id}
+              onChange={(e) =>
+                setSearchForm({ ...searchForm, test_case_exe_id: e.target.value })
+              }
+              placeholder="Enter case exe id"
+            />
+          </div>
+
+          <div className="field">
+            <label>CFG ID</label>
+            <input
+              value={searchForm.cfg_id}
+              onChange={(e) =>
+                setSearchForm({ ...searchForm, cfg_id: e.target.value })
+              }
+              placeholder="Enter cfg id"
+            />
+          </div>
+
+          <div className="field">
+            <label>Case Name</label>
+            <input
+              value={searchForm.test_case_name}
+              onChange={(e) =>
+                setSearchForm({ ...searchForm, test_case_name: e.target.value })
+              }
+              placeholder="Enter case name"
+            />
+          </div>
+
+          <div className="field">
+            <label>Execution Machine</label>
+            <input
+              value={searchForm.execution_machine}
+              onChange={(e) =>
+                setSearchForm({
+                  ...searchForm,
+                  execution_machine: e.target.value
+                })
+              }
+              placeholder="Enter execution machine"
+            />
+          </div>
+
+          <div className="field">
+            <label>State</label>
+            <select
+              value={searchForm.state}
+              onChange={(e) =>
+                setSearchForm({ ...searchForm, state: e.target.value })
+              }
+            >
+              <option value="">All</option>
+              <option value="1">Running</option>
+              <option value="2">Case Success</option>
+              <option value="3">Case Failed</option>
+              <option value="4">Verifying</option>
+              <option value="5">Verify Success</option>
+              <option value="6">Verify Failed</option>
+              <option value="7">Triggered Verify</option>
+              <option value="8">UiPath Submit Success</option>
+              <option value="9">Order Processing</option>
+              <option value="10">Order Success</option>
+              <option value="11">Order Failed</option>
+              <option value="12">Triggered Order</option>
+              <option value="13">No Order Needed</option>
+              <option value="14">No Verify Needed</option>
+            </select>
+          </div>
+        </div>
+
+        <div className="search-actions">
+          <button className="btn btn-secondary" onClick={handleClear}>
+            Clear
+          </button>
+          <button className="btn btn-primary" onClick={handleSearch}>
+            Search
+          </button>
+        </div>
+      </div>
+
+      {/* 📊 表格 */}
+      <div className="table-card">
+        <div className="table-header">
+          <div>Case Execution List</div>
+          <div>Total {total}</div>
+        </div>
+
+        {loading ? (
+          <div className="loading-box">Loading...</div>
+        ) : (
+          <table className="case-table">
+            <thead>
+              <tr>
+                <th>ID</th>
+                <th>Name</th>
+                <th>CFG</th>
+                <th>Machine</th>
+                <th>State</th>
+                <th>Create Date</th>
+                <th>Finish Date</th>
+                <th>Action</th>
+              </tr>
+            </thead>
+
+            <tbody>
+              {rows.map((item) => (
+                <tr key={item.TEST_CASE_EXE_ID}>
+                  <td>{item.TEST_CASE_EXE_ID}</td>
+                  <td>{item.TEST_CASE_NAME}</td>
+                  <td>{item.CFG_ID}</td>
+                  <td>{item.EXECUTION_MACHINE}</td>
+
+                  <td style={{ color: getStateColor(item.STATE) }}>
+                    {getCaseExecutionStateText(item.STATE)}
+                  </td>
+
+                  <td>{formatTime(item.CREATE_DATE)}</td>
+                  <td>{formatTime(item.FINISH_DATE)}</td>
+
+                  <td>
+                    <div className="action-buttons">
+                      <button
+                        className="btn btn-link"
+                        onClick={() => onView(item.TEST_CASE_EXE_ID)}
+                      >
+                        View Detail
+                      </button>
+                    </div>
+                  </td>
+                </tr>
+              ))}
+
+              {rows.length === 0 && (
+                <tr>
+                  <td colSpan={8} className="empty-row">
+                    No Data
+                  </td>
+                </tr>
+              )}
+            </tbody>
+          </table>
+        )}
+
+        <div className="pagination-bar">
+          <button onClick={() => setPage(page - 1)} disabled={page === 1}>
+            Prev
+          </button>
+
+          <span>
+            Page {page} / {Math.ceil(total / pageSize)}
+          </span>
+
+          <button
+            onClick={() => setPage(page + 1)}
+            disabled={page >= Math.ceil(total / pageSize)}
+          >
+            Next
+          </button>
+        </div>
+      </div>
+    </div>
+  );
+}
+
+===== src\pages\CaseFormPage.tsx =====
+import { useEffect, useState } from "react";
+import { testopsApi } from "../api/testops";
+
+type Props = {
+  mode: "create" | "edit";
+  cfgId: number | null;
+  onBack: () => void;
+  onSaved: () => void;
+};
+
+type FormDataType = {
+  case_name: string;
+  template_id: number | "";
+  verify_template_id: number | "";
+  verify_template_name: string;
+  trigger_mode: number;
+  cron_expression: string;
+  task_status: number;
+  environment: string;
+  machine: string;
+  tenant_id: string;
+  state: number;
+  inst_id: string;
+  uipath_case_name: string;
+  uipath_entry: string;
+  case_id: string;
+  test_data_text: string;
+};
+
+const defaultJsonTemplate = `{
+  "login": {
+    "userName": "",
+    "password": ""
+  },
+  "menu": {},
+  "order": {}
+}`;
+
+const initialForm: FormDataType = {
+  case_name: "",
+  template_id: "",
+  verify_template_id: "",
+  verify_template_name: "",
+  trigger_mode: 2,
+  cron_expression: "0 0 0 * * ?",
+  task_status: 1,
+  environment: "T0",
+  machine: "",
+  tenant_id: "21",
+  state: 1,
+  inst_id: "",
+  uipath_case_name: "",
+  uipath_entry: "",
+  case_id: "",
+  test_data_text: defaultJsonTemplate
+};
+
+export default function CaseFormPage({ mode, cfgId, onBack, onSaved }: Props) {
+  const [form, setForm] = useState<FormDataType>(initialForm);
+  const [templates, setTemplates] = useState<any[]>([]);
+  const [loading, setLoading] = useState(false);
+
+  const pageTitle = mode === "create" ? "Create Case" : `Edit Case - ${cfgId}`;
+
+  const loadTemplates = async () => {
+   const res = await testopsApi.getTemplates();
+   let list = Array.isArray(res.data) ? res.data : res.data?.data || [];
+
+   // ⭐ 按 template_id 数字排序
+   list = list.sort((a, b) => Number(a.template_id) - Number(b.template_id));
+
+   setTemplates(list);
+  };
+
+  const loadCaseDetail = async (id: number) => {
+    const res = await testopsApi.getCaseDetail(id);
+    const d = res.data;
+
+    setForm({
+      case_name: d.case_name || "",
+      template_id: d.template_id ?? "",
+      verify_template_id: d.verify_template_id ?? "",
+      verify_template_name: d.verify_template_name || "",
+      trigger_mode: d.trigger_mode ?? 2,
+      cron_expression: d.cron_expression || "",
+      task_status: d.task_status ?? 1,
+      environment: d.environment || "",
+      machine: d.machine || "",
+      tenant_id: d.tenant_id || "21",
+      state: d.state ?? 1,
+      inst_id: d.inst_id || "",
+      uipath_case_name: d.uipath_case_name || "",
+      uipath_entry: d.uipath_entry || "",
+      case_id: d.case_id || "",
+      test_data_text: JSON.stringify(d.test_data || {}, null, 2)
+    });
+  };
+
+  useEffect(() => {
+    loadTemplates();
+
+    if (mode === "edit" && cfgId !== null) {
+      loadCaseDetail(cfgId);
+    }
+  }, [mode, cfgId]);
+
+  const handleLoadDefaultJson = () => {
+    setForm({ ...form, test_data_text: defaultJsonTemplate });
+  };
+
+  const handleSubmit = async () => {
+    let parsedJson = {};
+
+    try {
+      parsedJson = form.test_data_text.trim()
+        ? JSON.parse(form.test_data_text)
+        : {};
+    } catch {
+      alert("UiPath JSON 格式错误，请先修正");
+      return;
+    }
+
+    const verifyTemplate = templates.find(
+      (t) => Number(t.template_id) === Number(form.verify_template_id)
+    );
+
+    const payload = {
+      case_name: form.case_name,
+      template_id: form.template_id === "" ? 0 : Number(form.template_id),
+      verify_template_id: form.verify_template_id === "" ? 0 : Number(form.verify_template_id),
+      verify_template_name: verifyTemplate?.template_name || form.verify_template_name || "",
+      trigger_mode: Number(form.trigger_mode),
+      cron_expression: form.cron_expression,
+      task_status: Number(form.task_status),
+      environment: form.environment,
+      machine: form.machine,
+      tenant_id: form.tenant_id,
+      state: Number(form.state),
+      inst_id: form.inst_id,
+      uipath_case_name: form.uipath_case_name,
+      uipath_entry: form.uipath_entry,
+      case_id: form.case_id,
+      test_data: parsedJson
+    };
+
+    setLoading(true);
+    try {
+      if (mode === "create") {
+        await testopsApi.createCase(payload);
+        alert("创建成功");
+      } else if (cfgId !== null) {
+        await testopsApi.updateCase(cfgId, payload);
+        alert("更新成功");
+      }
+      onSaved();
+    } catch (e: any) {
+      alert(e?.response?.data?.detail || "保存失败");
+    } finally {
+      setLoading(false);
+    }
+  };
+
+  return (
+    <div className="page-container">
+      <div className="form-header">
+        <div className="page-title">{pageTitle}</div>
+        <div className="form-header-actions">
+          <button className="btn btn-secondary" onClick={onBack}>Back</button>
+          <button className="btn btn-primary" onClick={handleSubmit} disabled={loading}>
+            {loading ? "Saving..." : "Save"}
+          </button>
+        </div>
+      </div>
+
+      <div className="form-card">
+        <div className="section-title">Basic Information</div>
+
+        <div className="form-grid">
+          <div className="field">
+            <label>Case Name</label>
+            <input
+              value={form.case_name}
+              onChange={(e) => setForm({ ...form, case_name: e.target.value })}
+            />
+          </div>
+
+          <div className="field">
+            <label>Environment</label>
+            <input
+              value={form.environment}
+              onChange={(e) => setForm({ ...form, environment: e.target.value })}
+            />
+          </div>
+
+          <div className="field">
+            <label>Machine</label>
+            <input
+              value={form.machine}
+              onChange={(e) => setForm({ ...form, machine: e.target.value })}
+            />
+          </div>
+
+          <div className="field">
+            <label>Tenant ID</label>
+            <input
+              value={form.tenant_id}
+              onChange={(e) => setForm({ ...form, tenant_id: e.target.value })}
+            />
+          </div>
+
+          <div className="field">
+            <label>TEST_INST_ID</label>
+            <input
+              value={form.inst_id}
+              onChange={(e) => setForm({ ...form, inst_id: e.target.value })}
+            />
+          </div>
+
+          <div className="field">
+            <label>UiPath Entry</label>
+            <input
+              value={form.uipath_entry}
+              onChange={(e) => setForm({ ...form, uipath_entry: e.target.value })}
+            />
+          </div>
+
+          <div className="field">
+            <label>UiPath Case Name</label>
+            <input
+              value={form.uipath_case_name}
+              onChange={(e) => setForm({ ...form, uipath_case_name: e.target.value })}
+            />
+          </div>
+
+          <div className="field">
+            <label>Case ID</label>
+            <input
+              value={form.case_id}
+              onChange={(e) => setForm({ ...form, case_id: e.target.value })}
+            />
+          </div>
+
+          <div className="field">
+            <label>Trigger Mode</label>
+            <input
+              type="number"
+              value={form.trigger_mode}
+              onChange={(e) => setForm({ ...form, trigger_mode: Number(e.target.value) })}
+            />
+          </div>
+
+          <div className="field">
+            <label>Cron Expression</label>
+            <input
+              value={form.cron_expression}
+              onChange={(e) => setForm({ ...form, cron_expression: e.target.value })}
+            />
+          </div>
+
+          <div className="field">
+            <label>Task Status</label>
+            <input
+              type="number"
+              value={form.task_status}
+              onChange={(e) => setForm({ ...form, task_status: Number(e.target.value) })}
+            />
+          </div>
+
+          <div className="field">
+            <label>State</label>
+            <input
+              type="number"
+              value={form.state}
+              onChange={(e) => setForm({ ...form, state: Number(e.target.value) })}
+            />
+          </div>
+        </div>
+      </div>
+
+      <div className="form-card">
+        <div className="section-title">Template Configuration</div>
+
+        <div className="form-grid">
+          <div className="field">
+            <label>Order Template</label>
+            <select
+              value={form.template_id}
+              onChange={(e) => setForm({ ...form, template_id: e.target.value === "" ? "" : Number(e.target.value) })}
+            >
+              <option value="">不需要订单处理</option>
+              {templates.map((t) => (
+                <option key={t.template_id} value={t.template_id}>
+                  {t.template_id} - {t.template_name}
+                </option>
+              ))}
+            </select>
+          </div>
+
+          <div className="field">
+            <label>Verify Template</label>
+            <select
+              value={form.verify_template_id}
+              onChange={(e) => setForm({ ...form, verify_template_id: e.target.value === "" ? "" : Number(e.target.value) })}
+            >
+              <option value="">不需要数据校验</option>
+              {templates.map((t) => (
+                <option key={t.template_id} value={t.template_id}>
+                  {t.template_id} - {t.template_name}
+                </option>
+              ))}
+            </select>
+          </div>
+        </div>
+
+        <div className="tips-box">
+          <div>生成规则：</div>
+          <div>1. UiPath 数据永远生成 1 条</div>
+          <div>2. 选择了 Order Template，则再生成 1 条 Order 数据</div>
+          <div>3. 选择了 Verify Template，则再生成 1 条 Verify 数据</div>
+        </div>
+      </div>
+
+      <div className="form-card">
+        <div className="section-title">UiPath Test Data</div>
+
+        <div className="json-actions">
+          <button className="btn btn-secondary" onClick={handleLoadDefaultJson}>
+            Load Default JSON Template
+          </button>
+        </div>
+
+        <textarea
+          className="json-editor"
+          value={form.test_data_text}
+          onChange={(e) => setForm({ ...form, test_data_text: e.target.value })}
+        />
+      </div>
+    </div>
+  );
+}
+
+===== src\pages\CaseListPage.tsx =====
+import { useEffect, useState } from "react";
+import { testopsApi } from "../api/testops";
+
+type Props = {
+  onAdd: () => void;
+  onEdit: (cfgId: number) => void;
+};
+
+type SearchForm = {
+  cfg_id: string;
+  case_name: string;
+  environment: string;
+  machine: string;
+  template_id: string;
+  verify_template_id: string;
+};
+
+const initialSearchForm: SearchForm = {
+  cfg_id: "",
+  case_name: "",
+  environment: "",
+  machine: "",
+  template_id: "",
+  verify_template_id: ""
+};
+
+export default function CaseListPage({ onAdd, onEdit }: Props) {
+  const [searchForm, setSearchForm] = useState<SearchForm>(initialSearchForm);
+  const [rows, setRows] = useState<any[]>([]);
+  const [total, setTotal] = useState(0);
+  const [page, setPage] = useState(1);
+  const pageSize = 10;
+
+
+
+
+  const [templates, setTemplates] = useState<any[]>([]);
+  const [loading, setLoading] = useState(false);
+
+
+  const loadTemplates = async () => {
+    const res = await testopsApi.getTemplates();
+    let list = Array.isArray(res.data) ? res.data : res.data?.data || [];
+
+    list = list.sort((a, b) => Number(a.template_id) - Number(b.template_id));
+
+    setTemplates(list);
+  };
+
+  const loadCases = async () => {
+    const res = await testopsApi.getCases({
+    case_name: searchForm.case_name || undefined,
+    cfg_id: searchForm.cfg_id || undefined,
+    environment: searchForm.environment || undefined,
+    machine: searchForm.machine || undefined,
+    template_id: searchForm.template_id ? Number(searchForm.template_id) : undefined,
+    verify_template_id: searchForm.verify_template_id ? Number(searchForm.verify_template_id) : undefined,
+
+    page,
+    page_size: pageSize
+    });
+
+  setRows(res.data.data || []);
+  setTotal(res.data.total || 0);
+    };
+
+  useEffect(() => {
+    loadTemplates();
+    }, []);
+
+  useEffect(() => {
+    loadCases();
+    }, [page]);
+
+  const handleSearch = async () => {
+    setPage(1);   // ⭐关键
+    await loadCases();
+  };
+
+  const handleClear = async () => {
+    setSearchForm(initialSearchForm);
+    await loadCases();
+  };
+
+  const handleDelete = async (cfgId: number) => {
+    const ok = window.confirm(`确认删除 cfg_id=${cfgId} 吗？`);
+    if (!ok) return;
+
+    try {
+      await testopsApi.deleteCase(cfgId);
+      alert("删除成功");
+      await handleSearch();
+    } catch (e: any) {
+      alert(e?.response?.data?.detail || "删除失败");
+    }
+  };
+
+  return (
+    <div className="page-container">
+      <div className="page-title">Case Management</div>
+
+      <div className="search-card">
+        <div className="search-card-title">Search Condition</div>
+
+        <div className="search-grid">
+          <div className="field">
+            <label>CFG_ID</label>
+            <input
+                value={searchForm.cfg_id}
+                onChange={(e) =>
+                setSearchForm({ ...searchForm, cfg_id: e.target.value })
+                }
+                placeholder="请输入 cfg_id"
+            />
+          </div>
+          <div className="field">
+            <label>Case Name</label>
+            <input
+              value={searchForm.case_name}
+              onChange={(e) => setSearchForm({ ...searchForm, case_name: e.target.value })}
+              placeholder="请输入 Case Name"
+            />
+          </div>
+
+          <div className="field">
+            <label>Environment</label>
+            <input
+              value={searchForm.environment}
+              onChange={(e) => setSearchForm({ ...searchForm, environment: e.target.value })}
+              placeholder="例如 stage3 / T0"
+            />
+          </div>
+
+          <div className="field">
+            <label>Machine</label>
+            <input
+              value={searchForm.machine}
+              onChange={(e) => setSearchForm({ ...searchForm, machine: e.target.value })}
+              placeholder="例如 10.1.248.31"
+            />
+          </div>
+
+          <div className="field">
+            <label>Order Template</label>
+            <select
+              value={searchForm.template_id}
+              onChange={(e) => setSearchForm({ ...searchForm, template_id: e.target.value })}
+            >
+              <option value="">全部</option>
+              {templates.map((t) => (
+                <option key={t.template_id} value={t.template_id}>
+                  {t.template_id} - {t.template_name}
+                </option>
+              ))}
+            </select>
+          </div>
+
+          <div className="field">
+            <label>Verify Template</label>
+            <select
+              value={searchForm.verify_template_id}
+              onChange={(e) => setSearchForm({ ...searchForm, verify_template_id: e.target.value })}
+            >
+              <option value="">全部</option>
+              {templates.map((t) => (
+                <option key={t.template_id} value={t.template_id}>
+                  {t.template_id} - {t.template_name}
+                </option>
+              ))}
+            </select>
+          </div>
+        </div>
+
+        <div className="search-actions">
+          <button className="btn btn-secondary" onClick={handleClear}>Clear</button>
+          <button className="btn btn-primary" onClick={handleSearch}>Search</button>
+          <button className="btn btn-success" onClick={onAdd}>Add Case</button>
+        </div>
+      </div>
+
+      <div className="table-card">
+        <div className="table-header">
+          <div>Case List</div>
+          <div>Total {rows.length}</div>
+        </div>
+
+        {loading ? (
+          <div className="loading-box">Loading...</div>
+        ) : (
+        <>
+          <table className="case-table">
+            <thead>
+              <tr>
+                <th>CFG_ID</th>
+                <th>Case Name</th>
+                <th>Order Template</th>
+                <th>Verify Template</th>
+                <th>Environment</th>
+                <th>Machine</th>
+                <th>UiPath Entry</th>
+                <th>Task Status</th>
+                <th>Create Date</th>
+                <th>Action</th>
+              </tr>
+            </thead>
+
+            <tbody>
+              {rows.map((row) => (
+                <tr key={row.cfg_id}>
+                  <td>{row.cfg_id}</td>
+                  <td>{row.case_name}</td>
+                  <td>{row.template_id ?? "-"}</td>
+                  <td>{row.verify_template_id ?? "-"}</td>
+                  <td>{row.environment || "-"}</td>
+                  <td>{row.machine || "-"}</td>
+                  <td>{row.uipath_entry ?? "-"}</td>
+                  <td>{row.task_status ?? "-"}</td>
+                  <td>{row.create_date || "-"}</td>
+                  <td>
+                    <div className="action-buttons">
+                      <button className="btn btn-link" onClick={() => onEdit(row.cfg_id)}>Edit</button>
+                      <button className="btn btn-link danger" onClick={() => handleDelete(row.cfg_id)}>Delete</button>
+                    </div>
+                  </td>
+                </tr>
+              ))}
+
+              {rows.length === 0 && (
+                <tr>
+                  <td colSpan={10} className="empty-row">
+                    No Data
+                  </td>
+                </tr>
+              )}
+            </tbody>
+          </table>
+          <div style={{ marginTop: "16px", textAlign: "center" }}>
+            <button
+                onClick={() => setPage(page - 1)}
+                disabled={page === 1}
+                style={{ marginRight: "10px" }}
+            >
+                Prev
+            </button>
+
+            <span>
+                Page {page} / {Math.ceil(total / pageSize)}
+            </span>
+
+            <button
+                onClick={() => setPage(page + 1)}
+                disabled={page >= Math.ceil(total / pageSize)}
+                style={{ marginLeft: "10px" }}
+            >
+                Next
+            </button>
+        </div>
+        </>
+          
+        )}
+      </div>
+    </div>
+  );
+}
+
+===== src\pages\ComponentExecutionListPage.tsx =====
+import { useEffect, useState } from "react";
+import { testopsApi } from "../api/testops";
+import { getComponentExecutionStateColor, getComponentExecutionStateText } from "../utils/status";
+
+type Props = {
+  caseExeId?: number;   // ⭐ 从 Case Execution 跳转
+};
+
+export default function ComponentExecutionListPage({ caseExeId }: Props) {
+
+  const initialSearch = {
+    test_case_exe_id: caseExeId ? String(caseExeId) : "",
+    test_component_id: "",
+    test_component_name: "",
+    state: ""
+  };
+
+  const [searchForm, setSearchForm] = useState(initialSearch);
+
+  const [rows, setRows] = useState<any[]>([]);
+  const [total, setTotal] = useState(0);
+  const [loading, setLoading] = useState(false);
+
+  const [page, setPage] = useState(1);
+  const pageSize = 10;
+
+  const buildParams = () => {
+    const p: any = {};
+
+    if (searchForm.test_case_exe_id)
+      p.test_case_exe_id = Number(searchForm.test_case_exe_id);
+
+    if (searchForm.test_component_id)
+      p.test_component_id = Number(searchForm.test_component_id);
+
+    if (searchForm.test_component_name)
+      p.test_component_name = searchForm.test_component_name;
+
+    if (searchForm.state !== "")
+      p.state = Number(searchForm.state);
+
+    return p;
+  };
+
+  const loadData = async (targetPage = page, currentSearch = searchForm) => {
+    setLoading(true);
+    try {
+      const res = await testopsApi.getComponentExecutions({
+        ...buildParams(),
+        page: targetPage,
+        page_size: pageSize
+      });
+
+      setRows(res.data?.data || []);
+      setTotal(res.data?.total || 0);
+    } catch (e: any) {
+      console.error(e);
+      alert("Load failed");
+    } finally {
+      setLoading(false);
+    }
+  };
+
+  useEffect(() => {
+    loadData(1);
+  }, []);
+
+  const handleSearch = async () => {
+    setPage(1);
+    await loadData(1);
+  };
+
+  const handleClear = async () => {
+    const reset = {
+      test_case_exe_id: "",
+      test_component_id: "",
+      test_component_name: "",
+      state: ""
+    };
+    setSearchForm(reset);
+    setPage(1);
+    await loadData(1, reset);
+  };
+
+  return (
+    <div className="page-container">
+
+      <div className="page-title">Component Execution</div>
+
+      {/* ===== 搜索 ===== */}
+      <div className="search-card">
+        <div className="search-card-title">Search Condition</div>
+
+        <div className="search-grid">
+
+          <div className="field">
+            <label>Case Exe ID</label>
+            <input
+              value={searchForm.test_case_exe_id}
+              onChange={(e) =>
+                setSearchForm({ ...searchForm, test_case_exe_id: e.target.value })
+              }
+              placeholder="Enter case exe id"
+            />
+          </div>
+
+          <div className="field">
+            <label>Component ID</label>
+            <input
+              value={searchForm.test_component_id}
+              onChange={(e) =>
+                setSearchForm({ ...searchForm, test_component_id: e.target.value })
+              }
+              placeholder="Enter component id"
+            />
+          </div>
+
+          <div className="field">
+            <label>Component Name</label>
+            <input
+              value={searchForm.test_component_name}
+              onChange={(e) =>
+                setSearchForm({ ...searchForm, test_component_name: e.target.value })
+              }
+              placeholder="Enter component name"
+            />
+          </div>
+
+          <div className="field">
+            <label>State</label>
+            <select
+              value={searchForm.state}
+              onChange={(e) =>
+                setSearchForm({ ...searchForm, state: e.target.value })
+              }
+            >
+              <option value="">All</option>
+              <option value="0">Init</option>
+              <option value="2">Success</option>
+              <option value="3">Failed</option>
+            </select>
+          </div>
+
+        </div>
+
+        <div className="search-actions">
+          <button className="btn btn-secondary" onClick={handleClear}>
+            Clear
+          </button>
+          <button className="btn btn-primary" onClick={handleSearch}>
+            Search
+          </button>
+        </div>
+      </div>
+
+      {/* ===== 表格 ===== */}
+      <div className="table-card">
+
+        <div className="table-header">
+          <div>Component Execution List</div>
+          <div>Total {total}</div>
+        </div>
+
+        {loading ? (
+          <div className="loading-box">Loading...</div>
+        ) : (
+          <table className="case-table">
+            <thead>
+              <tr>
+                <th>ID</th>
+                <th>Case Exe ID</th>
+                <th>Component ID</th>
+                <th>Component Name</th>
+                <th>State</th>
+                <th>Create Date</th>
+                <th>Finish Date</th>
+              </tr>
+            </thead>
+
+            <tbody>
+              {rows.map((row) => (
+                <tr key={row.TEST_COMPONENT_EXE_ID}>
+                  <td>{row.TEST_COMPONENT_EXE_ID}</td>
+                  <td>{row.TEST_CASE_EXE_ID}</td>
+                  <td>{row.TEST_COMPONENT_ID}</td>
+                  <td>{row.TEST_COMPONENT_NAME}</td>
+                  <td style={{ color: getComponentExecutionStateColor(row.STATE), fontWeight: 500 }}>
+                    {getComponentExecutionStateText(row.STATE)}
+                  </td>
+                  <td>{row.CREATE_DATE || "-"}</td>
+                  <td>{row.FINISH_DATE || "-"}</td>
+                </tr>
+              ))}
+
+              {rows.length === 0 && (
+                <tr>
+                  <td colSpan={7} className="empty-row">
+                    No Data
+                  </td>
+                </tr>
+              )}
+            </tbody>
+          </table>
+        )}
+
+        {/* 分页 */}
+        <div className="pagination-bar">
+          <button disabled={page === 1} onClick={() => setPage(page - 1)}>
+            Prev
+          </button>
+
+          <span>
+            Page {page} / {Math.ceil(total / pageSize) || 1}
+          </span>
+
+          <button
+            disabled={page >= Math.ceil(total / pageSize)}
+            onClick={() => setPage(page + 1)}
+          >
+            Next
+          </button>
+        </div>
+      </div>
+
+    </div>
+  );
+}
+
+===== src\pages\ComponentFormPage.tsx =====
+import { useEffect, useState } from "react";
+import { testopsApi } from "../api/testops";
+
+const initialForm = {
+  component_name: "",
+  component_type: "",
+  component_file: "",
+  remark: "",
+  tenant_id: "21",
+  state: 1
+};
+
+export default function ComponentFormPage({ mode, componentId, onBack, onSaved }: any) {
+  const [form, setForm] = useState<any>(initialForm);
+  const [loading, setLoading] = useState(false);
+
+  const loadDetail = async () => {
+    if (!componentId) return;
+    const res = await testopsApi.getComponentDetail(componentId);
+    setForm({
+      component_name: res.data.component_name || "",
+      component_type: res.data.component_type || "",
+      component_file: res.data.component_file || "",
+      remark: res.data.remark || "",
+      tenant_id: res.data.tenant_id || "21",
+      state: res.data.state ?? 1
+    });
+  };
+
+  useEffect(() => {
+    if (mode === "edit") loadDetail();
+  }, [mode, componentId]);
+
+  const handleSubmit = async () => {
+    setLoading(true);
+    try {
+      if (mode === "create") {
+        await testopsApi.createComponent(form);
+        alert("创建成功");
+      } else {
+        await testopsApi.updateComponent(componentId, form);
+        alert("更新成功");
+      }
+      onSaved();
+    } catch (e: any) {
+      alert(e?.response?.data?.detail || "保存失败");
+    } finally {
+      setLoading(false);
+    }
+  };
+
+  return (
+    <div className="page-container">
+      <div className="form-header">
+        <div className="page-title">{mode === "create" ? "Create Component" : `Edit Component - ${componentId}`}</div>
+        <div className="form-header-actions">
+          <button className="btn btn-secondary" onClick={onBack}>Back</button>
+          <button className="btn btn-primary" onClick={handleSubmit} disabled={loading}>
+            {loading ? "Saving..." : "Save"}
+          </button>
+        </div>
+      </div>
+
+      <div className="form-card">
+        <div className="form-grid">
+          <div className="field">
+            <label>Component Name</label>
+            <input value={form.component_name} onChange={(e) => setForm({ ...form, component_name: e.target.value })} />
+          </div>
+          <div className="field">
+            <label>Component Type</label>
+            <input value={form.component_type} onChange={(e) => setForm({ ...form, component_type: e.target.value })} />
+          </div>
+          <div className="field">
+            <label>Component File</label>
+            <input value={form.component_file} onChange={(e) => setForm({ ...form, component_file: e.target.value })} />
+          </div>
+          <div className="field">
+            <label>Remark</label>
+            <input value={form.remark} onChange={(e) => setForm({ ...form, remark: e.target.value })} />
+          </div>
+          <div className="field">
+            <label>Tenant ID</label>
+            <input value={form.tenant_id} onChange={(e) => setForm({ ...form, tenant_id: e.target.value })} />
+          </div>
+          <div className="field">
+            <label>State</label>
+            <input type="number" value={form.state} onChange={(e) => setForm({ ...form, state: Number(e.target.value) })} />
+          </div>
+        </div>
+      </div>
+    </div>
+  );
+}
+
+===== src\pages\ComponentListPage.tsx =====
+import { useEffect, useState } from "react";
+import { testopsApi } from "../api/testops";
+
+export default function ComponentListPage({ onAdd, onEdit }: any) {
+  const [searchForm, setSearchForm] = useState({
+    component_id: "",
+    component_name: "",
+    component_type: "",
+    component_file: ""
+  });
+
+  const [rows, setRows] = useState<any[]>([]);
+  const [total, setTotal] = useState(0);
+  const [page, setPage] = useState(1);
+  const pageSize = 10;
+
+  const loadData = async (targetPage = page) => {
+    const res = await testopsApi.getComponents({
+      component_id: searchForm.component_id ? Number(searchForm.component_id) : undefined,
+      component_name: searchForm.component_name || undefined,
+      component_type: searchForm.component_type || undefined,
+      component_file: searchForm.component_file || undefined,
+      page: targetPage,
+      page_size: pageSize
+    });
+
+    setRows(res.data.data || []);
+    setTotal(res.data.total || 0);
+  };
+
+  useEffect(() => {
+    loadData(page);
+  }, [page]);
+
+  const handleSearch = async () => {
+    setPage(1);
+    await loadData(1);
+  };
+
+  const handleClear = async () => {
+    const empty = {
+      component_id: "",
+      component_name: "",
+      component_type: "",
+      component_file: ""
+    };
+    setSearchForm(empty);
+    setPage(1);
+
+    const res = await testopsApi.getComponents({
+      page: 1,
+      page_size: pageSize
+    });
+
+    setRows(res.data.data || []);
+    setTotal(res.data.total || 0);
+  };
+
+  const handleDelete = async (id: number) => {
+    if (!window.confirm(`确认删除组件 ${id} 吗？`)) return;
+    await testopsApi.deleteComponent(id);
+    alert("删除成功");
+    await loadData(page);
+  };
+
+  return (
+    <div className="page-container">
+      <div className="page-title">Component Management</div>
+
+      <div className="search-card">
+        <div className="search-card-title">Search Condition</div>
+
+        <div className="search-grid">
+          <div className="field">
+            <label>Component ID</label>
+            <input
+              value={searchForm.component_id}
+              onChange={(e) => setSearchForm({ ...searchForm, component_id: e.target.value })}
+              placeholder="请输入 component_id"
+            />
+          </div>
+
+          <div className="field">
+            <label>Component Name</label>
+            <input
+              value={searchForm.component_name}
+              onChange={(e) => setSearchForm({ ...searchForm, component_name: e.target.value })}
+              placeholder="请输入 Component Name"
+            />
+          </div>
+
+          <div className="field">
+            <label>Component Type</label>
+            <input
+              value={searchForm.component_type}
+              onChange={(e) => setSearchForm({ ...searchForm, component_type: e.target.value })}
+              placeholder="请输入 Component Type"
+            />
+          </div>
+
+          <div className="field">
+            <label>Component File</label>
+            <input
+              value={searchForm.component_file}
+              onChange={(e) => setSearchForm({ ...searchForm, component_file: e.target.value })}
+              placeholder="请输入 Component File"
+            />
+          </div>
+        </div>
+
+        <div className="search-actions">
+          <button className="btn btn-secondary" onClick={handleClear}>Clear</button>
+          <button className="btn btn-primary" onClick={handleSearch}>Search</button>
+          <button className="btn btn-success" onClick={onAdd}>Add Component</button>
+        </div>
+      </div>
+
+      <div className="table-card">
+        <div className="table-header">
+          <div>Component List</div>
+          <div>Total {total}</div>
+        </div>
+
+        <table className="case-table">
+          <thead>
+            <tr>
+              <th>ID</th>
+              <th>Name</th>
+              <th>Type</th>
+              <th>File</th>
+              <th>Remark</th>
+              <th>State</th>
+              <th>Action</th>
+            </tr>
+          </thead>
+          <tbody>
+            {rows.map((row) => (
+              <tr key={row.component_id}>
+                <td>{row.component_id}</td>
+                <td>{row.component_name}</td>
+                <td>{row.component_type}</td>
+                <td>{row.component_file}</td>
+                <td>{row.remark}</td>
+                <td>{row.state}</td>
+                <td>
+                  <div className="action-buttons">
+                    <button className="btn btn-link" onClick={() => onEdit(row.component_id)}>Edit</button>
+                    <button className="btn btn-link danger" onClick={() => handleDelete(row.component_id)}>Delete</button>
+                  </div>
+                </td>
+              </tr>
+            ))}
+            {rows.length === 0 && (
+              <tr><td colSpan={7} className="empty-row">No Data</td></tr>
+            )}
+          </tbody>
+        </table>
+
+        <div className="pagination-bar">
+          <button onClick={() => setPage(page - 1)} disabled={page === 1}>Prev</button>
+          <span>Page {page} / {Math.ceil(total / pageSize) || 1}</span>
+          <button onClick={() => setPage(page + 1)} disabled={page >= Math.ceil(total / pageSize)}>Next</button>
+        </div>
+      </div>
+    </div>
+  );
+}
+
+===== src\pages\ComponentParameterFormPage.tsx =====
+import { useEffect, useState } from "react";
+import { testopsApi } from "../api/testops";
+
+export default function ComponentParameterFormPage({ id, onBack }: any) {
+
+  const [components, setComponents] = useState<any[]>([]);
+  const [parameters, setParameters] = useState<any[]>([]);
+
+  const [form, setForm] = useState({
+    component_id: "",
+    parameter_id: "",
+    sort: 1,
+    state: 1
+  });
+
+  // ✅ 加载数据
+  const loadOptions = async () => {
+    try {
+      const cRes = await testopsApi.getComponents({ page: 1, page_size: 999 });
+      const pRes = await testopsApi.getParameters({ page: 1, page_size: 999 });
+
+      console.log("components:", cRes.data);
+      console.log("parameters:", pRes.data);
+
+      setComponents(cRes.data?.data || []);
+      setParameters(pRes.data?.data || []);
+
+    } catch (e) {
+      console.error("Load options error:", e);
+      alert("Failed to load dropdown data");
+    }
+  };
+
+  // ✅ 编辑
+  const loadDetail = async () => {
+    if (!id) return;
+
+    const res = await testopsApi.getComponentParameterDetail(id);
+    const d = res.data;
+
+    setForm({
+      component_id: String(d.component_id),
+      parameter_id: String(d.parameter_id),
+      sort: d.sort || 1,
+      state: d.state || 1
+    });
+  };
+
+  useEffect(() => {
+    loadOptions();
+    loadDetail();
+  }, []);
+
+  // ✅ 保存
+  const handleSave = async () => {
+    if (!form.component_id || !form.parameter_id) {
+      alert("Please select Component and Parameter");
+      return;
+    }
+
+    const payload = {
+      component_id: Number(form.component_id),
+      parameter_id: Number(form.parameter_id),
+      sort: form.sort,
+      state: form.state
+    };
+
+    try {
+      if (id) {
+        await testopsApi.updateComponentParameter(id, payload);
+        alert("Update success");
+      } else {
+        await testopsApi.createComponentParameter(payload);
+        alert("Create success");
+      }
+
+      onBack();
+    } catch (e) {
+      alert("Save failed");
+    }
+  };
+
+  return (
+    <div className="page-container">
+
+      <div className="page-title">
+        {id ? "Edit Mapping" : "Create Mapping"}
+      </div>
+
+      <div className="form-card">
+
+        <div className="form-grid">
+
+          {/* Component */}
+          <div className="field">
+            <label>Component</label>
+            <select
+              value={form.component_id}
+              onChange={(e) =>
+                setForm({ ...form, component_id: e.target.value })
+              }
+            >
+              <option value="">Select Component</option>
+
+              {components.map((c) => (
+                <option key={c.component_id} value={c.component_id}>
+                  {c.component_id} - {c.component_name}
+                </option>
+              ))}
+            </select>
+          </div>
+
+          {/* Parameter */}
+          <div className="field">
+            <label>Parameter</label>
+            <select
+              value={form.parameter_id}
+              onChange={(e) =>
+                setForm({ ...form, parameter_id: e.target.value })
+              }
+            >
+              <option value="">Select Parameter</option>
+
+              {parameters.map((p) => (
+                <option key={p.parameter_id} value={p.parameter_id}>
+                  {p.parameter_id} - {p.parameter_name}
+                </option>
+              ))}
+            </select>
+          </div>
+
+          {/* Sort */}
+          <div className="field">
+            <label>Sort</label>
+            <input
+              type="number"
+              value={form.sort}
+              onChange={(e) =>
+                setForm({ ...form, sort: Number(e.target.value) })
+              }
+            />
+          </div>
+
+          {/* State */}
+          <div className="field">
+            <label>State</label>
+            <input
+              type="number"
+              value={form.state}
+              onChange={(e) =>
+                setForm({ ...form, state: Number(e.target.value) })
+              }
+            />
+          </div>
+
+        </div>
+
+        <div className="form-header-actions">
+          <button className="btn btn-primary" onClick={handleSave}>
+            Save
+          </button>
+          <button className="btn btn-secondary" onClick={onBack}>
+            Back
+          </button>
+        </div>
+
+      </div>
+    </div>
+  );
+}
+
+===== src\pages\ComponentParameterListPage.tsx =====
+import { useEffect, useState } from "react";
+import { testopsApi } from "../api/testops";
+
+export default function ComponentParameterListPage({ onAdd, onEdit }: any) {
+
+  const [searchForm, setSearchForm] = useState({
+    id: "",
+    component_id: "",
+    parameter_id: ""
+  });
+
+  const [rows, setRows] = useState<any[]>([]);
+  const [total, setTotal] = useState(0);
+
+  const [page, setPage] = useState(1);
+  const pageSize = 10;
+
+  // ✅ 查询数据
+  const loadData = async (targetPage = page) => {
+    const res = await testopsApi.getComponentParameters({
+      id: searchForm.id || undefined,
+      component_id: searchForm.component_id || undefined,
+      parameter_id: searchForm.parameter_id || undefined,
+      page: targetPage,
+      page_size: pageSize
+    });
+
+    setRows(res.data.data || []);
+    setTotal(res.data.total || 0);
+  };
+
+  useEffect(() => {
+    loadData(page);
+  }, [page]);
+
+  const handleSearch = () => {
+    setPage(1);
+    loadData(1);
+  };
+
+  const handleClear = () => {
+    setSearchForm({ id: "", component_id: "", parameter_id: "" });
+    setPage(1);
+    loadData(1);
+  };
+
+  const handleDelete = async (id: number) => {
+    if (!window.confirm("确认删除吗？")) return;
+    await testopsApi.deleteComponentParameter(id);
+    alert("删除成功");
+    loadData(page);
+  };
+
+  return (
+    <div className="page-container">
+
+      <div className="page-title">Component Parameter Mapping</div>
+
+      {/* ✅ 查询区域 */}
+      <div className="search-card">
+        <div className="search-card-title">Search Condition</div>
+
+        <div className="search-grid">
+
+          <div className="field">
+            <label>ID</label>
+            <input
+              value={searchForm.id}
+              onChange={(e) =>
+                setSearchForm({ ...searchForm, id: e.target.value })
+              }
+            />
+          </div>
+
+          <div className="field">
+            <label>Component ID</label>
+            <input
+              value={searchForm.component_id}
+              onChange={(e) =>
+                setSearchForm({ ...searchForm, component_id: e.target.value })
+              }
+            />
+          </div>
+
+          <div className="field">
+            <label>Parameter ID</label>
+            <input
+              value={searchForm.parameter_id}
+              onChange={(e) =>
+                setSearchForm({ ...searchForm, parameter_id: e.target.value })
+              }
+            />
+          </div>
+
+        </div>
+
+        {/* ✅ 按钮区（和 Case 一样） */}
+        <div className="search-actions">
+          <button className="btn btn-secondary" onClick={handleClear}>
+            Clear
+          </button>
+
+          <button className="btn btn-primary" onClick={handleSearch}>
+            Search
+          </button>
+
+          <button className="btn btn-success" onClick={onAdd}>
+            Add Mapping
+          </button>
+        </div>
+      </div>
+
+      {/* ✅ 列表 */}
+      <div className="table-card">
+
+        <div className="table-header">
+          <div>Mapping List</div>
+          <div>Total {total}</div>
+        </div>
+
+        <table className="case-table">
+          <thead>
+            <tr>
+              <th>ID</th>
+              <th>Component</th>
+              <th>Parameter</th>
+              <th>Sort</th>
+              <th>State</th>
+              <th>Action</th>
+            </tr>
+          </thead>
+
+          <tbody>
+            {rows.map((row) => (
+              <tr key={row.id}>
+                <td>{row.id}</td>
+                <td>{row.component_id}</td>
+                <td>{row.parameter_id}</td>
+                <td>{row.sort}</td>
+                <td>{row.state}</td>
+                <td>
+                    <div className="action-buttons">
+                        <button
+                        className="btn btn-link"
+                        onClick={() => onEdit(row.id)}
+                        >
+                        Edit
+                        </button>
+
+                        <button
+                        className="btn btn-link danger"
+                        onClick={() => handleDelete(row.id)}
+                        >
+                        Delete
+                        </button>
+                    </div>
+                    </td>
+              </tr>
+            ))}
+
+            {rows.length === 0 && (
+              <tr>
+                <td colSpan={6} className="empty-row">
+                  No Data
+                </td>
+              </tr>
+            )}
+          </tbody>
+        </table>
+
+        {/* ✅ 分页 */}
+        <div className="pagination-bar">
+          <button
+            onClick={() => setPage(page - 1)}
+            disabled={page === 1}
+          >
+            Prev
+          </button>
+
+          <span>
+            Page {page} / {Math.ceil(total / pageSize) || 1}
+          </span>
+
+          <button
+            onClick={() => setPage(page + 1)}
+            disabled={page >= Math.ceil(total / pageSize)}
+          >
+            Next
+          </button>
+        </div>
+
+      </div>
+    </div>
+  );
+}
+
+===== src\pages\ExecutionTracePage.tsx =====
+import { useState } from "react";
+import { testopsApi } from "../api/testops";
+import ExecutionTraceGraph from "../components/ExecutionTraceGraph";
+
+export default function ExecutionTracePage() {
+  const [cfgId, setCfgId] = useState("");
+  const [data, setData] = useState<any[]>([]);
+
+  const load = async () => {
+    const exe = await testopsApi.getExecutions(Number(cfgId));
+
+    const result = await Promise.all(
+      exe.data.data.map(async (e: any) => {
+        const comp = await testopsApi.getComponents(e.test_case_exe_id);
+        return {
+          execution: e.test_case_exe_id,
+          components: comp.data.data.map((c: any) => ({
+            name: c.component_name
+          }))
+        };
+      })
+    );
+
+    setData(result);
+  };
+
+  return (
+    <div>
+      <h2>执行链路</h2>
+
+      <input onChange={(e) => setCfgId(e.target.value)} />
+      <button onClick={load}>查询</button>
+
+      <ExecutionTraceGraph executions={data} />
+    </div>
+  );
+}
+
+===== src\pages\ParameterFormPage.tsx =====
+import { useEffect, useState } from "react";
+import { testopsApi } from "../api/testops";
+
+const initialForm = {
+  parameter_name: "",
+  parameter_path: "",
+  parameter_type: "",
+  default_value: "",
+  remark: "",
+  tenant_id: "21",
+  state: 1
+};
+
+export default function ParameterFormPage({ mode, parameterId, onBack, onSaved }: any) {
+  const [form, setForm] = useState<any>(initialForm);
+  const [loading, setLoading] = useState(false);
+
+  const loadDetail = async () => {
+    if (!parameterId) return;
+    const res = await testopsApi.getParameterDetail(parameterId);
+    setForm({
+      parameter_name: res.data.parameter_name || "",
+      parameter_path: res.data.parameter_path || "",
+      parameter_type: res.data.parameter_type || "",
+      default_value: res.data.default_value || "",
+      remark: res.data.remark || "",
+      tenant_id: res.data.tenant_id || "21",
+      state: res.data.state ?? 1
+    });
+  };
+
+  useEffect(() => {
+    if (mode === "edit") loadDetail();
+  }, [mode, parameterId]);
+
+  const handleSubmit = async () => {
+    setLoading(true);
+    try {
+      if (mode === "create") {
+        await testopsApi.createParameter(form);
+        alert("创建成功");
+      } else {
+        await testopsApi.updateParameter(parameterId, form);
+        alert("更新成功");
+      }
+      onSaved();
+    } catch (e: any) {
+      alert(e?.response?.data?.detail || "保存失败");
+    } finally {
+      setLoading(false);
+    }
+  };
+
+  return (
+    <div className="page-container">
+      <div className="form-header">
+        <div className="page-title">{mode === "create" ? "Create Parameter" : `Edit Parameter - ${parameterId}`}</div>
+        <div className="form-header-actions">
+          <button className="btn btn-secondary" onClick={onBack}>Back</button>
+          <button className="btn btn-primary" onClick={handleSubmit} disabled={loading}>
+            {loading ? "Saving..." : "Save"}
+          </button>
+        </div>
+      </div>
+
+      <div className="form-card">
+        <div className="form-grid">
+          <div className="field">
+            <label>Parameter Name</label>
+            <input value={form.parameter_name} onChange={(e) => setForm({ ...form, parameter_name: e.target.value })} />
+          </div>
+          <div className="field">
+            <label>Parameter Path</label>
+            <input value={form.parameter_path} onChange={(e) => setForm({ ...form, parameter_path: e.target.value })} />
+          </div>
+          <div className="field">
+            <label>Parameter Type</label>
+            <input value={form.parameter_type} onChange={(e) => setForm({ ...form, parameter_type: e.target.value })} />
+          </div>
+          <div className="field">
+            <label>Default Value</label>
+            <input value={form.default_value} onChange={(e) => setForm({ ...form, default_value: e.target.value })} />
+          </div>
+          <div className="field">
+            <label>Remark</label>
+            <input value={form.remark} onChange={(e) => setForm({ ...form, remark: e.target.value })} />
+          </div>
+          <div className="field">
+            <label>Tenant ID</label>
+            <input value={form.tenant_id} onChange={(e) => setForm({ ...form, tenant_id: e.target.value })} />
+          </div>
+          <div className="field">
+            <label>State</label>
+            <input type="number" value={form.state} onChange={(e) => setForm({ ...form, state: Number(e.target.value) })} />
+          </div>
+        </div>
+      </div>
+    </div>
+  );
+}
+
+===== src\pages\ParameterListPage.tsx =====
+import { useEffect, useState } from "react";
+import { testopsApi } from "../api/testops";
+
+export default function ParameterListPage({ onAdd, onEdit }: any) {
+  const [searchForm, setSearchForm] = useState({
+    parameter_id: "",
+    parameter_name: "",
+    parameter_path: "",
+    parameter_type: ""
+  });
+
+  const [rows, setRows] = useState<any[]>([]);
+  const [total, setTotal] = useState(0);
+  const [page, setPage] = useState(1);
+  const pageSize = 10;
+
+  const loadData = async (targetPage = page) => {
+    const res = await testopsApi.getParameters({
+      parameter_id: searchForm.parameter_id ? Number(searchForm.parameter_id) : undefined,
+      parameter_name: searchForm.parameter_name || undefined,
+      parameter_path: searchForm.parameter_path || undefined,
+      parameter_type: searchForm.parameter_type || undefined,
+      page: targetPage,
+      page_size: pageSize
+    });
+
+    setRows(res.data.data || []);
+    setTotal(res.data.total || 0);
+  };
+
+  useEffect(() => {
+    loadData(page);
+  }, [page]);
+
+  const handleSearch = async () => {
+    setPage(1);
+    await loadData(1);
+  };
+
+  const handleClear = async () => {
+    const empty = {
+      parameter_id: "",
+      parameter_name: "",
+      parameter_path: "",
+      parameter_type: ""
+    };
+    setSearchForm(empty);
+    setPage(1);
+
+    const res = await testopsApi.getParameters({
+      page: 1,
+      page_size: pageSize
+    });
+
+    setRows(res.data.data || []);
+    setTotal(res.data.total || 0);
+  };
+
+  const handleDelete = async (id: number) => {
+    if (!window.confirm(`确认删除参数 ${id} 吗？`)) return;
+    await testopsApi.deleteParameter(id);
+    alert("删除成功");
+    await loadData(page);
+  };
+
+  return (
+    <div className="page-container">
+      <div className="page-title">Parameter Management</div>
+
+      <div className="search-card">
+        <div className="search-card-title">Search Condition</div>
+
+        <div className="search-grid">
+          <div className="field">
+            <label>Parameter ID</label>
+            <input
+              value={searchForm.parameter_id}
+              onChange={(e) => setSearchForm({ ...searchForm, parameter_id: e.target.value })}
+              placeholder="请输入 parameter_id"
+            />
+          </div>
+
+          <div className="field">
+            <label>Parameter Name</label>
+            <input
+              value={searchForm.parameter_name}
+              onChange={(e) => setSearchForm({ ...searchForm, parameter_name: e.target.value })}
+              placeholder="请输入 Parameter Name"
+            />
+          </div>
+
+          <div className="field">
+            <label>Parameter Path</label>
+            <input
+              value={searchForm.parameter_path}
+              onChange={(e) => setSearchForm({ ...searchForm, parameter_path: e.target.value })}
+              placeholder="请输入 Parameter Path"
+            />
+          </div>
+
+          <div className="field">
+            <label>Parameter Type</label>
+            <input
+              value={searchForm.parameter_type}
+              onChange={(e) => setSearchForm({ ...searchForm, parameter_type: e.target.value })}
+              placeholder="请输入 Parameter Type"
+            />
+          </div>
+        </div>
+
+        <div className="search-actions">
+          <button className="btn btn-secondary" onClick={handleClear}>Clear</button>
+          <button className="btn btn-primary" onClick={handleSearch}>Search</button>
+          <button className="btn btn-success" onClick={onAdd}>Add Parameter</button>
+        </div>
+      </div>
+
+      <div className="table-card">
+        <div className="table-header">
+          <div>Parameter List</div>
+          <div>Total {total}</div>
+        </div>
+
+        <table className="case-table">
+          <thead>
+            <tr>
+              <th>ID</th>
+              <th>Name</th>
+              <th>Path</th>
+              <th>Type</th>
+              <th>Default Value</th>
+              <th>Remark</th>
+              <th>State</th>
+              <th>Action</th>
+            </tr>
+          </thead>
+          <tbody>
+            {rows.map((row) => (
+              <tr key={row.parameter_id}>
+                <td>{row.parameter_id}</td>
+                <td>{row.parameter_name}</td>
+                <td>{row.parameter_path}</td>
+                <td>{row.parameter_type}</td>
+                <td>{row.default_value}</td>
+                <td>{row.remark}</td>
+                <td>{row.state}</td>
+                <td>
+                  <div className="action-buttons">
+                    <button className="btn btn-link" onClick={() => onEdit(row.parameter_id)}>Edit</button>
+                    <button className="btn btn-link danger" onClick={() => handleDelete(row.parameter_id)}>Delete</button>
+                  </div>
+                </td>
+              </tr>
+            ))}
+            {rows.length === 0 && (
+              <tr><td colSpan={8} className="empty-row">No Data</td></tr>
+            )}
+          </tbody>
+        </table>
+
+        <div className="pagination-bar">
+          <button onClick={() => setPage(page - 1)} disabled={page === 1}>Prev</button>
+          <span>Page {page} / {Math.ceil(total / pageSize) || 1}</span>
+          <button onClick={() => setPage(page + 1)} disabled={page >= Math.ceil(total / pageSize)}>Next</button>
+        </div>
+      </div>
+    </div>
+  );
+}
+
+===== src\pages\PlanRunListPage.tsx =====
+import { useEffect, useState } from "react";
+import { testopsApi } from "../api/testops";
+
+type Props = {
+  onView: (batchId: number) => void;
+};
+
+type SearchForm = {
+  batch_id: string;
+  batch_name: string;
+  plan_id: string;
+  execution_machine: string;
+  task_status: string;
+  status: string;
+  create_date_from: string;
+  create_date_to: string;
+};
+
+const initialSearchForm: SearchForm = {
+  batch_id: "",
+  batch_name: "",
+  plan_id: "",
+  execution_machine: "",
+  task_status: "",
+  status: "",
+  create_date_from: "",
+  create_date_to: ""
+};
+
+function getTaskStatusText(value: number) {
+  const map: Record<number, { text: string; color: string }> = {
+    0: { text: "Not Sent", color: "#999" },
+    1: { text: "Ready", color: "#1890ff" },
+    2: { text: "Sent", color: "#52c41a" },
+    3: { text: "Failed", color: "#ff4d4f" },
+    4: { text: "Triggered", color: "#faad14" },
+    5: { text: "No Need", color: "#aaa" },
+    9: { text: "Jira Updated", color: "#722ed1" }
+  };
+
+  const item = map[value];
+
+  return item ? (
+    <span style={{ color: item.color, fontWeight: 500 }}>
+      {item.text}
+    </span>
+  ) : (
+    value ?? "-"
+  );
+}
+
+function getStatusText(value: number) {
+  switch (value) {
+    case 0:
+      return "Inactive";
+    case 1:
+      return "Active";
+    default:
+      return String(value ?? "-");
+  }
+}
+
+export default function PlanRunListPage({ onView }: Props) {
+  const [searchForm, setSearchForm] = useState<SearchForm>(initialSearchForm);
+  const [rows, setRows] = useState<any[]>([]);
+  const [total, setTotal] = useState(0);
+  const [loading, setLoading] = useState(false);
+
+  const [page, setPage] = useState(1);
+  const pageSize = 10;
+
+  const loadData = async (targetPage = page, currentSearch = searchForm) => {
+    setLoading(true);
+    try {
+      const res = await testopsApi.getPlanRuns({
+        batch_id: currentSearch.batch_id ? Number(currentSearch.batch_id) : undefined,
+        batch_name: currentSearch.batch_name || undefined,
+        plan_id: currentSearch.plan_id ? Number(currentSearch.plan_id) : undefined,
+        execution_machine: currentSearch.execution_machine || undefined,
+        task_status:
+          currentSearch.task_status !== "" ? Number(currentSearch.task_status) : undefined,
+        status: currentSearch.status !== "" ? Number(currentSearch.status) : undefined,
+        create_date_from: currentSearch.create_date_from || undefined,
+        create_date_to: currentSearch.create_date_to || undefined,
+        page: targetPage,
+        page_size: pageSize
+      });
+
+      setRows(res.data?.data || []);
+      setTotal(res.data?.total || 0);
+    } catch (e: any) {
+      console.error("Load plan runs error:", e);
+      alert(e?.response?.data?.detail || "Failed to load data");
+    } finally {
+      setLoading(false);
+    }
+  };
+
+  useEffect(() => {
+    loadData(page);
+  }, [page]);
+
+  const handleSearch = async () => {
+    setPage(1);
+    await loadData(1, searchForm);
+  };
+
+  const handleClear = async () => {
+    setSearchForm(initialSearchForm);
+    setPage(1);
+    await loadData(1, initialSearchForm);
+  };
+
+  return (
+    <div className="page-container">
+      <div className="page-title">Plan Runs</div>
+
+      <div className="search-card">
+        <div className="search-card-title">Search Condition</div>
+
+        <div className="search-grid">
+          <div className="field">
+            <label>Batch ID</label>
+            <input
+              value={searchForm.batch_id}
+              onChange={(e) =>
+                setSearchForm({ ...searchForm, batch_id: e.target.value })
+              }
+              placeholder="Enter batch id"
+            />
+          </div>
+
+          <div className="field">
+            <label>Batch Name</label>
+            <input
+              value={searchForm.batch_name}
+              onChange={(e) =>
+                setSearchForm({ ...searchForm, batch_name: e.target.value })
+              }
+              placeholder="Enter batch name"
+            />
+          </div>
+
+          <div className="field">
+            <label>Plan ID</label>
+            <input
+              value={searchForm.plan_id}
+              onChange={(e) =>
+                setSearchForm({ ...searchForm, plan_id: e.target.value })
+              }
+              placeholder="Enter plan id"
+            />
+          </div>
+
+          <div className="field">
+            <label>Execution Machine</label>
+            <input
+              value={searchForm.execution_machine}
+              onChange={(e) =>
+                setSearchForm({ ...searchForm, execution_machine: e.target.value })
+              }
+              placeholder="Enter execution machine"
+            />
+          </div>
+
+          <div className="field">
+            <label>Task Status</label>
+            <select
+              value={searchForm.task_status}
+              onChange={(e) =>
+                setSearchForm({ ...searchForm, task_status: e.target.value })
+              }
+            >
+              <option value="">All</option>
+
+              <option value="0">Not Sent</option>
+              <option value="1">Ready to Send</option>
+              <option value="2">Email Sent</option>
+              <option value="3">Email Failed</option>
+              <option value="4">Triggered</option>
+              <option value="5">No Email Needed</option>
+              <option value="9">Jira Updated</option>
+            </select>
+          </div>
+
+          <div className="field">
+            <label>Status</label>
+            <select
+              value={searchForm.status}
+              onChange={(e) =>
+                setSearchForm({ ...searchForm, status: e.target.value })
+              }
+            >
+              <option value="">All</option>
+              <option value="1">Active</option>
+              <option value="0">Inactive</option>
+            </select>
+          </div>
+
+          <div className="field">
+            <label>Create Date From</label>
+            <input
+              type="datetime-local"
+              value={searchForm.create_date_from}
+              onChange={(e) =>
+                setSearchForm({ ...searchForm, create_date_from: e.target.value })
+              }
+            />
+          </div>
+
+          <div className="field">
+            <label>Create Date To</label>
+            <input
+              type="datetime-local"
+              value={searchForm.create_date_to}
+              onChange={(e) =>
+                setSearchForm({ ...searchForm, create_date_to: e.target.value })
+              }
+            />
+          </div>
+        </div>
+
+        <div className="search-actions">
+          <button className="btn btn-secondary" onClick={handleClear}>
+            Clear
+          </button>
+          <button className="btn btn-primary" onClick={handleSearch}>
+            Search
+          </button>
+        </div>
+      </div>
+
+      <div className="table-card">
+        <div className="table-header">
+          <div>Run List</div>
+          <div>Total {total}</div>
+        </div>
+
+        {loading ? (
+          <div className="loading-box">Loading...</div>
+        ) : (
+          <table className="case-table">
+            <thead>
+              <tr>
+                <th>Batch ID</th>
+                <th>Batch Name</th>
+                <th>Plan ID</th>
+                <th>Execution Machine</th>
+                <th>Task Status</th>
+                <th>Status</th>
+                <th>Pass Rate</th>
+                <th>Re Run</th>
+                <th>Send Email</th>
+                <th>Create Date</th>
+                <th>Finish Date</th>
+                <th>Action</th>
+              </tr>
+            </thead>
+
+            <tbody>
+              {rows.map((row) => (
+                <tr key={row.batch_id}>
+                  <td>{row.batch_id}</td>
+                  <td>{row.batch_name || "-"}</td>
+                  <td>{row.plan_id ?? "-"}</td>
+                  <td>{row.execution_machine || "-"}</td>
+                  <td>{getTaskStatusText(row.task_status)}</td>
+                  <td>{getStatusText(row.status)}</td>
+                  <td>{row.pass_rate || "-"}</td>
+                  <td>{row.re_run ?? "-"}</td>
+                  <td>{row.send_email ?? "-"}</td>
+                  <td>{row.create_date || "-"}</td>
+                  <td>{row.finish_date || "-"}</td>
+                  <td>
+                    <div className="action-buttons">
+                      <button
+                        className="btn btn-link"
+                        onClick={() => onView(row.batch_id)}
+                      >
+                        View Detail
+                      </button>
+                    </div>
+                  </td>
+                </tr>
+              ))}
+
+              {rows.length === 0 && (
+                <tr>
+                  <td colSpan={12} className="empty-row">
+                    No Data
+                  </td>
+                </tr>
+              )}
+            </tbody>
+          </table>
+        )}
+
+        <div className="pagination-bar">
+          <button
+            onClick={() => setPage(page - 1)}
+            disabled={page === 1}
+          >
+            Prev
+          </button>
+
+          <span>
+            Page {page} / {Math.ceil(total / pageSize) || 1}
+          </span>
+
+          <button
+            onClick={() => setPage(page + 1)}
+            disabled={page >= Math.ceil(total / pageSize)}
+          >
+            Next
+          </button>
+        </div>
+      </div>
+    </div>
+  );
+}
+
+===== src\pages\TemplateFormPage.tsx =====
+import { useEffect, useState } from "react";
+import { testopsApi } from "../api/testops";
+
+const initialForm = {
+  template_name: "",
+  module: "",
+  test_case_type: "1",
+  is_browser: 0,
+  tenant_id: "21",
+  state: 1,
+  remark: "",
+  components: [] as any[]
+};
+
+export default function TemplateFormPage({ mode, templateId, onBack, onSaved }: any) {
+  const [form, setForm] = useState<any>(initialForm);
+  const [componentOptions, setComponentOptions] = useState<any[]>([]);
+  const [loading, setLoading] = useState(false);
+
+  const loadComponents = async () => {
+    const res = await testopsApi.getComponents();
+    setComponentOptions((res.data.data || []).sort((a: any, b: any) => a.component_id - b.component_id));
+  };
+
+  const loadDetail = async () => {
+    if (!templateId) return;
+    const res = await testopsApi.getTemplateDetail(templateId);
+    const d = res.data;
+    setForm({
+      template_name: d.template_name || "",
+      module: d.module || "",
+      test_case_type: d.test_case_type || "1",
+      is_browser: d.is_browser ?? 0,
+      tenant_id: d.tenant_id || "21",
+      state: d.state ?? 1,
+      remark: d.remark || "",
+      components: d.components || []
+    });
+  };
+
+  useEffect(() => {
+    loadComponents();
+    if (mode === "edit") loadDetail();
+  }, [mode, templateId]);
+
+  const addComponentRow = () => {
+    setForm({
+      ...form,
+      components: [
+        ...form.components,
+        {
+          component_id: "",
+          sort: form.components.length + 1,
+          wait_time: 5,
+          loop_num: 1,
+          is_suspend: "Y",
+          remark: ""
+        }
+      ]
+    });
+  };
+
+  const updateRow = (index: number, key: string, value: any) => {
+    const next = [...form.components];
+    next[index][key] = value;
+    setForm({ ...form, components: next });
+  };
+
+  const removeRow = (index: number) => {
+    const next = form.components.filter((_: any, i: number) => i !== index);
+    setForm({ ...form, components: next });
+  };
+
+  const handleSubmit = async () => {
+    const payload = {
+      ...form,
+      is_browser: Number(form.is_browser),
+      state: Number(form.state),
+      components: form.components.map((c: any) => ({
+        component_id: Number(c.component_id),
+        sort: Number(c.sort),
+        wait_time: Number(c.wait_time),
+        loop_num: Number(c.loop_num),
+        is_suspend: c.is_suspend,
+        remark: c.remark || ""
+      }))
+    };
+
+    setLoading(true);
+    try {
+      if (mode === "create") {
+        await testopsApi.createTemplate(payload);
+        alert("创建成功");
+      } else {
+        await testopsApi.updateTemplate(templateId, payload);
+        alert("更新成功");
+      }
+      onSaved();
+    } catch (e: any) {
+      alert(e?.response?.data?.detail || "保存失败");
+    } finally {
+      setLoading(false);
+    }
+  };
+
+  return (
+    <div className="page-container">
+      <div className="form-header">
+        <div className="page-title">{mode === "create" ? "Create Template" : `Edit Template - ${templateId}`}</div>
+        <div className="form-header-actions">
+          <button className="btn btn-secondary" onClick={onBack}>Back</button>
+          <button className="btn btn-primary" onClick={handleSubmit} disabled={loading}>
+            {loading ? "Saving..." : "Save"}
+          </button>
+        </div>
+      </div>
+
+      <div className="form-card">
+        <div className="section-title">Template Basic Information</div>
+        <div className="form-grid">
+          <div className="field">
+            <label>Template Name</label>
+            <input value={form.template_name} onChange={(e) => setForm({ ...form, template_name: e.target.value })} />
+          </div>
+          <div className="field">
+            <label>Module</label>
+            <input value={form.module} onChange={(e) => setForm({ ...form, module: e.target.value })} />
+          </div>
+          <div className="field">
+            <label>Case Type</label>
+            <input value={form.test_case_type} onChange={(e) => setForm({ ...form, test_case_type: e.target.value })} />
+          </div>
+          <div className="field">
+            <label>Is Browser</label>
+            <input type="number" value={form.is_browser} onChange={(e) => setForm({ ...form, is_browser: Number(e.target.value) })} />
+          </div>
+          <div className="field">
+            <label>Tenant ID</label>
+            <input value={form.tenant_id} onChange={(e) => setForm({ ...form, tenant_id: e.target.value })} />
+          </div>
+          <div className="field">
+            <label>State</label>
+            <input type="number" value={form.state} onChange={(e) => setForm({ ...form, state: Number(e.target.value) })} />
+          </div>
+          <div className="field" style={{ gridColumn: "1 / span 3" }}>
+            <label>Remark</label>
+            <input value={form.remark} onChange={(e) => setForm({ ...form, remark: e.target.value })} />
+          </div>
+        </div>
+      </div>
+
+      <div className="form-card">
+        <div className="form-header">
+          <div className="section-title">Template Components</div>
+          <button className="btn btn-success" onClick={addComponentRow}>Add Step</button>
+        </div>
+
+        <table className="case-table">
+          <thead>
+            <tr>
+              <th>Component</th>
+              <th>Sort</th>
+              <th>Wait Time</th>
+              <th>Loop Num</th>
+              <th>Is Suspend</th>
+              <th>Remark</th>
+              <th>Action</th>
+            </tr>
+          </thead>
+          <tbody>
+            {form.components.map((row: any, index: number) => (
+              <tr key={index}>
+                <td>
+                  <select
+                    value={row.component_id}
+                    onChange={(e) => updateRow(index, "component_id", e.target.value)}
+                  >
+                    <option value="">请选择组件</option>
+                    {componentOptions.map((c) => (
+                      <option key={c.component_id} value={c.component_id}>
+                        {c.component_id} - {c.component_name}
+                      </option>
+                    ))}
+                  </select>
+                </td>
+                <td><input type="number" value={row.sort} onChange={(e) => updateRow(index, "sort", e.target.value)} /></td>
+                <td><input type="number" value={row.wait_time} onChange={(e) => updateRow(index, "wait_time", e.target.value)} /></td>
+                <td><input type="number" value={row.loop_num} onChange={(e) => updateRow(index, "loop_num", e.target.value)} /></td>
+                <td>
+                  <select value={row.is_suspend} onChange={(e) => updateRow(index, "is_suspend", e.target.value)}>
+                    <option value="Y">Y</option>
+                    <option value="N">N</option>
+                  </select>
+                </td>
+                <td><input value={row.remark} onChange={(e) => updateRow(index, "remark", e.target.value)} /></td>
+                <td>
+                  <button className="btn btn-link danger" onClick={() => removeRow(index)}>Delete</button>
+                </td>
+              </tr>
+            ))}
+
+            {form.components.length === 0 && (
+              <tr>
+                <td colSpan={7} className="empty-row">No Components</td>
+              </tr>
+            )}
+          </tbody>
+        </table>
+      </div>
+    </div>
+  );
+}
+
+===== src\pages\TemplateListPage.tsx =====
+import { useEffect, useState } from "react";
+import { testopsApi } from "../api/testops";
+
+export default function TemplateListPage({ onAdd, onEdit }: any) {
+  const [searchForm, setSearchForm] = useState({
+    template_id: "",
+    template_name: "",
+    module: "",
+    test_case_type: ""
+  });
+
+  const [rows, setRows] = useState<any[]>([]);
+  const [total, setTotal] = useState(0);
+  const [page, setPage] = useState(1);
+  const pageSize = 10;
+
+  const loadData = async (targetPage = page) => {
+    const res = await testopsApi.getTemplates({
+      template_id: searchForm.template_id ? Number(searchForm.template_id) : undefined,
+      template_name: searchForm.template_name || undefined,
+      module: searchForm.module || undefined,
+      test_case_type: searchForm.test_case_type || undefined,
+      page: targetPage,
+      page_size: pageSize
+    });
+
+    setRows(res.data.data || []);
+    setTotal(res.data.total || 0);
+  };
+
+  useEffect(() => {
+    loadData(page);
+  }, [page]);
+
+  const handleSearch = async () => {
+    setPage(1);
+    await loadData(1);
+  };
+
+  const handleClear = async () => {
+    const empty = {
+      template_id: "",
+      template_name: "",
+      module: "",
+      test_case_type: ""
+    };
+    setSearchForm(empty);
+    setPage(1);
+
+    const res = await testopsApi.getTemplates({
+      page: 1,
+      page_size: pageSize
+    });
+
+    setRows(res.data.data || []);
+    setTotal(res.data.total || 0);
+  };
+
+  const handleDelete = async (id: number) => {
+    if (!window.confirm(`确认删除模板 ${id} 吗？`)) return;
+    await testopsApi.deleteTemplate(id);
+    alert("删除成功");
+    await loadData(page);
+  };
+
+  return (
+    <div className="page-container">
+      <div className="page-title">Template Management</div>
+
+      <div className="search-card">
+        <div className="search-card-title">Search Condition</div>
+
+        <div className="search-grid">
+          <div className="field">
+            <label>Template ID</label>
+            <input
+              value={searchForm.template_id}
+              onChange={(e) => setSearchForm({ ...searchForm, template_id: e.target.value })}
+              placeholder="请输入 template_id"
+            />
+          </div>
+
+          <div className="field">
+            <label>Template Name</label>
+            <input
+              value={searchForm.template_name}
+              onChange={(e) => setSearchForm({ ...searchForm, template_name: e.target.value })}
+              placeholder="请输入 Template Name"
+            />
+          </div>
+
+          <div className="field">
+            <label>Module</label>
+            <input
+              value={searchForm.module}
+              onChange={(e) => setSearchForm({ ...searchForm, module: e.target.value })}
+              placeholder="请输入 Module"
+            />
+          </div>
+
+          <div className="field">
+            <label>Case Type</label>
+            <input
+              value={searchForm.test_case_type}
+              onChange={(e) => setSearchForm({ ...searchForm, test_case_type: e.target.value })}
+              placeholder="请输入 Case Type"
+            />
+          </div>
+        </div>
+
+        <div className="search-actions">
+          <button className="btn btn-secondary" onClick={handleClear}>Clear</button>
+          <button className="btn btn-primary" onClick={handleSearch}>Search</button>
+          <button className="btn btn-success" onClick={onAdd}>Add Template</button>
+        </div>
+      </div>
+
+      <div className="table-card">
+        <div className="table-header">
+          <div>Template List</div>
+          <div>Total {total}</div>
+        </div>
+
+        <table className="case-table">
+          <thead>
+            <tr>
+              <th>Template ID</th>
+              <th>Template Name</th>
+              <th>Module</th>
+              <th>Case Type</th>
+              <th>Is Browser</th>
+              <th>State</th>
+              <th>Create Date</th>
+              <th>Action</th>
+            </tr>
+          </thead>
+          <tbody>
+            {rows.map((row) => (
+              <tr key={row.template_id}>
+                <td>{row.template_id}</td>
+                <td>{row.template_name}</td>
+                <td>{row.module}</td>
+                <td>{row.test_case_type}</td>
+                <td>{row.is_browser}</td>
+                <td>{row.state}</td>
+                <td>{row.create_date}</td>
+                <td>
+                  <div className="action-buttons">
+                    <button className="btn btn-link" onClick={() => onEdit(row.template_id)}>Edit</button>
+                    <button className="btn btn-link danger" onClick={() => handleDelete(row.template_id)}>Delete</button>
+                  </div>
+                </td>
+              </tr>
+            ))}
+            {rows.length === 0 && (
+              <tr><td colSpan={8} className="empty-row">No Data</td></tr>
+            )}
+          </tbody>
+        </table>
+
+        <div className="pagination-bar">
+          <button onClick={() => setPage(page - 1)} disabled={page === 1}>Prev</button>
+          <span>Page {page} / {Math.ceil(total / pageSize) || 1}</span>
+          <button onClick={() => setPage(page + 1)} disabled={page >= Math.ceil(total / pageSize)}>Next</button>
+        </div>
+      </div>
+    </div>
+  );
+}
+
+===== src\pages\TemplateRelationFormPage.tsx =====
+import { useEffect, useState } from "react";
+import { testopsApi } from "../api/testops";
+
+export default function TemplateRelationFormPage({ relId, onBack, onSaved }: any) {
+  const [form, setForm] = useState({
+    test_case_template_id: "",
+    pre_test_case_template_id: "",
+    tenant_id: "21",
+    state: 1
+  });
+
+  const loadDetail = async () => {
+    if (!relId) return;
+
+    const res = await testopsApi.getTemplateRelationDetail(relId);
+    const d = res.data;
+
+    setForm({
+      test_case_template_id: String(d.test_case_template_id || ""),
+      pre_test_case_template_id: String(d.pre_test_case_template_id || ""),
+      tenant_id: String(d.tenant_id || "21"),
+      state: d.state ?? 1
+    });
+  };
+
+  useEffect(() => {
+    loadDetail();
+  }, [relId]);
+
+  const handleSave = async () => {
+    if (!form.test_case_template_id || !form.pre_test_case_template_id) {
+      alert("Please input Template ID and Pre Template ID");
+      return;
+    }
+
+    const payload = {
+      test_case_template_id: Number(form.test_case_template_id),
+      pre_test_case_template_id: Number(form.pre_test_case_template_id),
+      tenant_id: Number(form.tenant_id),
+      state: Number(form.state)
+    };
+
+    if (relId) {
+      await testopsApi.updateTemplateRelation(relId, payload);
+      alert("Update success");
+    } else {
+      await testopsApi.createTemplateRelation(payload);
+      alert("Create success");
+    }
+
+    onSaved();
+  };
+
+  return (
+    <div className="page-container">
+      <div className="form-header">
+        <div className="page-title">
+          {relId ? `Edit Relation - ${relId}` : "Create Relation"}
+        </div>
+
+        <div className="form-header-actions">
+          <button className="btn btn-secondary" onClick={onBack}>
+            Back
+          </button>
+          <button className="btn btn-primary" onClick={handleSave}>
+            Save
+          </button>
+        </div>
+      </div>
+
+      <div className="form-card">
+        <div className="section-title">Basic Information</div>
+
+        <div className="form-grid">
+          <div className="field">
+            <label>Template ID</label>
+            <input
+              value={form.test_case_template_id}
+              onChange={(e) =>
+                setForm({ ...form, test_case_template_id: e.target.value })
+              }
+            />
+          </div>
+
+          <div className="field">
+            <label>Pre Template ID</label>
+            <input
+              value={form.pre_test_case_template_id}
+              onChange={(e) =>
+                setForm({
+                  ...form,
+                  pre_test_case_template_id: e.target.value
+                })
+              }
+            />
+          </div>
+
+          <div className="field">
+            <label>Tenant ID</label>
+            <input
+              value={form.tenant_id}
+              onChange={(e) =>
+                setForm({ ...form, tenant_id: e.target.value })
+              }
+            />
+          </div>
+
+          <div className="field">
+            <label>State</label>
+            <input
+              type="number"
+              value={form.state}
+              onChange={(e) =>
+                setForm({ ...form, state: Number(e.target.value) })
+              }
+            />
+          </div>
+        </div>
+      </div>
+    </div>
+  );
+}
+
+===== src\pages\TemplateRelationListPage.tsx =====
+import { useEffect, useState } from "react";
+import { testopsApi } from "../api/testops";
+
+export default function TemplateRelationListPage({ onAdd, onEdit }: any) {
+  const [searchForm, setSearchForm] = useState({
+    rel_id: "",
+    test_case_template_id: "",
+    pre_test_case_template_id: ""
+  });
+
+  const [rows, setRows] = useState<any[]>([]);
+  const [total, setTotal] = useState(0);
+  const [page, setPage] = useState(1);
+  const pageSize = 10;
+
+  const loadData = async (targetPage = page) => {
+    const res = await testopsApi.getTemplateRelations({
+      rel_id: searchForm.rel_id ? Number(searchForm.rel_id) : undefined,
+      test_case_template_id: searchForm.test_case_template_id
+        ? Number(searchForm.test_case_template_id)
+        : undefined,
+      pre_test_case_template_id: searchForm.pre_test_case_template_id
+        ? Number(searchForm.pre_test_case_template_id)
+        : undefined,
+      page: targetPage,
+      page_size: pageSize
+    });
+
+    setRows(res.data.data || []);
+    setTotal(res.data.total || 0);
+  };
+
+  useEffect(() => {
+    loadData(page);
+  }, [page]);
+
+  const handleSearch = async () => {
+    setPage(1);
+    await loadData(1);
+  };
+
+  const handleClear = async () => {
+    setSearchForm({
+      rel_id: "",
+      test_case_template_id: "",
+      pre_test_case_template_id: ""
+    });
+    setPage(1);
+
+    const res = await testopsApi.getTemplateRelations({
+      page: 1,
+      page_size: pageSize
+    });
+
+    setRows(res.data.data || []);
+    setTotal(res.data.total || 0);
+  };
+
+  const handleDelete = async (relId: number) => {
+    const ok = window.confirm(`Are you sure to delete relation ${relId}?`);
+    if (!ok) return;
+
+    await testopsApi.deleteTemplateRelation(relId);
+    alert("Delete success");
+    await loadData(page);
+  };
+
+  return (
+    <div className="page-container">
+      <div className="page-title">Template Relation Management</div>
+
+      <div className="search-card">
+        <div className="search-card-title">Search Condition</div>
+
+        <div className="search-grid">
+          <div className="field">
+            <label>Relation ID</label>
+            <input
+              value={searchForm.rel_id}
+              onChange={(e) =>
+                setSearchForm({ ...searchForm, rel_id: e.target.value })
+              }
+              placeholder="Enter relation id"
+            />
+          </div>
+
+          <div className="field">
+            <label>Template ID</label>
+            <input
+              value={searchForm.test_case_template_id}
+              onChange={(e) =>
+                setSearchForm({
+                  ...searchForm,
+                  test_case_template_id: e.target.value
+                })
+              }
+              placeholder="Enter template id"
+            />
+          </div>
+
+          <div className="field">
+            <label>Pre Template ID</label>
+            <input
+              value={searchForm.pre_test_case_template_id}
+              onChange={(e) =>
+                setSearchForm({
+                  ...searchForm,
+                  pre_test_case_template_id: e.target.value
+                })
+              }
+              placeholder="Enter pre template id"
+            />
+          </div>
+        </div>
+
+        <div className="search-actions">
+          <button className="btn btn-secondary" onClick={handleClear}>
+            Clear
+          </button>
+          <button className="btn btn-warning" onClick={handleSearch}>
+            Search
+          </button>
+          <button className="btn btn-primary" onClick={onAdd}>
+            Add Relation
+          </button>
+        </div>
+      </div>
+
+      <div className="table-card">
+        <div className="table-header">
+          <div>Relation List</div>
+          <div>Total {total}</div>
+        </div>
+
+        <table className="case-table">
+          <thead>
+            <tr>
+              <th>Relation ID</th>
+              <th>Template ID</th>
+              <th>Pre Template ID</th>
+              <th>Tenant ID</th>
+              <th>State</th>
+              <th>Create Date</th>
+              <th>Action</th>
+            </tr>
+          </thead>
+
+          <tbody>
+            {rows.map((row) => (
+              <tr key={row.rel_id}>
+                <td>{row.rel_id}</td>
+                <td>{row.test_case_template_id}</td>
+                <td>{row.pre_test_case_template_id}</td>
+                <td>{row.tenant_id ?? "-"}</td>
+                <td>{row.state ?? 0}</td>
+                <td>{row.create_date || "-"}</td>
+                <td>
+                  <div className="action-buttons">
+                    <button
+                      className="btn btn-link"
+                      onClick={() => onEdit(row.rel_id)}
+                    >
+                      Edit
+                    </button>
+                    <button
+                      className="btn btn-link danger"
+                      onClick={() => handleDelete(row.rel_id)}
+                    >
+                      Delete
+                    </button>
+                  </div>
+                </td>
+              </tr>
+            ))}
+
+            {rows.length === 0 && (
+              <tr>
+                <td colSpan={7} className="empty-row">
+                  No Data
+                </td>
+              </tr>
+            )}
+          </tbody>
+        </table>
+
+        <div className="pagination-bar">
+          <button
+            onClick={() => setPage(page - 1)}
+            disabled={page === 1}
+          >
+            Prev
+          </button>
+
+          <span>
+            Page {page} / {Math.ceil(total / pageSize) || 1}
+          </span>
+
+          <button
+            onClick={() => setPage(page + 1)}
+            disabled={page >= Math.ceil(total / pageSize)}
+          >
+            Next
+          </button>
+        </div>
+      </div>
+    </div>
+  );
+}
+
+===== src\pages\TestDispatcherFormPage.tsx =====
+import { useEffect, useState } from "react";
+import { testopsApi } from "../api/testops";
+
+type Props = {
+  id: number | null;
+  onBack: () => void;
+};
+
+type FormDataType = {
+  que_name: string;
+  exe_machine: string;
+  plan_id: string;
+  batch_name: string;
+  send_email: string;
+  pass_rate_switch: string;
+  pass_rate: string;
+  default_msg_to_list: string;
+  msg_cc_list: string;
+  msg_to_list: string;
+  case_list: string;
+  actual_case_list: string;
+  explanation: string;
+  update_jira: string;
+  create_bug: string;
+  uipath_exe_machone: string;
+};
+
+const initialForm: FormDataType = {
+  que_name: "",
+  exe_machine: "",
+  plan_id: "0",
+  batch_name: "",
+  send_email: "0",
+  pass_rate_switch: "0",
+  pass_rate: "",
+  default_msg_to_list: "",
+  msg_cc_list: "",
+  msg_to_list: "",
+  case_list: "",
+  actual_case_list: "",
+  explanation: "",
+  update_jira: "",
+  create_bug: "",
+  uipath_exe_machone: ""
+};
+
+export default function TestDispatcherFormPage({ id, onBack }: Props) {
+  const [form, setForm] = useState<FormDataType>(initialForm);
+  const [loading, setLoading] = useState(false);
+
+  const pageTitle = id ? `Edit Plan - ${id}` : "Create Plan";
+
+  const loadDetail = async () => {
+    if (!id) return;
+
+    try {
+      const res = await testopsApi.getTestDispatcherDetail(id);
+      const d = res.data;
+
+      setForm({
+        que_name: d.que_name || "",
+        exe_machine: d.exe_machine || "",
+        plan_id: String(d.plan_id ?? 0),
+        batch_name: d.batch_name || "",
+        send_email: String(d.send_email ?? 0),
+        pass_rate_switch: String(d.pass_rate_switch ?? 0),
+        pass_rate: d.pass_rate || "",
+        default_msg_to_list: d.default_msg_to_list || "",
+        msg_cc_list: d.msg_cc_list || "",
+        msg_to_list: d.msg_to_list || "",
+        case_list: d.case_list || "",
+        actual_case_list: d.actual_case_list || "",
+        explanation: d.explanation || "",
+        update_jira: d.update_jira || "",
+        create_bug: d.create_bug || "",
+        uipath_exe_machone: d.uipath_exe_machone || ""
+      });
+    } catch (e: any) {
+      console.error("Load dispatcher detail error:", e);
+      alert(e?.response?.data?.detail || "Failed to load detail");
+    }
+  };
+
+  useEffect(() => {
+    loadDetail();
+  }, [id]);
+
+  const handleSave = async () => {
+    const payload = {
+      que_name: form.que_name,
+      exe_machine: form.exe_machine,
+      plan_id: Number(form.plan_id || 0),
+      batch_name: form.batch_name,
+      send_email: Number(form.send_email || 0),
+      pass_rate_switch: Number(form.pass_rate_switch || 0),
+      pass_rate: form.pass_rate,
+      default_msg_to_list: form.default_msg_to_list,
+      msg_cc_list: form.msg_cc_list,
+      msg_to_list: form.msg_to_list,
+      case_list: form.case_list,
+      actual_case_list: form.actual_case_list,
+      explanation: form.explanation,
+      update_jira: form.update_jira,
+      create_bug: form.create_bug,
+      uipath_exe_machone: form.uipath_exe_machone
+    };
+
+    setLoading(true);
+    try {
+      if (id) {
+        await testopsApi.updateTestDispatcher(id, payload);
+        alert("Updated successfully");
+      } else {
+        await testopsApi.createTestDispatcher(payload);
+        alert("Created successfully");
+      }
+      onBack();
+    } catch (e: any) {
+      console.error("Save dispatcher error:", e);
+      alert(e?.response?.data?.detail || "Save failed");
+    } finally {
+      setLoading(false);
+    }
+  };
+
+  return (
+    <div className="page-container">
+      <div className="form-header">
+        <div className="page-title">{pageTitle}</div>
+        <div className="form-header-actions">
+          <button className="btn btn-secondary" onClick={onBack}>
+            Back
+          </button>
+          <button
+            className="btn btn-primary"
+            onClick={handleSave}
+            disabled={loading}
+          >
+            {loading ? "Saving..." : "Save"}
+          </button>
+        </div>
+      </div>
+
+      <div className="form-card">
+        <div className="section-title">Basic Information</div>
+
+        <div className="form-grid">
+          <div className="field">
+            <label>Que Name</label>
+            <input
+              value={form.que_name}
+              onChange={(e) => setForm({ ...form, que_name: e.target.value })}
+            />
+          </div>
+
+          <div className="field">
+            <label>Exe Machine</label>
+            <input
+              value={form.exe_machine}
+              onChange={(e) => setForm({ ...form, exe_machine: e.target.value })}
+            />
+          </div>
+
+          <div className="field">
+            <label>Plan ID</label>
+            <input
+              value={form.plan_id}
+              onChange={(e) => setForm({ ...form, plan_id: e.target.value })}
+            />
+          </div>
+
+          <div className="field">
+            <label>Batch Name</label>
+            <input
+              value={form.batch_name}
+              onChange={(e) => setForm({ ...form, batch_name: e.target.value })}
+            />
+          </div>
+
+          <div className="field">
+            <label>Send Email</label>
+            <input
+              value={form.send_email}
+              onChange={(e) => setForm({ ...form, send_email: e.target.value })}
+            />
+          </div>
+
+          <div className="field">
+            <label>Pass Rate Switch</label>
+            <input
+              value={form.pass_rate_switch}
+              onChange={(e) =>
+                setForm({ ...form, pass_rate_switch: e.target.value })
+              }
+            />
+          </div>
+
+          <div className="field">
+            <label>Pass Rate</label>
+            <input
+              value={form.pass_rate}
+              onChange={(e) => setForm({ ...form, pass_rate: e.target.value })}
+            />
+          </div>
+
+          <div className="field">
+            <label>Update Jira</label>
+            <input
+              value={form.update_jira}
+              onChange={(e) => setForm({ ...form, update_jira: e.target.value })}
+            />
+          </div>
+
+          <div className="field">
+            <label>Create Bug</label>
+            <input
+              value={form.create_bug}
+              onChange={(e) => setForm({ ...form, create_bug: e.target.value })}
+            />
+          </div>
+
+          <div className="field">
+            <label>UiPath Exe Machone</label>
+            <input
+              value={form.uipath_exe_machone}
+              onChange={(e) =>
+                setForm({ ...form, uipath_exe_machone: e.target.value })
+              }
+            />
+          </div>
+
+          <div className="field">
+            <label>Explanation</label>
+            <input
+              value={form.explanation}
+              onChange={(e) =>
+                setForm({ ...form, explanation: e.target.value })
+              }
+            />
+          </div>
+        </div>
+      </div>
+
+      <div className="form-card">
+        <div className="section-title">Message Configuration</div>
+
+        <div className="form-grid">
+          <div className="field">
+            <label>Default Msg To List</label>
+            <input
+              value={form.default_msg_to_list}
+              onChange={(e) =>
+                setForm({ ...form, default_msg_to_list: e.target.value })
+              }
+            />
+          </div>
+
+          <div className="field">
+            <label>Msg CC List</label>
+            <input
+              value={form.msg_cc_list}
+              onChange={(e) =>
+                setForm({ ...form, msg_cc_list: e.target.value })
+              }
+            />
+          </div>
+
+          <div className="field">
+            <label>Msg To List</label>
+            <input
+              value={form.msg_to_list}
+              onChange={(e) =>
+                setForm({ ...form, msg_to_list: e.target.value })
+              }
+            />
+          </div>
+        </div>
+      </div>
+
+      <div className="form-card">
+        <div className="section-title">Case Data</div>
+
+        <div className="field">
+          <label>Case List</label>
+          <textarea
+            className="json-editor"
+            value={form.case_list}
+            onChange={(e) => setForm({ ...form, case_list: e.target.value })}
+          />
+        </div>
+
+        <div className="field" style={{ marginTop: "16px" }}>
+          <label>Actual Case List</label>
+          <textarea
+            className="json-editor"
+            value={form.actual_case_list}
+            onChange={(e) =>
+              setForm({ ...form, actual_case_list: e.target.value })
+            }
+          />
+        </div>
+      </div>
+    </div>
+  );
+}
+
+===== src\pages\TestDispatcherListPage.tsx =====
+import { useEffect, useState } from "react";
+import { testopsApi } from "../api/testops";
+
+type Props = {
+  onAdd: () => void;
+  onEdit: (id: number) => void;
+};
+
+type SearchForm = {
+  dispatcher_plan_id: string;
+  que_name: string;
+  exe_machine: string;
+  batch_name: string;
+};
+
+const initialSearchForm: SearchForm = {
+  dispatcher_plan_id: "",
+  que_name: "",
+  exe_machine: "",
+  batch_name: ""
+};
+
+export default function TestDispatcherListPage({ onAdd, onEdit }: Props) {
+  const [searchForm, setSearchForm] = useState<SearchForm>(initialSearchForm);
+  const [rows, setRows] = useState<any[]>([]);
+  const [total, setTotal] = useState(0);
+  const [loading, setLoading] = useState(false);
+
+  const [page, setPage] = useState(1);
+  const pageSize = 10;
+
+  const loadData = async (targetPage = page, currentSearch = searchForm) => {
+    setLoading(true);
+    try {
+      const res = await testopsApi.getTestDispatchers({
+        dispatcher_plan_id: currentSearch.dispatcher_plan_id
+          ? Number(currentSearch.dispatcher_plan_id)
+          : undefined,
+        que_name: currentSearch.que_name || undefined,
+        exe_machine: currentSearch.exe_machine || undefined,
+        batch_name: currentSearch.batch_name || undefined,
+        page: targetPage,
+        page_size: pageSize
+      });
+
+      setRows(res.data?.data || []);
+      setTotal(res.data?.total || 0);
+    } catch (e: any) {
+      console.error("Load dispatcher list error:", e);
+      alert(e?.response?.data?.detail || "Failed to load data");
+    } finally {
+      setLoading(false);
+    }
+  };
+
+  useEffect(() => {
+    loadData(page);
+  }, [page]);
+
+  const handleSearch = async () => {
+    setPage(1);
+    await loadData(1, searchForm);
+  };
+
+  const handleClear = async () => {
+    setSearchForm(initialSearchForm);
+    setPage(1);
+    await loadData(1, initialSearchForm);
+  };
+
+  const handleDelete = async (id: number) => {
+    const ok = window.confirm(`Confirm delete dispatcher_plan_id=${id}?`);
+    if (!ok) return;
+
+    try {
+      await testopsApi.deleteTestDispatcher(id);
+      alert("Deleted successfully");
+
+      const totalPage = Math.max(1, Math.ceil((total - 1) / pageSize));
+      const nextPage = page > totalPage ? totalPage : page;
+      setPage(nextPage);
+      await loadData(nextPage);
+    } catch (e: any) {
+      console.error("Delete dispatcher error:", e);
+      alert(e?.response?.data?.detail || "Delete failed");
+    }
+  };
+
+  return (
+    <div className="page-container">
+      <div className="page-title">Test Plan Config</div>
+
+      <div className="search-card">
+        <div className="search-card-title">Search Condition</div>
+
+        <div className="search-grid">
+          <div className="field">
+            <label>Dispatcher Plan ID</label>
+            <input
+              value={searchForm.dispatcher_plan_id}
+              onChange={(e) =>
+                setSearchForm({ ...searchForm, dispatcher_plan_id: e.target.value })
+              }
+              placeholder="Enter dispatcher_plan_id"
+            />
+          </div>
+
+          <div className="field">
+            <label>Que Name</label>
+            <input
+              value={searchForm.que_name}
+              onChange={(e) =>
+                setSearchForm({ ...searchForm, que_name: e.target.value })
+              }
+              placeholder="Enter que name"
+            />
+          </div>
+
+          <div className="field">
+            <label>Exe Machine</label>
+            <input
+              value={searchForm.exe_machine}
+              onChange={(e) =>
+                setSearchForm({ ...searchForm, exe_machine: e.target.value })
+              }
+              placeholder="Enter exe machine"
+            />
+          </div>
+
+          <div className="field">
+            <label>Batch Name</label>
+            <input
+              value={searchForm.batch_name}
+              onChange={(e) =>
+                setSearchForm({ ...searchForm, batch_name: e.target.value })
+              }
+              placeholder="Enter batch name"
+            />
+          </div>
+
+        </div>
+
+        <div className="search-actions">
+          <button className="btn btn-secondary" onClick={handleClear}>
+            Clear
+          </button>
+          <button className="btn btn-primary" onClick={handleSearch}>
+            Search
+          </button>
+          <button className="btn btn-success" onClick={onAdd}>
+            Add Plan
+          </button>
+        </div>
+      </div>
+
+      <div className="table-card">
+        <div className="table-header">
+          <div>Plan List</div>
+          <div>Total {total}</div>
+        </div>
+
+        {loading ? (
+          <div className="loading-box">Loading...</div>
+        ) : (
+          <table className="case-table">
+            <thead>
+              <tr>
+                <th>Dispatcher Plan ID</th>
+                <th>Batch Name</th>
+                <th>Que Name</th>
+                <th>Exe Machine</th>
+                <th>Send Email</th>
+                <th>Pass Rate Switch</th>
+                <th>Pass Rate</th>
+                <th>Update Jira</th>
+                <th>Create Bug</th>
+                <th>Create Date</th>
+                <th>Action</th>
+              </tr>
+            </thead>
+
+            <tbody>
+              {rows.map((row) => (
+                <tr key={row.dispatcher_plan_id}>
+                  <td>{row.dispatcher_plan_id}</td>
+                  <td>{row.batch_name || "-"}</td>
+                  <td>{row.que_name || "-"}</td>
+                  <td>{row.exe_machine || "-"}</td>
+                  <td>{row.send_email ?? "-"}</td>
+                  <td>{row.pass_rate_switch ?? "-"}</td>
+                  <td>{row.pass_rate || "-"}</td>
+                  <td>{row.update_jira || "-"}</td>
+                  <td>{row.create_bug || "-"}</td>
+                  <td>{row.create_date || "-"}</td>
+                  <td>
+                    <div className="action-buttons">
+                      <button
+                        className="btn btn-link"
+                        onClick={() => onEdit(row.dispatcher_plan_id)}
+                      >
+                        Edit
+                      </button>
+                      <button
+                        className="btn btn-link danger"
+                        onClick={() => handleDelete(row.dispatcher_plan_id)}
+                      >
+                        Delete
+                      </button>
+                    </div>
+                  </td>
+                </tr>
+              ))}
+
+              {rows.length === 0 && (
+                <tr>
+                  <td colSpan={14} className="empty-row">
+                    No Data
+                  </td>
+                </tr>
+              )}
+            </tbody>
+          </table>
+        )}
+
+        <div className="pagination-bar">
+          <button
+            onClick={() => setPage(page - 1)}
+            disabled={page === 1}
+          >
+            Prev
+          </button>
+
+          <span>
+            Page {page} / {Math.ceil(total / pageSize) || 1}
+          </span>
+
+          <button
+            onClick={() => setPage(page + 1)}
+            disabled={page >= Math.ceil(total / pageSize)}
+          >
+            Next
+          </button>
+        </div>
+      </div>
+    </div>
+  );
+}
+
+===== src\styles\testops.css =====
+/* ===== Sidebar ONLY（不影响右侧）===== */
+
+.sidebar {
+  width: 240px;
+  background: #ffffff;
+  border-right: 1px solid #e5e7eb;
+  padding: 20px 12px;
+}
+
+.sidebar-logo {
+  font-size: 26px;
+  font-weight: 800;
+  margin-bottom: 24px;
+  padding-left: 10px;
+  color: #111827;
+}
+
+/* ⭐ 模块标题（更大+加粗） */
+.sidebar-group-title {
+  font-size: 13px;
+  font-weight: 700;
+  color: #9ca3af;
+  margin: 18px 10px 6px;
+  text-transform: uppercase;
+  letter-spacing: 0.6px;
+}
+
+/* ⭐ 子菜单（更小，不加粗） */
+.sidebar-item {
+  font-size: 14px;
+  font-weight: 400;
+  padding: 8px 14px 8px 18px;
+  border-radius: 8px;
+  cursor: pointer;
+  color: #374151;
+  margin-bottom: 4px;
+  transition: all 0.2s ease;
+  position: relative;
+}
+
+/* hover */
+.sidebar-item:hover {
+  background: #f3f4f6;
+}
+
+/* 激活状态 */
+.sidebar-item.active {
+  background: linear-gradient(135deg, #2563eb, #3b82f6);
+  color: #fff;
+}
+
+/* 左侧蓝条 */
+.sidebar-item.active::before {
+  content: "";
+  position: absolute;
+  left: 0;
+  width: 3px;
+  height: 18px;
+  background: #1d4ed8;
+  border-radius: 2px;
+}
+
+===== src\utils\status.ts =====
+export function getCaseExecutionStateText(value: number) {
+  switch (value) {
+    case 1: return "Running"
+    case 2: return "Success"
+    case 3: return "Failed"
+    case 4: return "Verifying"
+    case 5: return "Verify Success"
+    case 6: return "Verify Failed"
+    case 7: return "Triggered Verify"
+    case 8: return "UiPath Success"
+    case 9: return "Order Processing"
+    case 10: return "Order Success"
+    case 11: return "Order Failed"
+    case 12: return "Triggered Order"
+    case 13: return "No Order Needed"
+    case 14: return "No Verify Needed"
+    default: return "-"
+  }
+}
+
+
+
+export function getComponentExecutionStateText(value: number) {
+  const map: Record<number, string> = {
+    0: "Init",
+    2: "Success",
+    3: "Failed",
+  };
+
+  return map[value] || "-";
+}
+
+export function getComponentExecutionStateColor(value: number) {
+  const map: Record<number, string> = {
+    0: "#999",
+    2: "#16a34a",
+    3: "#dc2626",
+  };
+
+  return map[value] || "#666";
+}
+
+===== ai-testops-frontend\index.html =====
+<div id="root"></div>
+<script type="module" src="/src/main.tsx"></script>

@@ -1,0 +1,61 @@
+/* ===== Sidebar ONLY（不影响右侧）===== */
+
+.sidebar {
+  width: 240px;
+  background: #ffffff;
+  border-right: 1px solid #e5e7eb;
+  padding: 20px 12px;
+}
+
+.sidebar-logo {
+  font-size: 26px;
+  font-weight: 800;
+  margin-bottom: 24px;
+  padding-left: 10px;
+  color: #111827;
+}
+
+/* ⭐ 模块标题（更大+加粗） */
+.sidebar-group-title {
+  font-size: 13px;
+  font-weight: 700;
+  color: #9ca3af;
+  margin: 18px 10px 6px;
+  text-transform: uppercase;
+  letter-spacing: 0.6px;
+}
+
+/* ⭐ 子菜单（更小，不加粗） */
+.sidebar-item {
+  font-size: 14px;
+  font-weight: 400;
+  padding: 8px 14px 8px 18px;
+  border-radius: 8px;
+  cursor: pointer;
+  color: #374151;
+  margin-bottom: 4px;
+  transition: all 0.2s ease;
+  position: relative;
+}
+
+/* hover */
+.sidebar-item:hover {
+  background: #f3f4f6;
+}
+
+/* 激活状态 */
+.sidebar-item.active {
+  background: linear-gradient(135deg, #2563eb, #3b82f6);
+  color: #fff;
+}
+
+/* 左侧蓝条 */
+.sidebar-item.active::before {
+  content: "";
+  position: absolute;
+  left: 0;
+  width: 3px;
+  height: 18px;
+  background: #1d4ed8;
+  border-radius: 2px;
+}

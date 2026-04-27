@@ -1,0 +1,23 @@
+{
+  "compilerOptions": {
+    "target": "ESNext",
+    "lib": ["DOM", "ESNext"],
+    "module": "ESNext",
+
+    "moduleResolution": "bundler",   // ⭐ 关键修复
+
+    "jsx": "react-jsx",
+
+    "strict": false,
+    "skipLibCheck": true,
+
+    "esModuleInterop": true,
+    "allowSyntheticDefaultImports": true,
+
+    "resolveJsonModule": true,
+    "isolatedModules": true,
+
+    "noEmit": true
+  },
+  "include": ["src"]
+}
