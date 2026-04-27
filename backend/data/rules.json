@@ -1,0 +1,180 @@
+[
+  {
+    "pattern": "i_data_index",
+    "match": null,
+    "error_type": "i表处理异常",
+    "root_cause": "Billing i表没有启动或者MDB上传数据失败或者offer数据缺失"
+  },
+
+  {
+    "pattern": "database validation error",
+    "match": "mem_shortnum",
+    "error_type": "VPN检查",
+    "root_cause": "MEM_SHORTNUM 表未落表"
+  },
+  {
+    "pattern": "database validation error",
+    "match": "insurance",
+    "error_type": "保险检查",
+    "root_cause": "保险订单没有生成"
+  },
+  {
+    "pattern": "insurance user not generated",
+    "match": null,
+    "error_type": "保险检查",
+    "root_cause": "保险订单没有生成"
+  },
+
+  {
+    "pattern": "order process wrong",
+    "match": null,
+    "error_type": "执行超时",
+    "root_cause": "CRM环境异常"
+  },
+  {
+    "pattern": "order process stuck",
+    "match": null,
+    "error_type": "执行超时",
+    "root_cause": "订单工作流延时"
+  },
+
+  {
+    "pattern": "数组越界",
+    "match": null,
+    "error_type": "CRM BUG",
+    "root_cause": "CRM BUG"
+  },
+  {
+    "pattern": "index out of range",
+    "match": null,
+    "error_type": "自动化或系统BUG",
+    "root_cause": "数组越界"
+  },
+    {
+    "pattern": "mem_shortnum",
+    "match": null,
+    "error_type": "VPN检查",
+    "root_cause": "MEM_SHORTNUM 表异常或未生成"
+  },
+  {
+    "pattern": "case execute over time",
+    "match": null,
+    "error_type": "执行超时",
+    "root_cause": "case执行超时"
+  },
+  {
+    "pattern": "resource not found",
+    "match": null,
+    "error_type": "数据准备",
+    "root_cause": "资源不存在或未生成"
+  },
+  {
+    "pattern": "ui element not found",
+    "match": null,
+    "error_type": "自动化BUG",
+    "root_cause": "UI元素定位失败"
+  },
+  {
+	"pattern": "test data missing",
+	"match": "test data",
+	"error_type": "数据准备",
+	"root_cause": "测试数据未准备或SQL未生成数据"
+  },
+  {
+	"pattern": "bill id missing",
+	"match": "bill id",
+	"error_type": "数据准备",
+	"root_cause": "号码资源不足或未生成"
+  },
+
+  {
+    "pattern": "send confirm to och",
+    "match": null,
+    "error_type": "系统问题",
+    "root_cause": "流程未走到 SEND CONFIRM TO OCH"
+  },
+
+  {
+    "pattern": "object reference not set",
+    "match": null,
+    "error_type": "自动化BUG",
+    "root_cause": "空指针异常"
+  },
+
+  {
+    "pattern": "data can not found",
+    "match": null,
+    "error_type": "数据准备",
+    "root_cause": "没有找到可用数据"
+  },
+
+  {
+    "pattern": "order session was not found",
+    "match": null,
+    "error_type": "Sff stub issue",
+    "root_cause": "session issue"
+  },
+
+  {
+    "pattern": "communication with server exception",
+    "match": null,
+    "error_type": "环境问题",
+    "root_cause": "发布或网络异常"
+  },
+
+  {
+    "pattern": "selector",
+    "match": null,
+    "error_type": "自动化BUG",
+    "root_cause": "UI元素定位失败"
+  },
+
+  {
+    "pattern": "validate address",
+    "match": null,
+    "error_type": "数据准备",
+    "root_cause": "地址数据不可用"
+  },
+
+  {
+    "pattern": "resource can not found",
+    "match": null,
+    "error_type": "数据准备",
+    "root_cause": "资源缺失"
+  },
+
+  {
+    "pattern": "iccid",
+    "match": null,
+    "error_type": "数据准备",
+    "root_cause": "ICCID缺失"
+  },
+
+  {
+    "pattern": "ucm",
+    "match": null,
+    "error_type": "系统配置",
+    "root_cause": "UCM配置缺失"
+  },
+
+  {
+    "pattern": "ord_batch_group",
+    "match": null,
+    "error_type": "数据准备",
+    "root_cause": "生成记录过慢"
+  },
+
+  {
+    "pattern": "system exception",
+    "match": null,
+    "error_type": "环境问题",
+    "root_cause": "系统异常"
+  },
+
+  {
+    "pattern": "deliveryoption",
+    "match": null,
+    "error_type": "环境问题",
+    "root_cause": "流程中断"
+  }
+]

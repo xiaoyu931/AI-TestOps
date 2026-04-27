@@ -1,0 +1,310 @@
+[
+  {
+    "error_type": "System bug",
+    "root_cause": "SQL execution exception",
+    "solution": "Check SQL statements or database status",
+    "category": "Database",
+    "confidence": "high"
+  },
+  {
+    "error_type": "Automation bug",
+    "root_cause": "At the beginning of the month, due to time zone differences, data in soa_interaction_log was inserted into the August table, while automation queried the September table, causing validation failure",
+    "solution": "Modify the automation query logic",
+    "category": "Data",
+    "confidence": "medium"
+  },
+  {
+    "error_type": "Data issue",
+    "root_cause": "No available data",
+    "solution": "Prepare test data or check the data preparation process",
+    "category": "Data",
+    "confidence": "high"
+  },
+  {
+    "error_type": "Automation bug",
+    "root_cause": "Failed to select offer, UiPath code needs to be updated",
+    "solution": "Modify automation code",
+    "category": "Other",
+    "confidence": "medium"
+  },
+  {
+    "error_type": "Automation bug",
+    "root_cause": "billingcheck",
+    "solution": "Further analyze logs or contact the relevant system owner",
+    "category": "Other",
+    "confidence": "low"
+  },
+  {
+    "error_type": "Environment issue",
+    "root_cause": "BillingCheck failed, order remains in the current table and did not move to the history table",
+    "solution": "Further analyze logs or contact the relevant system owner",
+    "category": "Other",
+    "confidence": "medium"
+  },
+  {
+    "error_type": "Automation bug",
+    "root_cause": "Could not write the DataTable starting with cell A3, failed to write Excel file",
+    "solution": "Further analyze logs or contact the relevant system owner",
+    "category": "Other",
+    "confidence": "medium"
+  },
+  {
+    "error_type": "Environment issue",
+    "root_cause": "Order workflow was stuck for 5 hours before continuing",
+    "solution": "Further analyze logs or contact the relevant system owner",
+    "category": "Other",
+    "confidence": "medium"
+  },
+  {
+    "error_type": "Environment issue",
+    "root_cause": "Service communication exception",
+    "solution": "Check service interfaces or network status",
+    "category": "Environment",
+    "confidence": "high"
+  },
+  {
+    "error_type": "Data issue",
+    "root_cause": "Product attribute component array out of bounds",
+    "solution": "Further analyze logs or contact the relevant system owner",
+    "category": "Other",
+    "confidence": "medium"
+  },
+  {
+    "error_type": "Data issue",
+    "root_cause": "OnlineDate is within 48 hours and cannot be canceled",
+    "solution": "Further analyze logs or contact the relevant system owner",
+    "category": "Other",
+    "confidence": "medium"
+  },
+  {
+    "error_type": "Data issue",
+    "root_cause": "Address validation failed",
+    "solution": "Check address data or validation rules",
+    "category": "Other",
+    "confidence": "high"
+  },
+  {
+    "error_type": "Automation bug",
+    "root_cause": "The replace SIM option was not clicked, but the component marked it as successfully executed",
+    "solution": "Further analyze logs or contact the relevant system owner",
+    "category": "Other",
+    "confidence": "medium"
+  },
+  {
+    "error_type": "Environment issue",
+    "root_cause": "i-table processing exception",
+    "solution": "Check i-table synchronization or data processing flow",
+    "category": "Other",
+    "confidence": "high"
+  },
+  {
+    "error_type": "External system issue",
+    "root_cause": "Process stuck",
+    "solution": "Check process nodes or rerun the process",
+    "category": "Process",
+    "confidence": "high"
+  },
+  {
+    "error_type": "Environment issue",
+    "root_cause": "Environment issue, all case screenshots appear as blank white screens",
+    "solution": "Further analyze logs or contact the relevant system owner",
+    "category": "Environment",
+    "confidence": "medium"
+  },
+  {
+    "error_type": "Environment issue",
+    "root_cause": "Most automation cases failed due to inability to log in to CRM",
+    "solution": "Further analyze logs or contact the relevant system owner",
+    "category": "Data",
+    "confidence": "medium"
+  },
+  {
+    "error_type": "System bug",
+    "root_cause": "Abnormal TDC region configuration data",
+    "solution": "Further analyze logs or contact the relevant system owner",
+    "category": "Data",
+    "confidence": "medium"
+  },
+  {
+    "error_type": "Automation bug",
+    "root_cause": "Script parameters not initialized",
+    "solution": "Initialize script parameters or fix script logic",
+    "category": "Other",
+    "confidence": "high"
+  },
+  {
+    "error_type": "Data issue",
+    "root_cause": "SIM card unavailable prompt appears for the customer",
+    "solution": "Replace the customer",
+    "category": "Other",
+    "confidence": "medium"
+  },
+  {
+    "error_type": "System configuration issue",
+    "root_cause": "Abnormal page display caused incorrect selection of insurance contact method",
+    "solution": "Clear browser cache",
+    "category": "Other",
+    "confidence": "medium"
+  },
+  {
+    "error_type": "Data issue",
+    "root_cause": "User not found under the customer",
+    "solution": "Replace the customer",
+    "category": "Other",
+    "confidence": "medium"
+  },
+  {
+    "error_type": "Data issue",
+    "root_cause": "OSE missing Jira ID, causing incorrect Error Summary display",
+    "solution": "Optimize data configuration",
+    "category": "Other",
+    "confidence": "medium"
+  },
+  {
+    "error_type": "Data issue",
+    "root_cause": "Preconditions not executed, possibly related to changing the customer",
+    "solution": "Further analyze logs or contact the relevant system owner",
+    "category": "Other",
+    "confidence": "medium"
+  },
+  {
+    "error_type": "External system issue",
+    "root_cause": "SAP stub was modified but not reset, resulting in all orders being future orders",
+    "solution": "Restore SAP stub after modification",
+    "category": "Other",
+    "confidence": "medium"
+  },
+  {
+    "error_type": "External system issue",
+    "root_cause": "SFF returned 200, TDC stub issue",
+    "solution": "Rerun the case",
+    "category": "Other",
+    "confidence": "medium"
+  },
+  {
+    "error_type": "Automation bug",
+    "root_cause": "not enough arguments for format string",
+    "solution": "Check cfg_test_case_data configuration",
+    "category": "Other",
+    "confidence": "high"
+  },
+  {
+    "error_type": "Data issue",
+    "root_cause": "Opennet address unavailable",
+    "solution": "Change address",
+    "category": "Other",
+    "confidence": "medium"
+  },
+  {
+    "error_type": "Data issue",
+    "root_cause": "Insufficient inventory",
+    "solution": "Replenish inventory or adjust inventory configuration",
+    "category": "Data",
+    "confidence": "high"
+  },
+  {
+    "error_type": "Data issue",
+    "root_cause": "Offer configuration changed",
+    "solution": "Configure dedicated offers for automation, prefixed with 'auto'",
+    "category": "Other",
+    "confidence": "medium"
+  },
+  {
+    "error_type": "Automation bug",
+    "root_cause": "Find Offer failed!",
+    "solution": "Page loading too slow, offer not displayed in time",
+    "category": "Other",
+    "confidence": "medium"
+  },
+  {
+    "error_type": "Data issue",
+    "root_cause": "Submit order failed",
+    "solution": "If the customer is newly created, check whether a retail account exists",
+    "category": "Other",
+    "confidence": "medium"
+  },
+  {
+    "error_type": "Automation bug",
+    "root_cause": "Offer modified, additional prompt appears when selecting offer",
+    "solution": "Enhance offer component to handle this scenario or adjust offer configuration",
+    "category": "Other",
+    "confidence": "medium"
+  },
+  {
+    "error_type": "Automation bug",
+    "root_cause": "Component content did not initialize DealNumberSerie",
+    "solution": "Check input parameters of the component",
+    "category": "Other",
+    "confidence": "high"
+  },
+  {
+    "error_type": "Automation bug",
+    "root_cause": "pushc not found",
+    "solution": "Check whether pass_rate in test_dispatcher_data is set to 0",
+    "category": "Other",
+    "confidence": "medium"
+  },
+  {
+    "error_type": "Data issue",
+    "root_cause": "No available user found",
+    "solution": "Execute data preparation cases",
+    "category": "Other",
+    "confidence": "high"
+  },
+  {
+    "error_type": "Environment issue",
+    "root_cause": "Environment issue causing offer information not to display",
+    "solution": "Further analyze logs or contact the relevant system owner",
+    "category": "Environment",
+    "confidence": "medium"
+  },
+  {
+    "error_type": "Data issue",
+    "root_cause": "Offer configuration changed, additional double SIM add-on introduced",
+    "solution": "Enhance offer component to handle this scenario or adjust offer configuration",
+    "category": "Other",
+    "confidence": "medium"
+  },
+  {
+    "error_type": "OMP configuration issue",
+    "root_cause": "OMP execution order not set to serial, causing concurrency conflicts",
+    "solution": "Adjust execution order to Serial",
+    "category": "Other",
+    "confidence": "high"
+  },
+  {
+    "error_type": "Environment issue",
+    "root_cause": "Process execution delay",
+    "solution": "Optimize process execution efficiency",
+    "category": "Process",
+    "confidence": "high"
+  },
+  {
+    "error_type": "Data issue",
+    "root_cause": "Insufficient ICCID resources",
+    "solution": "Replenish ICCID resources or check resource pool",
+    "category": "Data",
+    "confidence": "high"
+  },
+  {
+    "error_type": "Environment issue",
+    "root_cause": "Failed to get oseOrderId or CRM order ID",
+    "solution": "Further analyze logs or contact the relevant system owner",
+    "category": "Other",
+    "confidence": "low"
+  },
+  {
+    "error_type": "Environment issue",
+    "root_cause": "Execution timeout",
+    "solution": "Check environment or optimize script process",
+    "category": "Process",
+    "confidence": "high"
+  },
+  {
+    "error_type": "UI element not found",
+    "root_cause": "UI element location failed",
+    "solution": "Check UI elements or update automation selectors",
+    "category": "Automation",
+    "confidence": "high"
+  }
+]

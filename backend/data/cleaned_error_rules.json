@@ -1,0 +1,178 @@
+[
+  {
+    "pattern": "i_data_index",
+    "match": null,
+    "error_type": "i-table processing exception",
+    "root_cause": "Billing i-table not started, or MDB upload failed, or offer data missing",
+    "priority": 10,
+    "is_active": true
+  },
+  {
+    "pattern": "database validation error",
+    "match": "mem_shortnum",
+    "error_type": "VPN check",
+    "root_cause": "MEM_SHORTNUM table not created",
+    "priority": 8,
+    "is_active": true
+  },
+  {
+    "pattern": "database validation error",
+    "match": "insurance",
+    "error_type": "Insurance check",
+    "root_cause": "Insurance order not generated",
+    "priority": 5,
+    "is_active": true
+  },
+  {
+    "pattern": "order process wrong",
+    "match": null,
+    "error_type": "Execution timeout",
+    "root_cause": "CRM environment abnormal",
+    "priority": 9,
+    "is_active": true
+  },
+  {
+    "pattern": "order process stuck",
+    "match": null,
+    "error_type": "Execution timeout",
+    "root_cause": "Order workflow delay",
+    "priority": 9,
+    "is_active": true
+  },
+  {
+    "pattern": "Array out of bounds",
+    "match": null,
+    "error_type": "CRM bug",
+    "root_cause": "CRM bug",
+    "priority": 8,
+    "is_active": true
+  },
+  {
+    "pattern": "send confirm to och",
+    "match": null,
+    "error_type": "System issue",
+    "root_cause": "Process did not reach SEND CONFIRM TO OCH",
+    "priority": 10,
+    "is_active": true
+  },
+  {
+    "pattern": "case execute over time",
+    "match": null,
+    "error_type": "Execution timeout",
+    "root_cause": "Case execution timeout",
+    "priority": 9,
+    "is_active": true
+  },
+  {
+    "pattern": "object reference not set",
+    "match": null,
+    "error_type": "Automation bug",
+    "root_cause": "Null pointer exception",
+    "priority": 8,
+    "is_active": true
+  },
+  {
+    "pattern": "test data missing",
+    "match": "test data",
+    "error_type": "Data preparation",
+    "root_cause": "Test data not prepared or SQL did not generate data",
+    "priority": 6,
+    "is_active": true
+  },
+  {
+    "pattern": "order session was not found",
+    "match": null,
+    "error_type": "Sff stub issue",
+    "root_cause": "Session issue",
+    "priority": 5,
+    "is_active": true
+  },
+  {
+    "pattern": "communication with server exception",
+    "match": null,
+    "error_type": "Environment issue",
+    "root_cause": "Deployment or network exception",
+    "priority": 10,
+    "is_active": true
+  },
+  {
+    "pattern": "selector",
+    "match": null,
+    "error_type": "Automation bug",
+    "root_cause": "UI element location failed",
+    "priority": 8,
+    "is_active": true
+  },
+  {
+    "pattern": "validate address",
+    "match": null,
+    "error_type": "Data preparation",
+    "root_cause": "Address data unavailable",
+    "priority": 6,
+    "is_active": true
+  },
+  {
+    "pattern": "resource not found",
+    "match": null,
+    "error_type": "Data preparation",
+    "root_cause": "Resource does not exist or was not generated",
+    "priority": 6,
+    "is_active": true
+  },
+  {
+    "pattern": "bill id missing",
+    "match": "bill id",
+    "error_type": "Data preparation",
+    "root_cause": "Insufficient number resources or not generated",
+    "priority": 6,
+    "is_active": true
+  },
+  {
+    "pattern": "index out of range",
+    "match": null,
+    "error_type": "Automation or system bug",
+    "root_cause": "Array index out of bounds",
+    "priority": 10,
+    "is_active": true
+  },
+  {
+    "pattern": "ucm",
+    "match": null,
+    "error_type": "System configuration",
+    "root_cause": "Missing UCM configuration",
+    "priority": 10,
+    "is_active": true
+  },
+  {
+    "pattern": "ord_batch_group",
+    "match": null,
+    "error_type": "Data preparation",
+    "root_cause": "Record generation too slow",
+    "priority": 6,
+    "is_active": true
+  },
+  {
+    "pattern": "ui element not found",
+    "match": null,
+    "error_type": "Automation bug",
+    "root_cause": "UI element location failed",
+    "priority": 8,
+    "is_active": true
+  },
+  {
+    "pattern": "system exception",
+    "match": null,
+    "error_type": "Environment issue",
+    "root_cause": "System exception",
+    "priority": 10,
+    "is_active": true
+  },
+  {
+    "pattern": "deliveryoption",
+    "match": null,
+    "error_type": "Environment issue",
+    "root_cause": "Process interruption",
+    "priority": 10,
+    "is_active": true
+  }
+]
