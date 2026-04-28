@@ -10,11 +10,11 @@
     "source": "excel_cleaned"
   },
   {
-    "pattern": "\\{\"errorData\":\\[\"code:\\d+,System\\ exception，online\\ date\\ can't\\ be\\ chosen!\"\\]\\}\\ 环境问题",
+    "pattern": "\\{\"errorData\":\\[\"code:\\d+,System\\ exception，online\\ date\\ can't\\ be\\ chosen!\"\\]\\}",
     "match": "",
     "match_text": "",
     "error_type": "Environment issue",
-    "root_cause": "环境问题",
+    "root_cause": "Environment issue",
     "priority": 10,
     "is_active": true,
     "source": "excel_cleaned"
@@ -40,11 +40,11 @@
     "source": "excel_cleaned"
   },
   {
-    "pattern": "没找到报错信息，没找到报错截图，DeliveryOption\\ 组件执行之后没有后续组件的执行信息\\ 环境问题",
+    "pattern": "没找到报错信息，没找到报错截图，DeliveryOption\\ 组件执行之后没有后续组件的执行信息",
     "match": "",
     "match_text": "",
     "error_type": "Environment issue",
-    "root_cause": "环境问题",
+    "root_cause": "Environment issue",
     "priority": 10,
     "is_active": true,
     "source": "excel_cleaned"
@@ -53,7 +53,7 @@
     "pattern": "order process wrong|order process is wrong",
     "match": "",
     "match_text": "",
-    "error_type": "执行超时",
+    "error_type": "Execution timeout",
     "root_cause": "CRM environment abnormal",
     "priority": 10,
     "is_active": true,
