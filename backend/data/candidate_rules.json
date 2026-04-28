@@ -1,16 +1,275 @@
 [
   {
-    "pattern": "页面没打开",
-    "count": 1,
-    "examples": [
-      "页面没打开"
-    ]
+    "pattern": "i_data_index",
+    "match_text": "",
+    "error_type": "Data issue",
+    "root_cause": "Billing i-table not started, or MDB upload failed, or offer data missing",
+    "priority": 10
   },
   {
-    "pattern": "结果检查没触发",
-    "count": 1,
-    "examples": [
-      "结果检查没触发"
-    ]
+    "pattern": "order process wrong|order process is wrong",
+    "match_text": "",
+    "error_type": "执行超时",
+    "root_cause": "CRM environment abnormal",
+    "priority": 10
+  },
+  {
+    "pattern": "order process stuck|order process is stuck",
+    "match_text": "",
+    "error_type": "Environment issue",
+    "root_cause": "Order workflow delay",
+    "priority": 10
+  },
+  {
+    "pattern": "case execute over time|current case execute over time|current case excute over time|over time",
+    "match_text": "",
+    "error_type": "Environment issue",
+    "root_cause": "Case execution timeout",
+    "priority": 10
+  },
+  {
+    "pattern": "communication with server exception|communication with server",
+    "match_text": "",
+    "error_type": "Environment issue",
+    "root_cause": "Deployment or network exception",
+    "priority": 10
+  },
+  {
+    "pattern": "\\{\"errorData\":\\[\"code:\\d+,System\\ exception，online\\ date\\ can't\\ be\\ chosen!\"\\]\\}\\ 环境问题",
+    "match_text": "",
+    "error_type": "Environment issue",
+    "root_cause": "环境问题",
+    "priority": 10
+  },
+  {
+    "pattern": "没找到报错信息，没找到报错截图，DeliveryOption\\ 组件执行之后没有后续组件的执行信息\\ 环境问题",
+    "match_text": "",
+    "error_type": "Environment issue",
+    "root_cause": "环境问题",
+    "priority": 10
+  },
+  {
+    "pattern": "soasapinterface\\s*\\(\\s*createdoc\\s*\\)|data can'?t found|code['\\\"]?\\s*:\\s*404",
+    "match_text": "createDoc",
+    "error_type": "Data issue",
+    "root_cause": "SAP createDoc returned data not found",
+    "priority": 10
+  },
+  {
+    "pattern": "object reference not set",
+    "match_text": "",
+    "error_type": "Automation bug",
+    "root_cause": "Null pointer exception",
+    "priority": 8
+  },
+  {
+    "pattern": "找不到对应此选取器的用户界面元素|ui element not found|selector",
+    "match_text": "",
+    "error_type": "Automation bug",
+    "root_cause": "UI element location failed",
+    "priority": 8
+  },
+  {
+    "pattern": "arrayindexoutofboundsexception|index \\d+ out of bounds|index out of bounds|index out of range|array out of bounds",
+    "match_text": "",
+    "error_type": "业务报错",
+    "root_cause": "Array index out of bounds",
+    "priority": 8
+  },
+  {
+    "pattern": "找不到对应此选取器的用户界面元素|ui element not found|selector",
+    "match_text": "reaccessReason",
+    "error_type": "Automation bug",
+    "root_cause": "UI element location failed",
+    "priority": 8
+  },
+  {
+    "pattern": "找不到对应此选取器的用户界面元素|ui element not found|selector",
+    "match_text": "22920",
+    "error_type": "Automation bug",
+    "root_cause": "UI element location failed",
+    "priority": 8
+  },
+  {
+    "pattern": "找不到对应此选取器的用户界面元素|ui element not found|selector",
+    "match_text": "*2004824*",
+    "error_type": "Automation bug",
+    "root_cause": "UI element location failed",
+    "priority": 8
+  },
+  {
+    "pattern": "找不到对应此选取器的用户界面元素|ui element not found|selector",
+    "match_text": "SIM Card Type Selection",
+    "error_type": "Automation bug",
+    "root_cause": "UI element location failed",
+    "priority": 8
+  },
+  {
+    "pattern": "找不到对应此选取器的用户界面元素|ui element not found|selector",
+    "match_text": "showMenuList",
+    "error_type": "Automation bug",
+    "root_cause": "UI element location failed",
+    "priority": 8
+  },
+  {
+    "pattern": "找不到对应此选取器的用户界面元素|ui element not found|selector",
+    "match_text": "New subscribe*",
+    "error_type": "Automation bug",
+    "root_cause": "UI element location failed",
+    "priority": 8
+  },
+  {
+    "pattern": "找不到对应此选取器的用户界面元素|ui element not found|selector",
+    "match_text": "42101111478621",
+    "error_type": "Automation bug",
+    "root_cause": "UI element location failed",
+    "priority": 8
+  },
+  {
+    "pattern": "database validation error",
+    "match_text": "76207578",
+    "error_type": "VPN检查",
+    "root_cause": "MEM_SHORTNUM table not created",
+    "priority": 7
+  },
+  {
+    "pattern": "database validation error",
+    "match_text": "47655856",
+    "error_type": "保险检查",
+    "root_cause": "Insurance order not generated",
+    "priority": 7
+  },
+  {
+    "pattern": "database validation error",
+    "match_text": "65326086",
+    "error_type": "System bug",
+    "root_cause": "Insurance order not generated",
+    "priority": 7
+  },
+  {
+    "pattern": "页面没打开\\ 没找到测试数据，已解决",
+    "match_text": "",
+    "error_type": "Data issue",
+    "root_cause": "没找到测试数据，已解决",
+    "priority": 7
+  },
+  {
+    "pattern": "resource not found|data not found|data can'?t found",
+    "match_text": "",
+    "error_type": "Data issue",
+    "root_cause": "Resource does not exist or was not generated",
+    "priority": 7
+  },
+  {
+    "pattern": "页面没打开\\ port\\ out测试数据没找到，已修改sql",
+    "match_text": "",
+    "error_type": "Data issue",
+    "root_cause": "port out测试数据没找到，已修改sql",
+    "priority": 7
+  },
+  {
+    "pattern": "code:\\d+,Script\\ capture\\ exception,validate\\ address\\ failedSystem\\ 地址数据不可用",
+    "match_text": "",
+    "error_type": "Data issue",
+    "root_cause": "地址数据不可用",
+    "priority": 7
+  },
+  {
+    "pattern": "database validation error",
+    "match_text": "65325990",
+    "error_type": "VPN检查",
+    "root_cause": "MEM_SHORTNUM table not created",
+    "priority": 7
+  },
+  {
+    "pattern": "页面没打开\\ 缺少卡资源，已解决",
+    "match_text": "",
+    "error_type": "Data issue",
+    "root_cause": "缺少卡资源，已解决",
+    "priority": 7
+  },
+  {
+    "pattern": "页面没打开\\ 没找到测试数据\\-\\-已修改前置，问题已解决",
+    "match_text": "",
+    "error_type": "Data issue",
+    "root_cause": "没找到测试数据--已修改前置，问题已解决",
+    "priority": 7
+  },
+  {
+    "pattern": "take\\ too\\ long\\ to\\ generate\\ record\\ successfully\\ in\\ table\\ ord_batch_group\\ 测试数据问题,\\ 安装地址校验不通过",
+    "match_text": "",
+    "error_type": "Data issue",
+    "root_cause": "测试数据问题, 安装地址校验不通过",
+    "priority": 7
+  },
+  {
+    "pattern": "database validation error",
+    "match_text": "42102131332951",
+    "error_type": "Unknown",
+    "root_cause": "Insurance order not generated",
+    "priority": 7
+  },
+  {
+    "pattern": "数组越界\\ CRM\\ BUG（退订add\\ on的失效时间不正确）",
+    "match_text": "",
+    "error_type": "System bug",
+    "root_cause": "CRM BUG（退订add on的失效时间不正确）",
+    "priority": 5
+  },
+  {
+    "pattern": "SEND\\ CONFIRM\\ TO\\ OCH\\ 节点没到\\ np流程没到SEND\\ CONFIRM\\ TO\\ OCH\\ 节点，np没有报错，后面跑没问题",
+    "match_text": "",
+    "error_type": "？",
+    "root_cause": "np流程没到SEND CONFIRM TO OCH 节点，np没有报错，后面跑没问题",
+    "priority": 5
+  },
+  {
+    "pattern": "页面没打开\\ 提交订单后40分钟内页面没响应",
+    "match_text": "",
+    "error_type": "？",
+    "root_cause": "提交订单后40分钟内页面没响应",
+    "priority": 5
+  },
+  {
+    "pattern": "sff\\ throw\\ error:\\d+:Order\\ session\\ was\\ not\\ found\\ Unknown",
+    "match_text": "",
+    "error_type": "External system issue",
+    "root_cause": "Unknown",
+    "priority": 5
+  },
+  {
+    "pattern": "页面没打开\\ v2改造，task表中uipath_entry错误导致失败，已解决",
+    "match_text": "",
+    "error_type": "Automation bug",
+    "root_cause": "v2改造，task表中uipath_entry错误导致失败，已解决",
+    "priority": 5
+  },
+  {
+    "pattern": "页面没打开\\ \\d+\\.\\d+\\ offer找不到了\\ 影响3个case；\\ \\d+\\.change\\ offer选了offer后点了continue没反应\\ 影响5个case",
+    "match_text": "",
+    "error_type": "？",
+    "root_cause": "1.90127867 offer找不到了 影响3个case； 2.change offer选了offer后点了continue没反应 影响5个case",
+    "priority": 5
+  },
+  {
+    "pattern": "结果检查没触发\\ 再分析\\-sendemailrun没把检查结果扫到batch_detail表，下次出现结合日志排查原因",
+    "match_text": "",
+    "error_type": "Automation bug",
+    "root_cause": "再分析-sendemailrun没把检查结果扫到batch_detail表，下次出现结合日志排查原因",
+    "priority": 5
+  },
+  {
+    "pattern": "\\{\"errorData\":\\[\"code:\\d+,Script\\ capture\\ exception,no\\ SEND\\ CONFIRM\\ TO\\ OCH\\ event\"\\]\\}\\ 脚本问题",
+    "match_text": "",
+    "error_type": "Automation bug",
+    "root_cause": "脚本问题",
+    "priority": 5
+  },
+  {
+    "pattern": "定位不到元素",
+    "match_text": "",
+    "error_type": "Unknown",
+    "root_cause": "定位不到元素",
+    "priority": 5
   }
 ]

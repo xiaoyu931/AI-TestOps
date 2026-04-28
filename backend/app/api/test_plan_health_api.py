@@ -6,10 +6,12 @@ import json
 import re
 
 from app.database import SessionLocal
+from app.analyzer.analyzer_core import analyze_error
 from app.models.test_plan_model import TestPlan
 from app.models.batch_detail_model import BatchDetail
 from app.models.test_case_execution_model import TestCaseExecution
 from app.models.test_component_execution_model import TestComponentExecution
+
 
 router = APIRouter(prefix="/test-plan-health", tags=["Test Plan Health"])
 
@@ -310,6 +312,15 @@ def classify_top_issue(error_text: str, plan_name: str) -> str:
 
     return "Other"
 
+def analyze_top_issue(db, error_text: str, plan_name: str) -> str:
+    analysis = analyze_error(db, error_text)
+
+    if analysis.get("matched"):
+        return analysis.get("root_cause") or "Unknown"
+
+    return classify_top_issue(error_text, plan_name)
+
+
 
 # ===============================
 # 辅助：最近一个月失败趋势
@@ -573,7 +584,7 @@ def get_test_plan_health():
                 component_row = component_map.get(cid)
 
                 error_text = extract_error_text(case_row, component_row)
-                issue = classify_top_issue(error_text, item["plan_name"])
+                issue = analyze_top_issue(db, error_text, item["plan_name"])
 
                 issue_counter[issue] += 1
                 global_root_counter[issue] += 1

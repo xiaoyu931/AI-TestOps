@@ -1,310 +1,2394 @@
 [
   {
-    "error_type": "System bug",
-    "root_cause": "SQL execution exception",
-    "solution": "Check SQL statements or database status",
-    "category": "Database",
-    "confidence": "high"
-  },
-  {
     "error_type": "Automation bug",
-    "root_cause": "At the beginning of the month, due to time zone differences, data in soa_interaction_log was inserted into the August table, while automation queried the September table, causing validation failure",
-    "solution": "Modify the automation query logic",
+    "root_cause": "1. indexerror的是因为billingcheck脚本修改导致",
+    "solution": "Further analyze logs or contact the relevant system owner.",
     "category": "Data",
-    "confidence": "medium"
+    "confidence": "medium",
+    "source": "excel_cleaned"
   },
   {
-    "error_type": "Data issue",
-    "root_cause": "No available data",
-    "solution": "Prepare test data or check the data preparation process",
+    "error_type": "Automation bug",
+    "root_cause": "1.自动化case大部分由于无法登陆crm导致失败， 今天上午十点后执行mobile oldom 和new om主流程case成功，订单数据： old om mobile mobile开户 32101251860500 PSTN change offer 32101251860900 AI-132_AII_CRM_B2B_Mobile_NewConnection_Handset_Insurance 32101251860501 newom mobile AI_188_AII_CRM_NewOM_Mobil",
+    "solution": "Further analyze logs or contact the relevant system owner.",
     "category": "Data",
-    "confidence": "high"
+    "confidence": "medium",
+    "source": "excel_cleaned"
   },
   {
     "error_type": "Automation bug",
-    "root_cause": "Failed to select offer, UiPath code needs to be updated",
-    "solution": "Modify automation code",
+    "root_cause": "100 selectOfferNewomUIPath组件报错，show all offer没有勾选，导致查询offer失败，待修改入参",
+    "solution": "Further analyze logs or contact the relevant system owner.",
     "category": "Other",
-    "confidence": "medium"
+    "confidence": "medium",
+    "source": "excel_cleaned"
   },
   {
     "error_type": "Automation bug",
-    "root_cause": "billingcheck",
-    "solution": "Further analyze logs or contact the relevant system owner",
-    "category": "Other",
-    "confidence": "low"
-  },
-  {
-    "error_type": "Environment issue",
-    "root_cause": "BillingCheck failed, order remains in the current table and did not move to the history table",
-    "solution": "Further analyze logs or contact the relevant system owner",
-    "category": "Other",
-    "confidence": "medium"
+    "root_cause": "10、325 [{'code': 700, 'message': 'not enough arguments for format string'}] 由于cfg_test_case_data误改了",
+    "solution": "Further analyze logs or contact the relevant system owner.",
+    "category": "Data",
+    "confidence": "medium",
+    "source": "excel_cleaned"
   },
   {
     "error_type": "Automation bug",
-    "root_cause": "Could not write the DataTable starting with cell A3, failed to write Excel file",
-    "solution": "Further analyze logs or contact the relevant system owner",
-    "category": "Other",
-    "confidence": "medium"
+    "root_cause": "132 52245 由于预留给自动化操作的iccid不够了",
+    "solution": "Further analyze logs or contact the relevant system owner.",
+    "category": "Data",
+    "confidence": "medium",
+    "source": "excel_cleaned"
   },
   {
-    "error_type": "Environment issue",
-    "root_cause": "Order workflow was stuck for 5 hours before continuing",
-    "solution": "Further analyze logs or contact the relevant system owner",
+    "error_type": "Automation bug",
+    "root_cause": "1、220 47226 ChooseProductLineUIPath后面的组件没有对inparam初始化 待修改",
+    "solution": "Further analyze logs or contact the relevant system owner.",
     "category": "Other",
-    "confidence": "medium"
+    "confidence": "medium",
+    "source": "excel_cleaned"
   },
   {
-    "error_type": "Environment issue",
-    "root_cause": "Service communication exception",
-    "solution": "Check service interfaces or network status",
+    "error_type": "Automation bug",
+    "root_cause": "1、220 95 由于组件inparam没有初始化，待发布uipath",
+    "solution": "Further analyze logs or contact the relevant system owner.",
+    "category": "Other",
+    "confidence": "medium",
+    "source": "excel_cleaned"
+  },
+  {
+    "error_type": "Automation bug",
+    "root_cause": "211 55433 topMenuUIPath 报错 超出边界",
+    "solution": "Further analyze logs or contact the relevant system owner.",
+    "category": "Other",
+    "confidence": "medium",
+    "source": "excel_cleaned"
+  },
+  {
+    "error_type": "Automation bug",
+    "root_cause": "244、245、254、255、259、 257 、258 、260 ：由于环境发布 脚本失败",
+    "solution": "Further analyze logs or contact the relevant system owner.",
+    "category": "Other",
+    "confidence": "medium",
+    "source": "excel_cleaned"
+  },
+  {
+    "error_type": "Automation bug",
+    "root_cause": "257 52229 AI-182 工作流停在sap receive IMEI/ICC 是由于预留给自动化操作的iccid不够了 已修改",
+    "solution": "Further analyze logs or contact the relevant system owner.",
+    "category": "Data",
+    "confidence": "medium",
+    "source": "excel_cleaned"
+  },
+  {
+    "error_type": "Automation bug",
+    "root_cause": "2、 soa_interaction_log月初由于时差导致数据插入的是8月份的表，而自动化查询的是9月份的表导致校验失败 ， 已优化脚本（ 142 44435）--“”【脚本问题】",
+    "solution": "Further analyze logs or contact the relevant system owner.",
+    "category": "Other",
+    "confidence": "medium",
+    "source": "excel_cleaned"
+  },
+  {
+    "error_type": "Automation bug",
+    "root_cause": "2、Could not write the data table DataTable starting with cell A3.写excel文件失败，已解决（174 45145）--“”",
+    "solution": "Further analyze logs or contact the relevant system owner.",
+    "category": "Data",
+    "confidence": "medium",
+    "source": "excel_cleaned"
+  },
+  {
+    "error_type": "Automation bug",
+    "root_cause": "3、 258 49819 Find Offer failed! 找offer时可能回车快了一些 ，已优化",
+    "solution": "Further analyze logs or contact the relevant system owner.",
+    "category": "Other",
+    "confidence": "medium",
+    "source": "excel_cleaned"
+  },
+  {
+    "error_type": "Automation bug",
+    "root_cause": "3、 95 101 newom submit组件未对inparam初始化 待修改",
+    "solution": "Further analyze logs or contact the relevant system owner.",
+    "category": "Other",
+    "confidence": "medium",
+    "source": "excel_cleaned"
+  },
+  {
+    "error_type": "Automation bug",
+    "root_cause": "3、 95 101 newom submit组件未对inparam初始化 待更新脚本",
+    "solution": "Further analyze logs or contact the relevant system owner.",
+    "category": "Other",
+    "confidence": "medium",
+    "source": "excel_cleaned"
+  },
+  {
+    "error_type": "Automation bug",
+    "root_cause": "3、95 是由于点击change offer后打开的页面显示框较小，导致定位失败，待修改脚本 ---“”",
+    "solution": "Further analyze logs or contact the relevant system owner.",
+    "category": "Other",
+    "confidence": "medium",
+    "source": "excel_cleaned"
+  },
+  {
+    "error_type": "Automation bug",
+    "root_cause": "4、 选offer失败 需要更新uipath代码 （ 138 ）--“”【代码问题】",
+    "solution": "Further analyze logs or contact the relevant system owner.",
+    "category": "Other",
+    "confidence": "medium",
+    "source": "excel_cleaned"
+  },
+  {
+    "error_type": "Automation bug",
+    "root_cause": "4、242 页面显示不正常导致选保险联系方式错误 看能不能脚本清理浏览器缓存",
+    "solution": "Further analyze logs or contact the relevant system owner.",
+    "category": "Other",
+    "confidence": "medium",
+    "source": "excel_cleaned"
+  },
+  {
+    "error_type": "Automation bug",
+    "root_cause": "4、ose没有Jira Id，导致Error Summary展示有问题，待优化",
+    "solution": "Further analyze logs or contact the relevant system owner.",
+    "category": "Other",
+    "confidence": "medium",
+    "source": "excel_cleaned"
+  },
+  {
+    "error_type": "Automation bug",
+    "root_cause": "5、 174、188、189:offer有修改 选offer时会弹出连带的提示，已优化代码",
+    "solution": "Further analyze logs or contact the relevant system owner.",
+    "category": "Other",
+    "confidence": "medium",
+    "source": "excel_cleaned"
+  },
+  {
+    "error_type": "Automation bug",
+    "root_cause": "5、 billingcheck 报错，问题定位中 （ 177 44461 ）--付玉强【脚本问题】",
+    "solution": "Further analyze logs or contact the relevant system owner.",
+    "category": "Data",
+    "confidence": "medium",
+    "source": "excel_cleaned"
+  },
+  {
+    "error_type": "Automation bug",
+    "root_cause": "5、101 执行sql失败，导致没有更新报错信息和状态；已优化",
+    "solution": "Further analyze logs or contact the relevant system owner.",
+    "category": "Other",
+    "confidence": "medium",
+    "source": "excel_cleaned"
+  },
+  {
+    "error_type": "Automation bug",
+    "root_cause": "6、179 未点击换卡选项成功但没报错，且组件标识该组件执行成功的问题；已优化--“”",
+    "solution": "Further analyze logs or contact the relevant system owner.",
+    "category": "Other",
+    "confidence": "medium",
+    "source": "excel_cleaned"
+  },
+  {
+    "error_type": "Automation bug",
+    "root_cause": "8、 220 219 组件内容没有初始化 DealNumberSerie",
+    "solution": "Further analyze logs or contact the relevant system owner.",
+    "category": "Other",
+    "confidence": "medium",
+    "source": "excel_cleaned"
+  },
+  {
+    "error_type": "Automation bug",
+    "root_cause": "9、 173 50120 pushc没查到 实际上是有的 因为test_dispatcher_data里配置pass_rate为0 导致没有重跑 修改下pass_rate",
+    "solution": "Further analyze logs or contact the relevant system owner.",
+    "category": "Data",
+    "confidence": "medium",
+    "source": "excel_cleaned"
+  },
+  {
+    "error_type": "Automation bug",
+    "root_cause": "AI-100 受固网新需求影响，脚本待开发",
+    "solution": "Further analyze logs or contact the relevant system owner.",
+    "category": "Other",
+    "confidence": "medium",
+    "source": "excel_cleaned"
+  },
+  {
+    "error_type": "Automation bug",
+    "root_cause": "AI-100 受新需求影响，脚本待开发",
+    "solution": "Further analyze logs or contact the relevant system owner.",
+    "category": "Other",
+    "confidence": "medium",
+    "source": "excel_cleaned"
+  },
+  {
+    "error_type": "Automation bug",
+    "root_cause": "AI-111 脚本问题，待优化 晓羽负责优",
+    "solution": "Further analyze logs or contact the relevant system owner.",
+    "category": "Other",
+    "confidence": "medium",
+    "source": "excel_cleaned"
+  },
+  {
+    "error_type": "Automation bug",
+    "root_cause": "AI-111 脚本问题，待优化 晓雨负责优化",
+    "solution": "Further analyze logs or contact the relevant system owner.",
+    "category": "Other",
+    "confidence": "medium",
+    "source": "excel_cleaned"
+  },
+  {
+    "error_type": "Automation bug",
+    "root_cause": "AI-153 2分钟内号码没有显示 AI-116 AI-149 脚本问题 小付已解决 AI_134 没找到测试数据 billing找是否有报错改造导致的问题 小付已处理",
+    "solution": "Further analyze logs or contact the relevant system owner.",
+    "category": "Data",
+    "confidence": "medium",
+    "source": "excel_cleaned"
+  },
+  {
+    "error_type": "Automation bug",
+    "root_cause": "Array index out of bounds",
+    "solution": "Check whether the returned list is empty before accessing elements. Add boundary validation and handle empty result scenarios.",
+    "category": "Code",
+    "confidence": "high",
+    "source": "excel_cleaned"
+  },
+  {
+    "error_type": "Automation bug",
+    "root_cause": "B2Beshop Coax new connection GDS： 订单处理脚本问题，已更新代码",
+    "solution": "Further analyze logs or contact the relevant system owner.",
+    "category": "Other",
+    "confidence": "medium",
+    "source": "excel_cleaned"
+  },
+  {
+    "error_type": "Automation bug",
+    "root_cause": "CRM_B2B_Multi_NewConnection 用户订购订单都已竣工，没有找到这个保险订单对应的主用户订单 可能是脚本问题导致工作流回单有问题",
+    "solution": "Further analyze logs or contact the relevant system owner.",
+    "category": "Other",
+    "confidence": "medium",
+    "source": "excel_cleaned"
+  },
+  {
+    "error_type": "Automation bug",
+    "root_cause": "Case Name：B2Beshop opennet pre-terminate 失败原因：自动化代码问题，需要“”帮忙优化 CaseName：B2Beshop change lineSpeed O2O 失败原因：测试数据地址问题",
+    "solution": "Further analyze logs or contact the relevant system owner.",
+    "category": "Other",
+    "confidence": "medium",
+    "source": "excel_cleaned"
+  },
+  {
+    "error_type": "Automation bug",
+    "root_cause": "Case execution timeout",
+    "solution": "Check execution performance, service response time, and timeout configuration.",
     "category": "Environment",
-    "confidence": "high"
-  },
-  {
-    "error_type": "Data issue",
-    "root_cause": "Product attribute component array out of bounds",
-    "solution": "Further analyze logs or contact the relevant system owner",
-    "category": "Other",
-    "confidence": "medium"
-  },
-  {
-    "error_type": "Data issue",
-    "root_cause": "OnlineDate is within 48 hours and cannot be canceled",
-    "solution": "Further analyze logs or contact the relevant system owner",
-    "category": "Other",
-    "confidence": "medium"
-  },
-  {
-    "error_type": "Data issue",
-    "root_cause": "Address validation failed",
-    "solution": "Check address data or validation rules",
-    "category": "Other",
-    "confidence": "high"
+    "confidence": "high",
+    "source": "excel_cleaned"
   },
   {
     "error_type": "Automation bug",
-    "root_cause": "The replace SIM option was not clicked, but the component marked it as successfully executed",
-    "solution": "Further analyze logs or contact the relevant system owner",
-    "category": "Other",
-    "confidence": "medium"
-  },
-  {
-    "error_type": "Environment issue",
-    "root_cause": "i-table processing exception",
-    "solution": "Check i-table synchronization or data processing flow",
-    "category": "Other",
-    "confidence": "high"
-  },
-  {
-    "error_type": "External system issue",
-    "root_cause": "Process stuck",
-    "solution": "Check process nodes or rerun the process",
-    "category": "Process",
-    "confidence": "high"
-  },
-  {
-    "error_type": "Environment issue",
-    "root_cause": "Environment issue, all case screenshots appear as blank white screens",
-    "solution": "Further analyze logs or contact the relevant system owner",
-    "category": "Environment",
-    "confidence": "medium"
-  },
-  {
-    "error_type": "Environment issue",
-    "root_cause": "Most automation cases failed due to inability to log in to CRM",
-    "solution": "Further analyze logs or contact the relevant system owner",
-    "category": "Data",
-    "confidence": "medium"
-  },
-  {
-    "error_type": "System bug",
-    "root_cause": "Abnormal TDC region configuration data",
-    "solution": "Further analyze logs or contact the relevant system owner",
-    "category": "Data",
-    "confidence": "medium"
-  },
-  {
-    "error_type": "Automation bug",
-    "root_cause": "Script parameters not initialized",
-    "solution": "Initialize script parameters or fix script logic",
-    "category": "Other",
-    "confidence": "high"
-  },
-  {
-    "error_type": "Data issue",
-    "root_cause": "SIM card unavailable prompt appears for the customer",
-    "solution": "Replace the customer",
-    "category": "Other",
-    "confidence": "medium"
-  },
-  {
-    "error_type": "System configuration issue",
-    "root_cause": "Abnormal page display caused incorrect selection of insurance contact method",
-    "solution": "Clear browser cache",
-    "category": "Other",
-    "confidence": "medium"
-  },
-  {
-    "error_type": "Data issue",
-    "root_cause": "User not found under the customer",
-    "solution": "Replace the customer",
-    "category": "Other",
-    "confidence": "medium"
-  },
-  {
-    "error_type": "Data issue",
-    "root_cause": "OSE missing Jira ID, causing incorrect Error Summary display",
-    "solution": "Optimize data configuration",
-    "category": "Other",
-    "confidence": "medium"
-  },
-  {
-    "error_type": "Data issue",
-    "root_cause": "Preconditions not executed, possibly related to changing the customer",
-    "solution": "Further analyze logs or contact the relevant system owner",
-    "category": "Other",
-    "confidence": "medium"
-  },
-  {
-    "error_type": "External system issue",
-    "root_cause": "SAP stub was modified but not reset, resulting in all orders being future orders",
-    "solution": "Restore SAP stub after modification",
-    "category": "Other",
-    "confidence": "medium"
-  },
-  {
-    "error_type": "External system issue",
-    "root_cause": "SFF returned 200, TDC stub issue",
-    "solution": "Rerun the case",
-    "category": "Other",
-    "confidence": "medium"
-  },
-  {
-    "error_type": "Automation bug",
-    "root_cause": "not enough arguments for format string",
-    "solution": "Check cfg_test_case_data configuration",
-    "category": "Other",
-    "confidence": "high"
-  },
-  {
-    "error_type": "Data issue",
-    "root_cause": "Opennet address unavailable",
-    "solution": "Change address",
-    "category": "Other",
-    "confidence": "medium"
-  },
-  {
-    "error_type": "Data issue",
-    "root_cause": "Insufficient inventory",
-    "solution": "Replenish inventory or adjust inventory configuration",
-    "category": "Data",
-    "confidence": "high"
-  },
-  {
-    "error_type": "Data issue",
-    "root_cause": "Offer configuration changed",
-    "solution": "Configure dedicated offers for automation, prefixed with 'auto'",
-    "category": "Other",
-    "confidence": "medium"
-  },
-  {
-    "error_type": "Automation bug",
-    "root_cause": "Find Offer failed!",
-    "solution": "Page loading too slow, offer not displayed in time",
-    "category": "Other",
-    "confidence": "medium"
-  },
-  {
-    "error_type": "Data issue",
-    "root_cause": "Submit order failed",
-    "solution": "If the customer is newly created, check whether a retail account exists",
-    "category": "Other",
-    "confidence": "medium"
-  },
-  {
-    "error_type": "Automation bug",
-    "root_cause": "Offer modified, additional prompt appears when selecting offer",
-    "solution": "Enhance offer component to handle this scenario or adjust offer configuration",
-    "category": "Other",
-    "confidence": "medium"
-  },
-  {
-    "error_type": "Automation bug",
-    "root_cause": "Component content did not initialize DealNumberSerie",
-    "solution": "Check input parameters of the component",
-    "category": "Other",
-    "confidence": "high"
-  },
-  {
-    "error_type": "Automation bug",
-    "root_cause": "pushc not found",
-    "solution": "Check whether pass_rate in test_dispatcher_data is set to 0",
-    "category": "Other",
-    "confidence": "medium"
-  },
-  {
-    "error_type": "Data issue",
-    "root_cause": "No available user found",
-    "solution": "Execute data preparation cases",
-    "category": "Other",
-    "confidence": "high"
-  },
-  {
-    "error_type": "Environment issue",
-    "root_cause": "Environment issue causing offer information not to display",
-    "solution": "Further analyze logs or contact the relevant system owner",
-    "category": "Environment",
-    "confidence": "medium"
-  },
-  {
-    "error_type": "Data issue",
-    "root_cause": "Offer configuration changed, additional double SIM add-on introduced",
-    "solution": "Enhance offer component to handle this scenario or adjust offer configuration",
-    "category": "Other",
-    "confidence": "medium"
-  },
-  {
-    "error_type": "OMP configuration issue",
-    "root_cause": "OMP execution order not set to serial, causing concurrency conflicts",
-    "solution": "Adjust execution order to Serial",
-    "category": "Other",
-    "confidence": "high"
-  },
-  {
-    "error_type": "Environment issue",
-    "root_cause": "Process execution delay",
-    "solution": "Optimize process execution efficiency",
-    "category": "Process",
-    "confidence": "high"
-  },
-  {
-    "error_type": "Data issue",
-    "root_cause": "Insufficient ICCID resources",
-    "solution": "Replenish ICCID resources or check resource pool",
-    "category": "Data",
-    "confidence": "high"
-  },
-  {
-    "error_type": "Environment issue",
-    "root_cause": "Failed to get oseOrderId or CRM order ID",
-    "solution": "Further analyze logs or contact the relevant system owner",
-    "category": "Other",
-    "confidence": "low"
-  },
-  {
-    "error_type": "Environment issue",
-    "root_cause": "Execution timeout",
-    "solution": "Check environment or optimize script process",
-    "category": "Process",
-    "confidence": "high"
-  },
-  {
-    "error_type": "UI element not found",
-    "root_cause": "UI element location failed",
-    "solution": "Check UI elements or update automation selectors",
+    "root_cause": "Could not find the UI element",
+    "solution": "Further analyze logs or contact the relevant system owner.",
     "category": "Automation",
-    "confidence": "high"
+    "confidence": "medium",
+    "source": "excel_cleaned"
+  },
+  {
+    "error_type": "Automation bug",
+    "root_cause": "Null pointer exception",
+    "solution": "Check object initialization and add null checks before accessing object fields.",
+    "category": "Code",
+    "confidence": "high",
+    "source": "excel_cleaned"
+  },
+  {
+    "error_type": "Automation bug",
+    "root_cause": "Test Case:AI-100_UIPath_AII_CRM_B2B_COAX_New_Connection -----下单是成功的，因为遇到发布导致SFF跳单不成功卡在provision.new节点报错，重跑即可",
+    "solution": "Further analyze logs or contact the relevant system owner.",
+    "category": "External System",
+    "confidence": "medium",
+    "source": "excel_cleaned"
+  },
+  {
+    "error_type": "Automation bug",
+    "root_cause": "UI element location failed",
+    "solution": "Check whether the page structure changed, update automation selectors, and add wait logic if the page loads slowly.",
+    "category": "Automation",
+    "confidence": "high",
+    "source": "excel_cleaned"
+  },
+  {
+    "error_type": "Automation bug",
+    "root_cause": "dsl6015401Transfer Ownership订单状态 Send the Electronic Confirmation；可以考虑优化一下自动化脚本",
+    "solution": "Further analyze logs or contact the relevant system owner.",
+    "category": "Other",
+    "confidence": "medium",
+    "source": "excel_cleaned"
+  },
+  {
+    "error_type": "Automation bug",
+    "root_cause": "offer配置发生变动 offer 2004826配置数据在2023-06-15 14:55:23发生变动，生效方式变更为下账期 自动化case在开通节点跳单提前发了billing导致报错",
+    "solution": "Further analyze logs or contact the relevant system owner.",
+    "category": "Data",
+    "confidence": "medium",
+    "source": "excel_cleaned"
+  },
+  {
+    "error_type": "Automation bug",
+    "root_cause": "relocation需求改造导致，需要修改脚本",
+    "solution": "Further analyze logs or contact the relevant system owner.",
+    "category": "Other",
+    "confidence": "medium",
+    "source": "excel_cleaned"
+  },
+  {
+    "error_type": "Automation bug",
+    "root_cause": "v2改造，task表中uipath_entry错误导致失败，已解决",
+    "solution": "Further analyze logs or contact the relevant system owner.",
+    "category": "Other",
+    "confidence": "high",
+    "source": "excel_cleaned"
+  },
+  {
+    "error_type": "Automation bug",
+    "root_cause": "再分析-sendemailrun没把检查结果扫到batch_detail表，下次出现结合日志排查原因",
+    "solution": "Further analyze logs or contact the relevant system owner.",
+    "category": "Other",
+    "confidence": "high",
+    "source": "excel_cleaned"
+  },
+  {
+    "error_type": "Automation bug",
+    "root_cause": "副号选择失败，脚本问题，待修复",
+    "solution": "Further analyze logs or contact the relevant system owner.",
+    "category": "Other",
+    "confidence": "medium",
+    "source": "excel_cleaned"
+  },
+  {
+    "error_type": "Automation bug",
+    "root_cause": "脚本查找规格为1102724的卡号有问题，该卡规格不存在，应使用规格1102710",
+    "solution": "Further analyze logs or contact the relevant system owner.",
+    "category": "Other",
+    "confidence": "medium",
+    "source": "excel_cleaned"
+  },
+  {
+    "error_type": "Automation bug",
+    "root_cause": "脚本没有获取到res spec id ，导致查不到iccid",
+    "solution": "Further analyze logs or contact the relevant system owner.",
+    "category": "Data",
+    "confidence": "medium",
+    "source": "excel_cleaned"
+  },
+  {
+    "error_type": "Automation bug",
+    "root_cause": "脚本问题",
+    "solution": "Further analyze logs or contact the relevant system owner.",
+    "category": "Other",
+    "confidence": "high",
+    "source": "excel_cleaned"
+  },
+  {
+    "error_type": "Automation bug",
+    "root_cause": "脚本问题 批量选号失败",
+    "solution": "Further analyze logs or contact the relevant system owner.",
+    "category": "Other",
+    "confidence": "medium",
+    "source": "excel_cleaned"
+  },
+  {
+    "error_type": "Automation bug",
+    "root_cause": "脚本问题导致处理工作流失败",
+    "solution": "Further analyze logs or contact the relevant system owner.",
+    "category": "Other",
+    "confidence": "medium",
+    "source": "excel_cleaned"
+  },
+  {
+    "error_type": "Automation bug",
+    "root_cause": "脚本问题，没有处理查询数据库返回结果为空的场景，已修改",
+    "solution": "Further analyze logs or contact the relevant system owner.",
+    "category": "Other",
+    "confidence": "medium",
+    "source": "excel_cleaned"
+  },
+  {
+    "error_type": "Automation bug",
+    "root_cause": "自动化脚本问题，副号没有选成功",
+    "solution": "Further analyze logs or contact the relevant system owner.",
+    "category": "Other",
+    "confidence": "medium",
+    "source": "excel_cleaned"
+  },
+  {
+    "error_type": "Automation bug",
+    "root_cause": "订单处理脚本问题,get event节点没有处理",
+    "solution": "Further analyze logs or contact the relevant system owner.",
+    "category": "Other",
+    "confidence": "medium",
+    "source": "excel_cleaned"
+  },
+  {
+    "error_type": "Automation bug",
+    "root_cause": "订单处理脚本问题导致工作流报错",
+    "solution": "Further analyze logs or contact the relevant system owner.",
+    "category": "Other",
+    "confidence": "medium",
+    "source": "excel_cleaned"
+  },
+  {
+    "error_type": "Data issue",
+    "root_cause": "10、 172 没有找到可用用户",
+    "solution": "Further analyze logs or contact the relevant system owner.",
+    "category": "Other",
+    "confidence": "medium",
+    "source": "excel_cleaned"
+  },
+  {
+    "error_type": "Data issue",
+    "root_cause": "11、 166 50099 用户有在途单了 54662653 筛选用户sql里要加上ord_user_21里没有数据",
+    "solution": "Further analyze logs or contact the relevant system owner.",
+    "category": "Other",
+    "confidence": "medium",
+    "source": "excel_cleaned"
+  },
+  {
+    "error_type": "Data issue",
+    "root_cause": "11、320 opennet地址不能用",
+    "solution": "Further analyze logs or contact the relevant system owner.",
+    "category": "Other",
+    "confidence": "medium",
+    "source": "excel_cleaned"
+  },
+  {
+    "error_type": "Data issue",
+    "root_cause": "12、 159 50080 客户会弹出sim卡不可用的提示 待换客户",
+    "solution": "Further analyze logs or contact the relevant system owner.",
+    "category": "Other",
+    "confidence": "medium",
+    "source": "excel_cleaned"
+  },
+  {
+    "error_type": "Data issue",
+    "root_cause": "138 52762 NO valid ICCID resource FOR specID1102710",
+    "solution": "Further analyze logs or contact the relevant system owner.",
+    "category": "Data",
+    "confidence": "medium",
+    "source": "excel_cleaned"
+  },
+  {
+    "error_type": "Data issue",
+    "root_cause": "138 没有找到测试数据",
+    "solution": "Further analyze logs or contact the relevant system owner.",
+    "category": "Other",
+    "confidence": "medium",
+    "source": "excel_cleaned"
+  },
+  {
+    "error_type": "Data issue",
+    "root_cause": "13、 140 49920 offer有修改 选offer时会弹出连带的提示 修改下offer配置",
+    "solution": "Further analyze logs or contact the relevant system owner.",
+    "category": "Other",
+    "confidence": "medium",
+    "source": "excel_cleaned"
+  },
+  {
+    "error_type": "Data issue",
+    "root_cause": "140 前置没处理 没找到数据 与昨晚九点OMP主机连不上有关 快9点前置下单完成的",
+    "solution": "Further analyze logs or contact the relevant system owner.",
+    "category": "Other",
+    "confidence": "medium",
+    "source": "excel_cleaned"
+  },
+  {
+    "error_type": "Data issue",
+    "root_cause": "165:没有测试数据导致， mysql升级没有同步最新的数据--已添加数据",
+    "solution": "Further analyze logs or contact the relevant system owner.",
+    "category": "Other",
+    "confidence": "medium",
+    "source": "excel_cleaned"
+  },
+  {
+    "error_type": "Data issue",
+    "root_cause": "173 前置数据开户订单没竣工 由于负责处理订单的远程机重启了",
+    "solution": "Further analyze logs or contact the relevant system owner.",
+    "category": "Other",
+    "confidence": "medium",
+    "source": "excel_cleaned"
+  },
+  {
+    "error_type": "Data issue",
+    "root_cause": "189 partyCheck报错，SELECT COUNT(*) FROM PARTY.INSX_USER_INSURANCE_REL_21 WHERE bill_id='47656292' AND policy_num='FOR104105400' AND handset_offer_id='2010446' AND insurance_offer_id='2006387' AND origine_imei ='20221014060603'; 没有生成保险订单，导致没有查到数据，待排查",
+    "solution": "Further analyze logs or contact the relevant system owner.",
+    "category": "Data",
+    "confidence": "medium",
+    "source": "excel_cleaned"
+  },
+  {
+    "error_type": "Data issue",
+    "root_cause": "1、 242、244、245:终端显示out of stock 已改库存",
+    "solution": "Further analyze logs or contact the relevant system owner.",
+    "category": "Other",
+    "confidence": "medium",
+    "source": "excel_cleaned"
+  },
+  {
+    "error_type": "Data issue",
+    "root_cause": "1、 没有卡类型为 8888888的卡资源，导致sap回单报错【数据准备问题，建议优化】",
+    "solution": "Further analyze logs or contact the relevant system owner.",
+    "category": "External System",
+    "confidence": "medium",
+    "source": "excel_cleaned"
+  },
+  {
+    "error_type": "Data issue",
+    "root_cause": "1、377 数据校验成功， 379插入excution表的时间早于377，导致377被update状态为6，报告失败 ---付育强",
+    "solution": "Further analyze logs or contact the relevant system owner.",
+    "category": "Other",
+    "confidence": "medium",
+    "source": "excel_cleaned"
+  },
+  {
+    "error_type": "Data issue",
+    "root_cause": "2.关于固网case，周五发现TDC选择co 时查询不出结果，经排查，是由于数据库中有配置数据内容不对， ATTR_VALUE为空 SELECT T1.ID,T1.`NAME`,t1.`CODE`,t1.PARENT_AREA_NAME,t1.DISTRICT_ID,T1.STATE,T2.ATTR_VALUE FROM ossins.res_area t1,ossins.res_area_attr_ins t2 WHERE t1.id = t2.OBJ_ID AND t2.ATTR_TEXT = 'TD",
+    "solution": "Further analyze logs or contact the relevant system owner.",
+    "category": "Other",
+    "confidence": "medium",
+    "source": "excel_cleaned"
+  },
+  {
+    "error_type": "Data issue",
+    "root_cause": "205 56386 没有找到测试数据",
+    "solution": "Further analyze logs or contact the relevant system owner.",
+    "category": "Other",
+    "confidence": "medium",
+    "source": "excel_cleaned"
+  },
+  {
+    "error_type": "Data issue",
+    "root_cause": "219 提交订单正在处理 超过了30分钟 还是需要还原成超时时间为40分钟 这个case主要花费时间的是查询可以port in的号码",
+    "solution": "Further analyze logs or contact the relevant system owner.",
+    "category": "Other",
+    "confidence": "medium",
+    "source": "excel_cleaned"
+  },
+  {
+    "error_type": "Data issue",
+    "root_cause": "232 NO OPEN number FOUND 没有找到open状态的号码 已修改配置文件里号码范围",
+    "solution": "Further analyze logs or contact the relevant system owner.",
+    "category": "Other",
+    "confidence": "medium",
+    "source": "excel_cleaned"
+  },
+  {
+    "error_type": "Data issue",
+    "root_cause": "246：入参有修改， mysql升级没有同步最新的数据--已同步数据",
+    "solution": "Further analyze logs or contact the relevant system owner.",
+    "category": "Other",
+    "confidence": "medium",
+    "source": "excel_cleaned"
+  },
+  {
+    "error_type": "Data issue",
+    "root_cause": "247：入参有修改， mysql升级没有同步最新的数据--已同步数据",
+    "solution": "Further analyze logs or contact the relevant system owner.",
+    "category": "Other",
+    "confidence": "medium",
+    "source": "excel_cleaned"
+  },
+  {
+    "error_type": "Data issue",
+    "root_cause": "257 输入号码后回车失败 列表中没有找到号码 ChooseSubscriptionNewOmMobile组件 待修改",
+    "solution": "Further analyze logs or contact the relevant system owner.",
+    "category": "Other",
+    "confidence": "medium",
+    "source": "excel_cleaned"
+  },
+  {
+    "error_type": "Data issue",
+    "root_cause": "258 批量订单没有成功拆成子订单 chooseSubscription组件没有选中正确号码 已修改",
+    "solution": "Further analyze logs or contact the relevant system owner.",
+    "category": "Other",
+    "confidence": "medium",
+    "source": "excel_cleaned"
+  },
+  {
+    "error_type": "Data issue",
+    "root_cause": "269 号码port out 失败 待换号码测试",
+    "solution": "Further analyze logs or contact the relevant system owner.",
+    "category": "Other",
+    "confidence": "medium",
+    "source": "excel_cleaned"
+  },
+  {
+    "error_type": "Data issue",
+    "root_cause": "270 没找到数据 272执行失败 代码没升级 已升级",
+    "solution": "Further analyze logs or contact the relevant system owner.",
+    "category": "Other",
+    "confidence": "medium",
+    "source": "excel_cleaned"
+  },
+  {
+    "error_type": "Data issue",
+    "root_cause": "2、 246、247:offer被修改，添加了连带double sim的add on",
+    "solution": "Further analyze logs or contact the relevant system owner.",
+    "category": "Other",
+    "confidence": "medium",
+    "source": "excel_cleaned"
+  },
+  {
+    "error_type": "Data issue",
+    "root_cause": "2、148 客户下查不到此用户 再跑前置用新的用户",
+    "solution": "Further analyze logs or contact the relevant system owner.",
+    "category": "Other",
+    "confidence": "medium",
+    "source": "excel_cleaned"
+  },
+  {
+    "error_type": "Data issue",
+    "root_cause": "2、164 47162 由于客户会弹出sim卡不可用的提示 待换客户",
+    "solution": "Further analyze logs or contact the relevant system owner.",
+    "category": "Other",
+    "confidence": "medium",
+    "source": "excel_cleaned"
+  },
+  {
+    "error_type": "Data issue",
+    "root_cause": "2、AI_192_AII_CRM_NewOM_Mobile_TwoDoubleSimCard_handset：offer配置有修改，多了一个连带double sim的addOn Offer,需修改入参",
+    "solution": "Further analyze logs or contact the relevant system owner.",
+    "category": "Other",
+    "confidence": "medium",
+    "source": "excel_cleaned"
+  },
+  {
+    "error_type": "Data issue",
+    "root_cause": "3、 没有可用的iccid （ 179 220 ）【数据准备问题，建议优化】",
+    "solution": "Further analyze logs or contact the relevant system owner.",
+    "category": "Data",
+    "confidence": "medium",
+    "source": "excel_cleaned"
+  },
+  {
+    "error_type": "Data issue",
+    "root_cause": "4、 243 49764 submit order失败 由于该客户是新建的 没有retail account",
+    "solution": "Further analyze logs or contact the relevant system owner.",
+    "category": "Other",
+    "confidence": "medium",
+    "source": "excel_cleaned"
+  },
+  {
+    "error_type": "Data issue",
+    "root_cause": "5、140 由于客户会弹出sim卡不可用的提示 已换客户",
+    "solution": "Further analyze logs or contact the relevant system owner.",
+    "category": "Other",
+    "confidence": "medium",
+    "source": "excel_cleaned"
+  },
+  {
+    "error_type": "Data issue",
+    "root_cause": "5、template search result NOT FOUND 合同模板较长时间没有显示 重跑没问题（ 220 45180 ）--“”",
+    "solution": "Further analyze logs or contact the relevant system owner.",
+    "category": "Other",
+    "confidence": "medium",
+    "source": "excel_cleaned"
+  },
+  {
+    "error_type": "Data issue",
+    "root_cause": "6、138 由于客户会弹出sim卡不可用的提示 已换客户",
+    "solution": "Further analyze logs or contact the relevant system owner.",
+    "category": "Other",
+    "confidence": "medium",
+    "source": "excel_cleaned"
+  },
+  {
+    "error_type": "Data issue",
+    "root_cause": "6、由于前置的订单5号才竣工 所以没找到数据 （ 173 45143 ）--“”",
+    "solution": "Further analyze logs or contact the relevant system owner.",
+    "category": "Other",
+    "confidence": "medium",
+    "source": "excel_cleaned"
+  },
+  {
+    "error_type": "Data issue",
+    "root_cause": "7、164 没有跑前置 可能与换了客户有关 再跑前置",
+    "solution": "Further analyze logs or contact the relevant system owner.",
+    "category": "Other",
+    "confidence": "medium",
+    "source": "excel_cleaned"
+  },
+  {
+    "error_type": "Data issue",
+    "root_cause": "7、产品属性组件数组超出边界，未能复现，地址存在问题，已修复 （ 129)--“”",
+    "solution": "Further analyze logs or contact the relevant system owner.",
+    "category": "Other",
+    "confidence": "medium",
+    "source": "excel_cleaned"
+  },
+  {
+    "error_type": "Data issue",
+    "root_cause": "8、OnlineDate在48小时内，无法Cancel，未能复现，地址存在问题，已修复（ 131)--“”",
+    "solution": "Further analyze logs or contact the relevant system owner.",
+    "category": "Other",
+    "confidence": "medium",
+    "source": "excel_cleaned"
+  },
+  {
+    "error_type": "Data issue",
+    "root_cause": "98：sff throw error:200:Order session was not found--环境问题",
+    "solution": "Further analyze logs or contact the relevant system owner.",
+    "category": "External System",
+    "confidence": "medium",
+    "source": "excel_cleaned"
+  },
+  {
+    "error_type": "Data issue",
+    "root_cause": "9、code:410,Script capture exception,validate address failed，地址校验失败（89）--“”",
+    "solution": "Further analyze logs or contact the relevant system owner.",
+    "category": "Other",
+    "confidence": "medium",
+    "source": "excel_cleaned"
+  },
+  {
+    "error_type": "Data issue",
+    "root_cause": "AI-108、AI-109 ：sff throw error:200:Order session was not found",
+    "solution": "Further analyze logs or contact the relevant system owner.",
+    "category": "External System",
+    "confidence": "medium",
+    "source": "excel_cleaned"
+  },
+  {
+    "error_type": "Data issue",
+    "root_cause": "AI-114 billing环境有问题，肖胡斌已修复，数据已检查",
+    "solution": "Further analyze logs or contact the relevant system owner.",
+    "category": "Data",
+    "confidence": "medium",
+    "source": "excel_cleaned"
+  },
+  {
+    "error_type": "Data issue",
+    "root_cause": "AI-124 billing环境有问题，肖胡斌已修复,数据已检查",
+    "solution": "Further analyze logs or contact the relevant system owner.",
+    "category": "Data",
+    "confidence": "medium",
+    "source": "excel_cleaned"
+  },
+  {
+    "error_type": "Data issue",
+    "root_cause": "AI-187 insurance user 没生成，crm处理工作流较慢 AI_194 crm工作流报错 AI-177 没找到测试数据 AI-179 提交订单没成功 重跑没问题",
+    "solution": "Further analyze logs or contact the relevant system owner.",
+    "category": "Data",
+    "confidence": "medium",
+    "source": "excel_cleaned"
+  },
+  {
+    "error_type": "Data issue",
+    "root_cause": "Billing i-table not started, or MDB upload failed, or offer data missing",
+    "solution": "Check Billing i-table startup, MDB upload status, and whether offer data exists.",
+    "category": "Data",
+    "confidence": "high",
+    "source": "excel_cleaned"
+  },
+  {
+    "error_type": "Data issue",
+    "root_cause": "CRM environment abnormal",
+    "solution": "Check CRM environment status, database connection, and related service availability.",
+    "category": "Environment",
+    "confidence": "high",
+    "source": "excel_cleaned"
+  },
+  {
+    "error_type": "Data issue",
+    "root_cause": "Order workflow delay",
+    "solution": "Check order workflow status and rerun or investigate delayed workflow nodes.",
+    "category": "Environment",
+    "confidence": "high",
+    "source": "excel_cleaned"
+  },
+  {
+    "error_type": "Data issue",
+    "root_cause": "Resource does not exist or was not generated",
+    "solution": "Check whether the required resource exists and whether upstream data generation completed.",
+    "category": "Data",
+    "confidence": "high",
+    "source": "excel_cleaned"
+  },
+  {
+    "error_type": "Data issue",
+    "root_cause": "SAP createDoc returned data not found",
+    "solution": "Check whether upstream SAP data exists, verify createDoc request parameters, and confirm the SAP stub or service response.",
+    "category": "Data",
+    "confidence": "medium",
+    "source": "excel_cleaned"
+  },
+  {
+    "error_type": "Data issue",
+    "root_cause": "Test data not prepared or SQL did not generate data",
+    "solution": "Prepare test data or check SQL-based data generation.",
+    "category": "Data",
+    "confidence": "medium",
+    "source": "excel_cleaned"
+  },
+  {
+    "error_type": "Data issue",
+    "root_cause": "cfg id 117 sf_task_21表报错数据库死锁",
+    "solution": "Further analyze logs or contact the relevant system owner.",
+    "category": "Other",
+    "confidence": "medium",
+    "source": "excel_cleaned"
+  },
+  {
+    "error_type": "Data issue",
+    "root_cause": "cfg id 270 pushc还在当前表，历史表查不到数据导致报错",
+    "solution": "Further analyze logs or contact the relevant system owner.",
+    "category": "Other",
+    "confidence": "medium",
+    "source": "excel_cleaned"
+  },
+  {
+    "error_type": "Data issue",
+    "root_cause": "cfg_id: 142、179 没有对应的卡资源导致订单处理失败，已解决，重跑成功",
+    "solution": "Further analyze logs or contact the relevant system owner.",
+    "category": "Other",
+    "confidence": "medium",
+    "source": "excel_cleaned"
+  },
+  {
+    "error_type": "Data issue",
+    "root_cause": "orderprocess组件没有把billid加到selectedofferlist里，导致数据检查失败，重跑没问题",
+    "solution": "Further analyze logs or contact the relevant system owner.",
+    "category": "Data",
+    "confidence": "medium",
+    "source": "excel_cleaned"
+  },
+  {
+    "error_type": "Data issue",
+    "root_cause": "ose的数据迁移有问题：没有334的记录 大部分记录都没有迁移过来 导致昨晚的selfcare计划在batch deatil表里状态没更新 待排查问题",
+    "solution": "Further analyze logs or contact the relevant system owner.",
+    "category": "Other",
+    "confidence": "medium",
+    "source": "excel_cleaned"
+  },
+  {
+    "error_type": "Data issue",
+    "root_cause": "port out测试数据没找到，已修改sql",
+    "solution": "Further analyze logs or contact the relevant system owner.",
+    "category": "Other",
+    "confidence": "high",
+    "source": "excel_cleaned"
+  },
+  {
+    "error_type": "Data issue",
+    "root_cause": "res.`res_sel_num_cust_log_21`表数据被清理导致预销户报错",
+    "solution": "Further analyze logs or contact the relevant system owner.",
+    "category": "Other",
+    "confidence": "medium",
+    "source": "excel_cleaned"
+  },
+  {
+    "error_type": "Data issue",
+    "root_cause": "resumption没找到测试数据",
+    "solution": "Further analyze logs or contact the relevant system owner.",
+    "category": "Other",
+    "confidence": "medium",
+    "source": "excel_cleaned"
+  },
+  {
+    "error_type": "Data issue",
+    "root_cause": "{\"errorData\":[\"code:410,Script capture exception,validate address failed\"]}",
+    "solution": "Further analyze logs or contact the relevant system owner.",
+    "category": "Data",
+    "confidence": "medium",
+    "source": "excel_cleaned"
+  },
+  {
+    "error_type": "Data issue",
+    "root_cause": "受到 BUG 导致的垃圾数据影响",
+    "solution": "Further analyze logs or contact the relevant system owner.",
+    "category": "Code",
+    "confidence": "high",
+    "source": "excel_cleaned"
+  },
+  {
+    "error_type": "Data issue",
+    "root_cause": "地址数据不可用",
+    "solution": "Further analyze logs or contact the relevant system owner.",
+    "category": "Other",
+    "confidence": "high",
+    "source": "excel_cleaned"
+  },
+  {
+    "error_type": "Data issue",
+    "root_cause": "工作流等SAP 回单ICCID",
+    "solution": "Further analyze logs or contact the relevant system owner.",
+    "category": "Data",
+    "confidence": "medium",
+    "source": "excel_cleaned"
+  },
+  {
+    "error_type": "Data issue",
+    "root_cause": "数据问题 The needed SIM card information was not found in SIM card Used table",
+    "solution": "Further analyze logs or contact the relevant system owner.",
+    "category": "Data",
+    "confidence": "medium",
+    "source": "excel_cleaned"
+  },
+  {
+    "error_type": "Data issue",
+    "root_cause": "数据问题 有在途单",
+    "solution": "Further analyze logs or contact the relevant system owner.",
+    "category": "Other",
+    "confidence": "medium",
+    "source": "excel_cleaned"
+  },
+  {
+    "error_type": "Data issue",
+    "root_cause": "数据问题 测试数据65354972有问题，The needed SIM card information was not found in SIM card Used table. Search parameter: [IMSI = 65354972, Organization Id = 21000000] 新找数据测试通过：order=32104256863503",
+    "solution": "Further analyze logs or contact the relevant system owner.",
+    "category": "Data",
+    "confidence": "medium",
+    "source": "excel_cleaned"
+  },
+  {
+    "error_type": "Data issue",
+    "root_cause": "是由于change offer业务在捞数据时没找到数据，导致prequalification一直不会通过",
+    "solution": "Further analyze logs or contact the relevant system owner.",
+    "category": "Other",
+    "confidence": "medium",
+    "source": "excel_cleaned"
+  },
+  {
+    "error_type": "Data issue",
+    "root_cause": "查询数据库时没有返回结果导致报错，已修改",
+    "solution": "Further analyze logs or contact the relevant system owner.",
+    "category": "Other",
+    "confidence": "medium",
+    "source": "excel_cleaned"
+  },
+  {
+    "error_type": "Data issue",
+    "root_cause": "没找到测试数据",
+    "solution": "Further analyze logs or contact the relevant system owner.",
+    "category": "Other",
+    "confidence": "medium",
+    "source": "excel_cleaned"
+  },
+  {
+    "error_type": "Data issue",
+    "root_cause": "没找到测试数据--已修改前置，问题已解决",
+    "solution": "Further analyze logs or contact the relevant system owner.",
+    "category": "Other",
+    "confidence": "high",
+    "source": "excel_cleaned"
+  },
+  {
+    "error_type": "Data issue",
+    "root_cause": "没找到测试数据，已解决",
+    "solution": "Further analyze logs or contact the relevant system owner.",
+    "category": "Other",
+    "confidence": "high",
+    "source": "excel_cleaned"
+  },
+  {
+    "error_type": "Data issue",
+    "root_cause": "没找到测试数据，由于开户提交订单不成功",
+    "solution": "Further analyze logs or contact the relevant system owner.",
+    "category": "Other",
+    "confidence": "medium",
+    "source": "excel_cleaned"
+  },
+  {
+    "error_type": "Data issue",
+    "root_cause": "没捞到测试数据",
+    "solution": "Further analyze logs or contact the relevant system owner.",
+    "category": "Other",
+    "confidence": "medium",
+    "source": "excel_cleaned"
+  },
+  {
+    "error_type": "Data issue",
+    "root_cause": "测试数据问题, 安装地址校验不通过",
+    "solution": "Further analyze logs or contact the relevant system owner.",
+    "category": "Other",
+    "confidence": "high",
+    "source": "excel_cleaned"
+  },
+  {
+    "error_type": "Data issue",
+    "root_cause": "由于订单还没竣工，但是订单处理组件返回了成功的结果，所以数据检查失败",
+    "solution": "Further analyze logs or contact the relevant system owner.",
+    "category": "Other",
+    "confidence": "medium",
+    "source": "excel_cleaned"
+  },
+  {
+    "error_type": "Data issue",
+    "root_cause": "缺少卡资源，已解决",
+    "solution": "Further analyze logs or contact the relevant system owner.",
+    "category": "Other",
+    "confidence": "high",
+    "source": "excel_cleaned"
+  },
+  {
+    "error_type": "Environment issue",
+    "root_cause": "129,127,117,115,113,106,105,103, billing环境问题",
+    "solution": "Further analyze logs or contact the relevant system owner.",
+    "category": "Data",
+    "confidence": "medium",
+    "source": "excel_cleaned"
+  },
+  {
+    "error_type": "Environment issue",
+    "root_cause": "141:页面打不开，报错截图显示Can't reach this page--环境问题",
+    "solution": "Further analyze logs or contact the relevant system owner.",
+    "category": "Other",
+    "confidence": "medium",
+    "source": "excel_cleaned"
+  },
+  {
+    "error_type": "Environment issue",
+    "root_cause": "1、AI_188_AII_CRM_NewOM_MobileChangeMainOfferAndSubscribeHandset:环境问题，导致offer信息不显示",
+    "solution": "Further analyze logs or contact the relevant system owner.",
+    "category": "Other",
+    "confidence": "medium",
+    "source": "excel_cleaned"
+  },
+  {
+    "error_type": "Environment issue",
+    "root_cause": "1、BillingCheck失败，订单一直在当前表，未进历史表 （ 250 、 204、205、207、200 、210、196）",
+    "solution": "Further analyze logs or contact the relevant system owner.",
+    "category": "Data",
+    "confidence": "medium",
+    "source": "excel_cleaned"
+  },
+  {
+    "error_type": "Environment issue",
+    "root_cause": "1、环境有问题，所有case失败截图显示为白板",
+    "solution": "Further analyze logs or contact the relevant system owner.",
+    "category": "Other",
+    "confidence": "medium",
+    "source": "excel_cleaned"
+  },
+  {
+    "error_type": "Environment issue",
+    "root_cause": "3、订单工作流卡了5个小时才往下走（ 106 44759 ）--“”",
+    "solution": "Further analyze logs or contact the relevant system owner.",
+    "category": "Other",
+    "confidence": "medium",
+    "source": "excel_cleaned"
+  },
+  {
+    "error_type": "Environment issue",
+    "root_cause": "92 提交订单时环境报错 SET ACTION DATE failed 重跑没问题",
+    "solution": "Further analyze logs or contact the relevant system owner.",
+    "category": "Other",
+    "confidence": "medium",
+    "source": "excel_cleaned"
+  },
+  {
+    "error_type": "Environment issue",
+    "root_cause": "AI-124 billing环境有问题，肖胡斌已修复",
+    "solution": "Further analyze logs or contact the relevant system owner.",
+    "category": "Data",
+    "confidence": "medium",
+    "source": "excel_cleaned"
+  },
+  {
+    "error_type": "Environment issue",
+    "root_cause": "AI-130 billing环境有问题，肖胡斌已修复",
+    "solution": "Further analyze logs or contact the relevant system owner.",
+    "category": "Data",
+    "confidence": "medium",
+    "source": "excel_cleaned"
+  },
+  {
+    "error_type": "Environment issue",
+    "root_cause": "AI-175 billing环境有问题，肖胡斌已修复 订单重跑：32105252540700",
+    "solution": "Further analyze logs or contact the relevant system owner.",
+    "category": "Data",
+    "confidence": "medium",
+    "source": "excel_cleaned"
+  },
+  {
+    "error_type": "Environment issue",
+    "root_cause": "AI-2602 环境报错 订单重跑：32100252543702",
+    "solution": "Further analyze logs or contact the relevant system owner.",
+    "category": "Other",
+    "confidence": "medium",
+    "source": "excel_cleaned"
+  },
+  {
+    "error_type": "Environment issue",
+    "root_cause": "AI-5959、AI-100 、AI-2532 、AI-2532 、AI-104、AI-104 ：billing环境有问题导致的失败,现已正常",
+    "solution": "Further analyze logs or contact the relevant system owner.",
+    "category": "Data",
+    "confidence": "medium",
+    "source": "excel_cleaned"
+  },
+  {
+    "error_type": "Environment issue",
+    "root_cause": "Case execution timeout",
+    "solution": "Check execution performance, service response time, and timeout configuration.",
+    "category": "Environment",
+    "confidence": "high",
+    "source": "excel_cleaned"
+  },
+  {
+    "error_type": "Environment issue",
+    "root_cause": "Deployment or network exception",
+    "solution": "Check deployment status, service availability, and network connectivity.",
+    "category": "Environment",
+    "confidence": "high",
+    "source": "excel_cleaned"
+  },
+  {
+    "error_type": "Environment issue",
+    "root_cause": "Order workflow delay",
+    "solution": "Check order workflow status and rerun or investigate delayed workflow nodes.",
+    "category": "Environment",
+    "confidence": "high",
+    "source": "excel_cleaned"
+  },
+  {
+    "error_type": "Environment issue",
+    "root_cause": "SAP工作流卡在 receive IMEI/ICC，T0环境需人工模拟接口回调",
+    "solution": "Further analyze logs or contact the relevant system owner.",
+    "category": "External System",
+    "confidence": "medium",
+    "source": "excel_cleaned"
+  },
+  {
+    "error_type": "Environment issue",
+    "root_cause": "SFF流程卡在provision节点，T0环境未人工处理",
+    "solution": "Further analyze logs or contact the relevant system owner.",
+    "category": "External System",
+    "confidence": "medium",
+    "source": "excel_cleaned"
+  },
+  {
+    "error_type": "Environment issue",
+    "root_cause": "Test Case:Selfcare fixedline change main offer 环境问题，工作流走的太慢(大于1小时)",
+    "solution": "Further analyze logs or contact the relevant system owner.",
+    "category": "Other",
+    "confidence": "medium",
+    "source": "excel_cleaned"
+  },
+  {
+    "error_type": "Environment issue",
+    "root_cause": "[\"http://10.1.248.197:60001/eshop/mvc/basket/item/profiles 503\", \"Failed to get oseOrderId or crm order id\"]",
+    "solution": "Further analyze logs or contact the relevant system owner.",
+    "category": "Other",
+    "confidence": "medium",
+    "source": "excel_cleaned"
+  },
+  {
+    "error_type": "Environment issue",
+    "root_cause": "ava.lang.Exception: java.sql.SQLNonTransientConnectionException: Communications link failure during rollback(). 环境发布导致连接失败",
+    "solution": "Further analyze logs or contact the relevant system owner.",
+    "category": "Other",
+    "confidence": "medium",
+    "source": "excel_cleaned"
+  },
+  {
+    "error_type": "Environment issue",
+    "root_cause": "relocation 页面显示异常 重跑没问题 可能和昨晚环境切换有关；AI-98重跑没问题",
+    "solution": "Further analyze logs or contact the relevant system owner.",
+    "category": "Other",
+    "confidence": "medium",
+    "source": "excel_cleaned"
+  },
+  {
+    "error_type": "Environment issue",
+    "root_cause": "因为sa环境现在是开着的，并且没有网元的模拟桩，所以工作流开通自动回了false",
+    "solution": "Further analyze logs or contact the relevant system owner.",
+    "category": "Other",
+    "confidence": "medium",
+    "source": "excel_cleaned"
+  },
+  {
+    "error_type": "Environment issue",
+    "root_cause": "环境发布影响",
+    "solution": "Further analyze logs or contact the relevant system owner.",
+    "category": "Other",
+    "confidence": "medium",
+    "source": "excel_cleaned"
+  },
+  {
+    "error_type": "Environment issue",
+    "root_cause": "环境问题",
+    "solution": "Further analyze logs or contact the relevant system owner.",
+    "category": "Other",
+    "confidence": "high",
+    "source": "excel_cleaned"
+  },
+  {
+    "error_type": "External system issue",
+    "root_cause": "121 106 sff报200",
+    "solution": "Further analyze logs or contact the relevant system owner.",
+    "category": "External System",
+    "confidence": "medium",
+    "source": "excel_cleaned"
+  },
+  {
+    "error_type": "External system issue",
+    "root_cause": "121 124 sff报错200",
+    "solution": "Further analyze logs or contact the relevant system owner.",
+    "category": "External System",
+    "confidence": "medium",
+    "source": "excel_cleaned"
+  },
+  {
+    "error_type": "External system issue",
+    "root_cause": "124 sff报错expected number of child nodes product-CHANGE-LIST/1cb100000001321200001coax-opr-tekn///1cb100000 001321200035coax-g-3-1-stik/1//1cb100000069010100074/ 待换地址",
+    "solution": "Further analyze logs or contact the relevant system owner.",
+    "category": "External System",
+    "confidence": "medium",
+    "source": "excel_cleaned"
+  },
+  {
+    "error_type": "External system issue",
+    "root_cause": "124,121,95，94 sff报200错误",
+    "solution": "Further analyze logs or contact the relevant system owner.",
+    "category": "External System",
+    "confidence": "medium",
+    "source": "excel_cleaned"
+  },
+  {
+    "error_type": "External system issue",
+    "root_cause": "129 sff报错 java.lang.Exception: Failed TO invoke RM service: Failed TO cancel.Cannot transform 2022-09-23T17:11 TO TYPE DATETIME重跑没问题",
+    "solution": "Further analyze logs or contact the relevant system owner.",
+    "category": "External System",
+    "confidence": "medium",
+    "source": "excel_cleaned"
+  },
+  {
+    "error_type": "External system issue",
+    "root_cause": "2、101 是sff流程卡住了 8点才报200 徽洪正在看 --“”",
+    "solution": "Further analyze logs or contact the relevant system owner.",
+    "category": "External System",
+    "confidence": "medium",
+    "source": "excel_cleaned"
+  },
+  {
+    "error_type": "External system issue",
+    "root_cause": "8、332 331 330 323 sap桩改动了没有重置 导致都是future订单",
+    "solution": "Further analyze logs or contact the relevant system owner.",
+    "category": "External System",
+    "confidence": "medium",
+    "source": "excel_cleaned"
+  },
+  {
+    "error_type": "External system issue",
+    "root_cause": "9、 327 sff报200",
+    "solution": "Further analyze logs or contact the relevant system owner.",
+    "category": "External System",
+    "confidence": "medium",
+    "source": "excel_cleaned"
+  },
+  {
+    "error_type": "External system issue",
+    "root_cause": "CaseName：AI-3195_AII_CRM_ChangeOfferWithOpenNetPriceCategory 错误信息：未记录 错误分析：报文里没有responsecontent 待修改地址或offer @guoxue@asiainfo-int.com CaseName 共计3个TC: AI-2532_AII_CRM_B2B_Opennet_Resumption AI-104_AII_CRM_B2C_TDC _Fiber_Resumption AI-99_AII_CRM_B2B_Opennet",
+    "solution": "Further analyze logs or contact the relevant system owner.",
+    "category": "Other",
+    "confidence": "medium",
+    "source": "excel_cleaned"
+  },
+  {
+    "error_type": "External system issue",
+    "root_cause": "SFF地址报错",
+    "solution": "Further analyze logs or contact the relevant system owner.",
+    "category": "External System",
+    "confidence": "medium",
+    "source": "excel_cleaned"
+  },
+  {
+    "error_type": "External system issue",
+    "root_cause": "Unknown",
+    "solution": "Further analyze logs or contact the relevant system owner.",
+    "category": "Other",
+    "confidence": "high",
+    "source": "excel_cleaned"
+  },
+  {
+    "error_type": "External system issue",
+    "root_cause": "sff报错 重跑没问题 java.lang.Exception: 203No reason definition was retrieved.:203:Could not resolve installation address! null#null#null#null#null;",
+    "solution": "Further analyze logs or contact the relevant system owner.",
+    "category": "External System",
+    "confidence": "medium",
+    "source": "excel_cleaned"
+  },
+  {
+    "error_type": "External system issue",
+    "root_cause": "sff流程报错500:Something bad happend，然后卡在return.to.crm节点",
+    "solution": "Further analyze logs or contact the relevant system owner.",
+    "category": "External System",
+    "confidence": "medium",
+    "source": "excel_cleaned"
+  },
+  {
+    "error_type": "External system issue",
+    "root_cause": "一个是 sap桩时间不是当天 已重置",
+    "solution": "Further analyze logs or contact the relevant system owner.",
+    "category": "External System",
+    "confidence": "medium",
+    "source": "excel_cleaned"
+  },
+  {
+    "error_type": "OMP设置问题",
+    "root_cause": "Test Case:B2Beshop change lineSpeed O2O 由于OMP测试计划Test0_OSE_B2BEshop_PLAN设置的case执行顺序不是 serial，导致所有case同时执行，当执行case=B2Beshop change lineSpeed O2O时，case=B2Beshop opennet pre-terminate已经下单了，但查询到的用户是同一个导致下单失败 已将执行顺序设置为 Serial，重跑即可。",
+    "solution": "Further analyze logs or contact the relevant system owner.",
+    "category": "Other",
+    "confidence": "medium",
+    "source": "excel_cleaned"
+  },
+  {
+    "error_type": "System bug",
+    "root_cause": "1、 晚上查询offer失败，白天能查询到 ，与mysql升级有关 已提bug AI-13244 （ 101 44384）--“”【mysql升级】",
+    "solution": "Further analyze logs or contact the relevant system owner.",
+    "category": "Code",
+    "confidence": "medium",
+    "source": "excel_cleaned"
+  },
+  {
+    "error_type": "System bug",
+    "root_cause": "6、选offer页面长时间未加载完成 ，与mysql升级有关 已提bug AI-13244 （ 95 ）--“”【mysql升级】",
+    "solution": "Further analyze logs or contact the relevant system owner.",
+    "category": "Code",
+    "confidence": "medium",
+    "source": "excel_cleaned"
+  },
+  {
+    "error_type": "System bug",
+    "root_cause": "CRM BUG（退订add on的失效时间不正确）",
+    "solution": "Further analyze logs or contact the relevant system owner.",
+    "category": "Code",
+    "confidence": "high",
+    "source": "excel_cleaned"
+  },
+  {
+    "error_type": "System bug",
+    "root_cause": "Insurance order not generated",
+    "solution": "Check whether the insurance order was generated and whether the insurance processing flow completed.",
+    "category": "Data",
+    "confidence": "high",
+    "source": "excel_cleaned"
+  },
+  {
+    "error_type": "Unknown",
+    "root_cause": "100%pass",
+    "solution": "Further analyze logs or contact the relevant system owner.",
+    "category": "Other",
+    "confidence": "medium",
+    "source": "excel_cleaned"
+  },
+  {
+    "error_type": "Unknown",
+    "root_cause": "100：[200011]object:[offering_id:90130904].offering does not exist --offer配置被修改，已修改定价计划",
+    "solution": "Further analyze logs or contact the relevant system owner.",
+    "category": "Other",
+    "confidence": "medium",
+    "source": "excel_cleaned"
+  },
+  {
+    "error_type": "Unknown",
+    "root_cause": "103 NO availble hardware 修改入参中的cpe offer 32108251501303 cpe 90127867 已修改",
+    "solution": "Further analyze logs or contact the relevant system owner.",
+    "category": "Other",
+    "confidence": "medium",
+    "source": "excel_cleaned"
+  },
+  {
+    "error_type": "Unknown",
+    "root_cause": "103 Offer变动 没有选cpe 待换offer",
+    "solution": "Further analyze logs or contact the relevant system owner.",
+    "category": "Other",
+    "confidence": "medium",
+    "source": "excel_cleaned"
+  },
+  {
+    "error_type": "Unknown",
+    "root_cause": "105 94 [200011]object:[offering_id:90130904].offering does NOT exist 待换offer",
+    "solution": "Further analyze logs or contact the relevant system owner.",
+    "category": "Other",
+    "confidence": "medium",
+    "source": "excel_cleaned"
+  },
+  {
+    "error_type": "Unknown",
+    "root_cause": "106 52269 delivery组件处理失败 2022-09-24 15:48:00 地址输入后没有查询 OC上重跑没有重现",
+    "solution": "Further analyze logs or contact the relevant system owner.",
+    "category": "Other",
+    "confidence": "medium",
+    "source": "excel_cleaned"
+  },
+  {
+    "error_type": "Unknown",
+    "root_cause": "138 同上",
+    "solution": "Further analyze logs or contact the relevant system owner.",
+    "category": "Other",
+    "confidence": "medium",
+    "source": "excel_cleaned"
+  },
+  {
+    "error_type": "Unknown",
+    "root_cause": "139 change offer报错null 代码问题 AI-14073",
+    "solution": "Further analyze logs or contact the relevant system owner.",
+    "category": "Other",
+    "confidence": "medium",
+    "source": "excel_cleaned"
+  },
+  {
+    "error_type": "Unknown",
+    "root_cause": "139 代码问题 AI-14073",
+    "solution": "Further analyze logs or contact the relevant system owner.",
+    "category": "Other",
+    "confidence": "medium",
+    "source": "excel_cleaned"
+  },
+  {
+    "error_type": "Unknown",
+    "root_cause": "140 搜索用户后在subscription list没有显示 76207429",
+    "solution": "Further analyze logs or contact the relevant system owner.",
+    "category": "Other",
+    "confidence": "medium",
+    "source": "excel_cleaned"
+  },
+  {
+    "error_type": "Unknown",
+    "root_cause": "148 同上",
+    "solution": "Further analyze logs or contact the relevant system owner.",
+    "category": "Other",
+    "confidence": "medium",
+    "source": "excel_cleaned"
+  },
+  {
+    "error_type": "Unknown",
+    "root_cause": "148 搜索用户后在subscription list没有显示 47653480",
+    "solution": "Further analyze logs or contact the relevant system owner.",
+    "category": "Other",
+    "confidence": "medium",
+    "source": "excel_cleaned"
+  },
+  {
+    "error_type": "Unknown",
+    "root_cause": "172 重入网报错 NOT SET EXTENDED attribute CODE information 重跑没问题",
+    "solution": "Further analyze logs or contact the relevant system owner.",
+    "category": "Other",
+    "confidence": "medium",
+    "source": "excel_cleaned"
+  },
+  {
+    "error_type": "Unknown",
+    "root_cause": "173 前置没有处理",
+    "solution": "Further analyze logs or contact the relevant system owner.",
+    "category": "Other",
+    "confidence": "medium",
+    "source": "excel_cleaned"
+  },
+  {
+    "error_type": "Unknown",
+    "root_cause": "177 支付时报错connection RESET 重跑没问题",
+    "solution": "Further analyze logs or contact the relevant system owner.",
+    "category": "Other",
+    "confidence": "medium",
+    "source": "excel_cleaned"
+  },
+  {
+    "error_type": "Unknown",
+    "root_cause": "188 52347 2022-09-24 18:34:07 在选offer时进程卡住了 40分钟后超时结束 重跑没问题",
+    "solution": "Further analyze logs or contact the relevant system owner.",
+    "category": "Other",
+    "confidence": "medium",
+    "source": "excel_cleaned"
+  },
+  {
+    "error_type": "Unknown",
+    "root_cause": "1951： 报错浏览器启动失败是由于57机器报错空间不足，但是C盘还剩十几G 也重启过，暂未找到原因",
+    "solution": "Further analyze logs or contact the relevant system owner.",
+    "category": "Other",
+    "confidence": "medium",
+    "source": "excel_cleaned"
+  },
+  {
+    "error_type": "Unknown",
+    "root_cause": "1961 同1951",
+    "solution": "Further analyze logs or contact the relevant system owner.",
+    "category": "Other",
+    "confidence": "medium",
+    "source": "excel_cleaned"
+  },
+  {
+    "error_type": "Unknown",
+    "root_cause": "1、148 页面提示没有进行操作 重跑没问题-“”",
+    "solution": "Further analyze logs or contact the relevant system owner.",
+    "category": "Other",
+    "confidence": "medium",
+    "source": "excel_cleaned"
+  },
+  {
+    "error_type": "Unknown",
+    "root_cause": "1、选offer页面长时间未加载完成 ，与mysql升级有关 已提bug AI-13244 （ 95 ）--“”【mysql升级】",
+    "solution": "Further analyze logs or contact the relevant system owner.",
+    "category": "Code",
+    "confidence": "medium",
+    "source": "excel_cleaned"
+  },
+  {
+    "error_type": "Unknown",
+    "root_cause": "2000426offer配置有问题导致批量订单处理时报错Failed to find material information by resource specification ID. 最近一次21号重跑已经ok",
+    "solution": "Further analyze logs or contact the relevant system owner.",
+    "category": "Data",
+    "confidence": "medium",
+    "source": "excel_cleaned"
+  },
+  {
+    "error_type": "Unknown",
+    "root_cause": "219 同上",
+    "solution": "Further analyze logs or contact the relevant system owner.",
+    "category": "Other",
+    "confidence": "medium",
+    "source": "excel_cleaned"
+  },
+  {
+    "error_type": "Unknown",
+    "root_cause": "220 56077 查询Series POA模板时 结果30s内没有显示",
+    "solution": "Further analyze logs or contact the relevant system owner.",
+    "category": "Other",
+    "confidence": "medium",
+    "source": "excel_cleaned"
+  },
+  {
+    "error_type": "Unknown",
+    "root_cause": "220 batch_detail表失败 case_excution表成功 test_case_exe_id 52427 和case_excution表的顺序没有按cfg id顺序排序有关",
+    "solution": "Further analyze logs or contact the relevant system owner.",
+    "category": "Other",
+    "confidence": "medium",
+    "source": "excel_cleaned"
+  },
+  {
+    "error_type": "Unknown",
+    "root_cause": "242 52161 用户offer信息没有显示 重跑没问题",
+    "solution": "Further analyze logs or contact the relevant system owner.",
+    "category": "Other",
+    "confidence": "medium",
+    "source": "excel_cleaned"
+  },
+  {
+    "error_type": "Unknown",
+    "root_cause": "242 支付时弹出了使用推荐的浏览器设置提示 导致没有找到支付页面 重跑没问题",
+    "solution": "Further analyze logs or contact the relevant system owner.",
+    "category": "Other",
+    "confidence": "medium",
+    "source": "excel_cleaned"
+  },
+  {
+    "error_type": "Unknown",
+    "root_cause": "242 用户offer信息不展示 重跑没问题",
+    "solution": "Further analyze logs or contact the relevant system owner.",
+    "category": "Other",
+    "confidence": "medium",
+    "source": "excel_cleaned"
+  },
+  {
+    "error_type": "Unknown",
+    "root_cause": "242 用户offer信息没有显示 重跑没问题",
+    "solution": "Further analyze logs or contact the relevant system owner.",
+    "category": "Other",
+    "confidence": "medium",
+    "source": "excel_cleaned"
+  },
+  {
+    "error_type": "Unknown",
+    "root_cause": "254：卡类型截取有问题--已修改代码",
+    "solution": "Further analyze logs or contact the relevant system owner.",
+    "category": "Other",
+    "confidence": "medium",
+    "source": "excel_cleaned"
+  },
+  {
+    "error_type": "Unknown",
+    "root_cause": "255：卡类型截取有问题--已修改代码",
+    "solution": "Further analyze logs or contact the relevant system owner.",
+    "category": "Other",
+    "confidence": "medium",
+    "source": "excel_cleaned"
+  },
+  {
+    "error_type": "Unknown",
+    "root_cause": "257 同上",
+    "solution": "Further analyze logs or contact the relevant system owner.",
+    "category": "Other",
+    "confidence": "medium",
+    "source": "excel_cleaned"
+  },
+  {
+    "error_type": "Unknown",
+    "root_cause": "258 由于兼容T8的改动 订单处理报错 已修改",
+    "solution": "Further analyze logs or contact the relevant system owner.",
+    "category": "Other",
+    "confidence": "medium",
+    "source": "excel_cleaned"
+  },
+  {
+    "error_type": "Unknown",
+    "root_cause": "260 机器空间不够 执行失败",
+    "solution": "Further analyze logs or contact the relevant system owner.",
+    "category": "Other",
+    "confidence": "medium",
+    "source": "excel_cleaned"
+  },
+  {
+    "error_type": "Unknown",
+    "root_cause": "268 57879 32103252471104 订单处理由于兼容T8影响了T0 已修改",
+    "solution": "Further analyze logs or contact the relevant system owner.",
+    "category": "Other",
+    "confidence": "medium",
+    "source": "excel_cleaned"
+  },
+  {
+    "error_type": "Unknown",
+    "root_cause": "2、378 地址不可用导致未生成订单",
+    "solution": "Further analyze logs or contact the relevant system owner.",
+    "category": "Other",
+    "confidence": "medium",
+    "source": "excel_cleaned"
+  },
+  {
+    "error_type": "Unknown",
+    "root_cause": "352 batch_detail表和case_excution表的状态不一致 实际成功",
+    "solution": "Further analyze logs or contact the relevant system owner.",
+    "category": "Other",
+    "confidence": "medium",
+    "source": "excel_cleaned"
+  },
+  {
+    "error_type": "Unknown",
+    "root_cause": "3、AI_191_AII_CRM_NEWOM_CRM_NC_NormalOrder_002：同上",
+    "solution": "Further analyze logs or contact the relevant system owner.",
+    "category": "Other",
+    "confidence": "medium",
+    "source": "excel_cleaned"
+  },
+  {
+    "error_type": "Unknown",
+    "root_cause": "4、148，164，177，190，220 由于浏览器启动失败是由于执行机内存不够，待清理 ---“”",
+    "solution": "Further analyze logs or contact the relevant system owner.",
+    "category": "Other",
+    "confidence": "medium",
+    "source": "excel_cleaned"
+  },
+  {
+    "error_type": "Unknown",
+    "root_cause": "4、smoke发送邮件失败的问题，是由于手工停止sendEmailRun进程，导致状态恰好停在初始化状态，影响到当前测试计 划邮件的发送；待优化--“”",
+    "solution": "Further analyze logs or contact the relevant system owner.",
+    "category": "Other",
+    "confidence": "medium",
+    "source": "excel_cleaned"
+  },
+  {
+    "error_type": "Unknown",
+    "root_cause": "60python进程没开是因为触发器时间没有调整正确",
+    "solution": "Further analyze logs or contact the relevant system owner.",
+    "category": "Other",
+    "confidence": "medium",
+    "source": "excel_cleaned"
+  },
+  {
+    "error_type": "Unknown",
+    "root_cause": "7、 237 number generation页面没显示 重跑没问题",
+    "solution": "Further analyze logs or contact the relevant system owner.",
+    "category": "Other",
+    "confidence": "medium",
+    "source": "excel_cleaned"
+  },
+  {
+    "error_type": "Unknown",
+    "root_cause": "7、AI-150_AII_CRM_NC_with_LN_in_NS_portin：同上",
+    "solution": "Further analyze logs or contact the relevant system owner.",
+    "category": "Other",
+    "confidence": "medium",
+    "source": "excel_cleaned"
+  },
+  {
+    "error_type": "Unknown",
+    "root_cause": "8、AI-150_AII_CRM_Mobile_with_LN_in_NS_portin：同上",
+    "solution": "Further analyze logs or contact the relevant system owner.",
+    "category": "Other",
+    "confidence": "medium",
+    "source": "excel_cleaned"
+  },
+  {
+    "error_type": "Unknown",
+    "root_cause": "94 103 105 选offer报错 开发在看",
+    "solution": "Further analyze logs or contact the relevant system owner.",
+    "category": "Other",
+    "confidence": "medium",
+    "source": "excel_cleaned"
+  },
+  {
+    "error_type": "Unknown",
+    "root_cause": "96 入参中的安装方式错误 已修改",
+    "solution": "Further analyze logs or contact the relevant system owner.",
+    "category": "Other",
+    "confidence": "medium",
+    "source": "excel_cleaned"
+  },
+  {
+    "error_type": "Unknown",
+    "root_cause": "96 地址校验失败 已换openent地址",
+    "solution": "Further analyze logs or contact the relevant system owner.",
+    "category": "Other",
+    "confidence": "medium",
+    "source": "excel_cleaned"
+  },
+  {
+    "error_type": "Unknown",
+    "root_cause": "AI-118_AII_CRM_B2C_Mobile_NewConnection_OTC_RC:case失败的原因是选offer时，双击offer但是没有弹出associated offer selection的弹窗",
+    "solution": "Further analyze logs or contact the relevant system owner.",
+    "category": "Other",
+    "confidence": "medium",
+    "source": "excel_cleaned"
+  },
+  {
+    "error_type": "Unknown",
+    "root_cause": "AI-135 重跑订单:32101252591901",
+    "solution": "Further analyze logs or contact the relevant system owner.",
+    "category": "Other",
+    "confidence": "medium",
+    "source": "excel_cleaned"
+  },
+  {
+    "error_type": "Unknown",
+    "root_cause": "AI-167、AI-156 、AI-166、AI-161、AI-165：兼容T8影响，已还原代码",
+    "solution": "Further analyze logs or contact the relevant system owner.",
+    "category": "Other",
+    "confidence": "medium",
+    "source": "excel_cleaned"
+  },
+  {
+    "error_type": "Unknown",
+    "root_cause": "AI-191 同AI-116 AI-194 订单工作流报错",
+    "solution": "Further analyze logs or contact the relevant system owner.",
+    "category": "Other",
+    "confidence": "medium",
+    "source": "excel_cleaned"
+  },
+  {
+    "error_type": "Unknown",
+    "root_cause": "AI-2381 代码问题，已提bug AI-15044 AI-148 billing找是否有报错改造导致的问题 小付已处理",
+    "solution": "Further analyze logs or contact the relevant system owner.",
+    "category": "Data",
+    "confidence": "medium",
+    "source": "excel_cleaned"
+  },
+  {
+    "error_type": "Unknown",
+    "root_cause": "AI-2602 可能是代码问题 待姚老师排查",
+    "solution": "Further analyze logs or contact the relevant system owner.",
+    "category": "Other",
+    "confidence": "medium",
+    "source": "excel_cleaned"
+  },
+  {
+    "error_type": "Unknown",
+    "root_cause": "AI-2602_ChangeOfferWithOpennet_o2t 可能是代码问题 待姚老师排查",
+    "solution": "Further analyze logs or contact the relevant system owner.",
+    "category": "Other",
+    "confidence": "medium",
+    "source": "excel_cleaned"
+  },
+  {
+    "error_type": "Unknown",
+    "root_cause": "AI_111_AII_CRM_B2C_Mobile_ChangeNumberAndSIM 已修复 待更新代码",
+    "solution": "Further analyze logs or contact the relevant system owner.",
+    "category": "Other",
+    "confidence": "medium",
+    "source": "excel_cleaned"
+  },
+  {
+    "error_type": "Unknown",
+    "root_cause": "AI_168 重入网报错 NOT SET EXTENDED attribute CODE information 没重现",
+    "solution": "Further analyze logs or contact the relevant system owner.",
+    "category": "Other",
+    "confidence": "medium",
+    "source": "excel_cleaned"
+  },
+  {
+    "error_type": "Unknown",
+    "root_cause": "AI_191 247 选号在performer项目没有成功 但是在library项目是成功的",
+    "solution": "Further analyze logs or contact the relevant system owner.",
+    "category": "Other",
+    "confidence": "medium",
+    "source": "excel_cleaned"
+  },
+  {
+    "error_type": "Unknown",
+    "root_cause": "AI_192 同上",
+    "solution": "Further analyze logs or contact the relevant system owner.",
+    "category": "Other",
+    "confidence": "medium",
+    "source": "excel_cleaned"
+  },
+  {
+    "error_type": "Unknown",
+    "root_cause": "AI_193 244 AI_194 245 crm代码有问题",
+    "solution": "Further analyze logs or contact the relevant system owner.",
+    "category": "Other",
+    "confidence": "medium",
+    "source": "excel_cleaned"
+  },
+  {
+    "error_type": "Unknown",
+    "root_cause": "Array index out of bounds",
+    "solution": "Check whether the returned list is empty before accessing elements. Add boundary validation and handle empty result scenarios.",
+    "category": "Code",
+    "confidence": "medium",
+    "source": "excel_cleaned"
+  },
+  {
+    "error_type": "Unknown",
+    "root_cause": "B2Beshop change lineSpeed O2O： change offer from opennet to opennet, 新老offer的速率是一样的 所以不会在party.ordx_intf_control_21_202211表有记录，待换offer；",
+    "solution": "Further analyze logs or contact the relevant system owner.",
+    "category": "Other",
+    "confidence": "medium",
+    "source": "excel_cleaned"
+  },
+  {
+    "error_type": "Unknown",
+    "root_cause": "Deployment or network exception",
+    "solution": "Check deployment status, service availability, and network connectivity.",
+    "category": "Environment",
+    "confidence": "high",
+    "source": "excel_cleaned"
+  },
+  {
+    "error_type": "Unknown",
+    "root_cause": "Insurance order not generated",
+    "solution": "Check whether the insurance order was generated and whether the insurance processing flow completed.",
+    "category": "Data",
+    "confidence": "medium",
+    "source": "excel_cleaned"
+  },
+  {
+    "error_type": "Unknown",
+    "root_cause": "Np 没到SEND CONFIRM TO OCH节点",
+    "solution": "Further analyze logs or contact the relevant system owner.",
+    "category": "Other",
+    "confidence": "medium",
+    "source": "excel_cleaned"
+  },
+  {
+    "error_type": "Unknown",
+    "root_cause": "Null pointer exception",
+    "solution": "Check object initialization and add null checks before accessing object fields.",
+    "category": "Code",
+    "confidence": "medium",
+    "source": "excel_cleaned"
+  },
+  {
+    "error_type": "Unknown",
+    "root_cause": "Order workflow delay",
+    "solution": "Check order workflow status and rerun or investigate delayed workflow nodes.",
+    "category": "Environment",
+    "confidence": "medium",
+    "source": "excel_cleaned"
+  },
+  {
+    "error_type": "Unknown",
+    "root_cause": "Resource does not exist or was not generated",
+    "solution": "Check whether the required resource exists and whether upstream data generation completed.",
+    "category": "Data",
+    "confidence": "high",
+    "source": "excel_cleaned"
+  },
+  {
+    "error_type": "Unknown",
+    "root_cause": "Selfcare fixedline CHANGE main offer 地址用不了",
+    "solution": "Further analyze logs or contact the relevant system owner.",
+    "category": "Other",
+    "confidence": "medium",
+    "source": "excel_cleaned"
+  },
+  {
+    "error_type": "Unknown",
+    "root_cause": "[\"Failed to generate sub order\"]",
+    "solution": "Further analyze logs or contact the relevant system owner.",
+    "category": "Other",
+    "confidence": "medium",
+    "source": "excel_cleaned"
+  },
+  {
+    "error_type": "Unknown",
+    "root_cause": "[\"http://10.1.248.197:60001/eshop/mvc/productOrder 400\", \"Failed to get oseOrderId or crm order id\"]",
+    "solution": "Further analyze logs or contact the relevant system owner.",
+    "category": "Other",
+    "confidence": "medium",
+    "source": "excel_cleaned"
+  },
+  {
+    "error_type": "Unknown",
+    "root_cause": "[\"nullhttp://10.1.248.197:60001/eshop/mvc/productOrder 400\", \"Failed to get oseOrderId or crm order id\"]",
+    "solution": "Further analyze logs or contact the relevant system owner.",
+    "category": "Other",
+    "confidence": "medium",
+    "source": "excel_cleaned"
+  },
+  {
+    "error_type": "Unknown",
+    "root_cause": "[{\"code\": 402, \"message\": \"IndexError\"}]",
+    "solution": "Further analyze logs or contact the relevant system owner.",
+    "category": "Other",
+    "confidence": "medium",
+    "source": "excel_cleaned"
+  },
+  {
+    "error_type": "Unknown",
+    "root_cause": "billing同步报错",
+    "solution": "Further analyze logs or contact the relevant system owner.",
+    "category": "Data",
+    "confidence": "medium",
+    "source": "excel_cleaned"
+  },
+  {
+    "error_type": "Unknown",
+    "root_cause": "billing报错 itable db success, deal to ItableTransListener.dealMdb exception!",
+    "solution": "Further analyze logs or contact the relevant system owner.",
+    "category": "Data",
+    "confidence": "medium",
+    "source": "excel_cleaned"
+  },
+  {
+    "error_type": "Unknown",
+    "root_cause": "cfg id 140:操作时报错，用户开户时在billing没有同步成功导致",
+    "solution": "Further analyze logs or contact the relevant system owner.",
+    "category": "Data",
+    "confidence": "medium",
+    "source": "excel_cleaned"
+  },
+  {
+    "error_type": "Unknown",
+    "root_cause": "cpe数量不对导致失败",
+    "solution": "Further analyze logs or contact the relevant system owner.",
+    "category": "Other",
+    "confidence": "medium",
+    "source": "excel_cleaned"
+  },
+  {
+    "error_type": "Unknown",
+    "root_cause": "cpe没选或错选导致报错，已修改",
+    "solution": "Further analyze logs or contact the relevant system owner.",
+    "category": "Other",
+    "confidence": "medium",
+    "source": "excel_cleaned"
+  },
+  {
+    "error_type": "Unknown",
+    "root_cause": "get event 无法跳过，重跑没问题",
+    "solution": "Further analyze logs or contact the relevant system owner.",
+    "category": "Other",
+    "confidence": "medium",
+    "source": "excel_cleaned"
+  },
+  {
+    "error_type": "Unknown",
+    "root_cause": "mobile pre-termination selfcare 由于查询到的用户的offer在ose查不到对应offer 待修改sql",
+    "solution": "Further analyze logs or contact the relevant system owner.",
+    "category": "Other",
+    "confidence": "medium",
+    "source": "excel_cleaned"
+  },
+  {
+    "error_type": "Unknown",
+    "root_cause": "newom mobile和mobile都是由于57机器内存不够失败 已清理",
+    "solution": "Further analyze logs or contact the relevant system owner.",
+    "category": "Other",
+    "confidence": "medium",
+    "source": "excel_cleaned"
+  },
+  {
+    "error_type": "Unknown",
+    "root_cause": "np流程没到SEND CONFIRM TO OCH 节点",
+    "solution": "Further analyze logs or contact the relevant system owner.",
+    "category": "Other",
+    "confidence": "medium",
+    "source": "excel_cleaned"
+  },
+  {
+    "error_type": "Unknown",
+    "root_cause": "offer变动，下单时多了cpe，增加寄送地址",
+    "solution": "Further analyze logs or contact the relevant system owner.",
+    "category": "Other",
+    "confidence": "medium",
+    "source": "excel_cleaned"
+  },
+  {
+    "error_type": "Unknown",
+    "root_cause": "offer变动，下单时缺少cpe",
+    "solution": "Further analyze logs or contact the relevant system owner.",
+    "category": "Other",
+    "confidence": "medium",
+    "source": "excel_cleaned"
+  },
+  {
+    "error_type": "Unknown",
+    "root_cause": "preq一直在转圈圈，导致报错界面元素未找到",
+    "solution": "Further analyze logs or contact the relevant system owner.",
+    "category": "Other",
+    "confidence": "medium",
+    "source": "excel_cleaned"
+  },
+  {
+    "error_type": "Unknown",
+    "root_cause": "return cpe 的continue没点成功",
+    "solution": "Further analyze logs or contact the relevant system owner.",
+    "category": "Other",
+    "confidence": "medium",
+    "source": "excel_cleaned"
+  },
+  {
+    "error_type": "Unknown",
+    "root_cause": "select count(*) from PARTY.MEM_SHORTNUM_INFO_21 where bill_id=\"47656626\" and user_id=42100131212612，status预期是5，实际是7",
+    "solution": "Further analyze logs or contact the relevant system owner.",
+    "category": "Data",
+    "confidence": "medium",
+    "source": "excel_cleaned"
+  },
+  {
+    "error_type": "Unknown",
+    "root_cause": "一个是 支付失败",
+    "solution": "Further analyze logs or contact the relevant system owner.",
+    "category": "Other",
+    "confidence": "medium",
+    "source": "excel_cleaned"
+  },
+  {
+    "error_type": "Unknown",
+    "root_cause": "副卡addon offer不正确导致卡类型选不到",
+    "solution": "Further analyze logs or contact the relevant system owner.",
+    "category": "Other",
+    "confidence": "medium",
+    "source": "excel_cleaned"
+  },
+  {
+    "error_type": "Unknown",
+    "root_cause": "合同过期导致选不到offer",
+    "solution": "Further analyze logs or contact the relevant system owner.",
+    "category": "Other",
+    "confidence": "medium",
+    "source": "excel_cleaned"
+  },
+  {
+    "error_type": "Unknown",
+    "root_cause": "同步billing报错",
+    "solution": "Further analyze logs or contact the relevant system owner.",
+    "category": "Data",
+    "confidence": "medium",
+    "source": "excel_cleaned"
+  },
+  {
+    "error_type": "Unknown",
+    "root_cause": "地址校验失败",
+    "solution": "Further analyze logs or contact the relevant system owner.",
+    "category": "Other",
+    "confidence": "medium",
+    "source": "excel_cleaned"
+  },
+  {
+    "error_type": "Unknown",
+    "root_cause": "地址校验失败 换地址测试通过",
+    "solution": "Further analyze logs or contact the relevant system owner.",
+    "category": "Other",
+    "confidence": "medium",
+    "source": "excel_cleaned"
+  },
+  {
+    "error_type": "Unknown",
+    "root_cause": "定位不到元素",
+    "solution": "Further analyze logs or contact the relevant system owner.",
+    "category": "Other",
+    "confidence": "high",
+    "source": "excel_cleaned"
+  },
+  {
+    "error_type": "Unknown",
+    "root_cause": "工作流开通节点没有回true",
+    "solution": "Further analyze logs or contact the relevant system owner.",
+    "category": "Other",
+    "confidence": "medium",
+    "source": "excel_cleaned"
+  },
+  {
+    "error_type": "Unknown",
+    "root_cause": "工作流报错",
+    "solution": "Further analyze logs or contact the relevant system owner.",
+    "category": "Other",
+    "confidence": "medium",
+    "source": "excel_cleaned"
+  },
+  {
+    "error_type": "Unknown",
+    "root_cause": "开户提交订单不成功",
+    "solution": "Further analyze logs or contact the relevant system owner.",
+    "category": "Other",
+    "confidence": "medium",
+    "source": "excel_cleaned"
+  },
+  {
+    "error_type": "Unknown",
+    "root_cause": "没定位到选择Reason for Suspension的元素，选取器标签搜索失败",
+    "solution": "Further analyze logs or contact the relevant system owner.",
+    "category": "Other",
+    "confidence": "medium",
+    "source": "excel_cleaned"
+  },
+  {
+    "error_type": "Unknown",
+    "root_cause": "没定位到选择reaccessReason的元素",
+    "solution": "Further analyze logs or contact the relevant system owner.",
+    "category": "Other",
+    "confidence": "medium",
+    "source": "excel_cleaned"
+  },
+  {
+    "error_type": "Unknown",
+    "root_cause": "没找到可用的用户",
+    "solution": "Further analyze logs or contact the relevant system owner.",
+    "category": "Other",
+    "confidence": "medium",
+    "source": "excel_cleaned"
+  },
+  {
+    "error_type": "Unknown",
+    "root_cause": "界面元素找不到",
+    "solution": "Further analyze logs or contact the relevant system owner.",
+    "category": "Other",
+    "confidence": "medium",
+    "source": "excel_cleaned"
+  },
+  {
+    "error_type": "Unknown",
+    "root_cause": "订单处理卡住",
+    "solution": "Further analyze logs or contact the relevant system owner.",
+    "category": "Other",
+    "confidence": "medium",
+    "source": "excel_cleaned"
+  },
+  {
+    "error_type": "Unknown",
+    "root_cause": "订单处理组件问题，没有成功回单",
+    "solution": "Further analyze logs or contact the relevant system owner.",
+    "category": "Other",
+    "confidence": "medium",
+    "source": "excel_cleaned"
+  },
+  {
+    "error_type": "Unknown",
+    "root_cause": "订单报错，重跑没问题，错误：Duplicate entry \"31202306300116\" for key \"ord_cust_ext_f_21_202306.PRIMARY\"",
+    "solution": "Further analyze logs or contact the relevant system owner.",
+    "category": "Other",
+    "confidence": "medium",
+    "source": "excel_cleaned"
+  },
+  {
+    "error_type": "Unknown",
+    "root_cause": "调setgoodsinformation报错 重跑没问题 java.lang.Exception: System Error:null at com.asiainfo.crm.so.common.service.impl.RbossCommonSVImpl.setGoodsInformation(RbossCommonSVImpl.java:3574) SELECT * FROM ord.`crm_inout_log_21_202307` t WHERE t.`CUSTOMER_ORDER_ID`='32",
+    "solution": "Further analyze logs or contact the relevant system owner.",
+    "category": "Other",
+    "confidence": "medium",
+    "source": "excel_cleaned"
+  },
+  {
+    "error_type": "Unknown",
+    "root_cause": "选offer 报错 getOfferDisplayJson error :2318970未获取到产品的详细信息",
+    "solution": "Further analyze logs or contact the relevant system owner.",
+    "category": "Other",
+    "confidence": "medium",
+    "source": "excel_cleaned"
+  },
+  {
+    "error_type": "Unknown",
+    "root_cause": "选offer组件问题",
+    "solution": "Further analyze logs or contact the relevant system owner.",
+    "category": "Other",
+    "confidence": "medium",
+    "source": "excel_cleaned"
+  },
+  {
+    "error_type": "Unknown",
+    "root_cause": "！！243 productinfo组件 submit没有点击成功 找不到元素webctrl aaname='New subscribe*' 的话 再点击submit一次 待修改",
+    "solution": "Further analyze logs or contact the relevant system owner.",
+    "category": "Other",
+    "confidence": "medium",
+    "source": "excel_cleaned"
+  },
+  {
+    "error_type": "VPN检查",
+    "root_cause": "MEM_SHORTNUM table not created",
+    "solution": "Check whether MEM_SHORTNUM data was generated and whether VPN order data has landed in the table.",
+    "category": "Data",
+    "confidence": "high",
+    "source": "excel_cleaned"
+  },
+  {
+    "error_type": "VPN检查",
+    "root_cause": "Unknown",
+    "solution": "Further analyze logs or contact the relevant system owner.",
+    "category": "Other",
+    "confidence": "high",
+    "source": "excel_cleaned"
+  },
+  {
+    "error_type": "VPN检查",
+    "root_cause": "没有生成VPN订单 （为什么没生成）",
+    "solution": "Further analyze logs or contact the relevant system owner.",
+    "category": "Other",
+    "confidence": "high",
+    "source": "excel_cleaned"
+  },
+  {
+    "error_type": "Vers BUG",
+    "root_cause": "2、138 卡在选保险页面 ，mysql升级引起-“”",
+    "solution": "Further analyze logs or contact the relevant system owner.",
+    "category": "Other",
+    "confidence": "medium",
+    "source": "excel_cleaned"
+  },
+  {
+    "error_type": "Vers BUG",
+    "root_cause": "3、95 显示没有权限 开发说是mysql升级调试引起的 -“”",
+    "solution": "Further analyze logs or contact the relevant system owner.",
+    "category": "Other",
+    "confidence": "medium",
+    "source": "excel_cleaned"
+  },
+  {
+    "error_type": "offer修改和代码问题",
+    "root_cause": "1.90127867 offer找不到了 影响3个case； 2.change offer选了offer后点了continue没反应 影响5个case",
+    "solution": "Further analyze logs or contact the relevant system owner.",
+    "category": "Other",
+    "confidence": "medium",
+    "source": "excel_cleaned"
+  },
+  {
+    "error_type": "offer找不到，需要更换",
+    "root_cause": "无法找到与此选取器对应的用户界面元素:已找到的最接近的匹配项为",
+    "solution": "Further analyze logs or contact the relevant system owner.",
+    "category": "Other",
+    "confidence": "medium",
+    "source": "excel_cleaned"
+  },
+  {
+    "error_type": "sql语句执行三遍都失败，手工执行一次后成功，，订单顺利完工。",
+    "root_cause": "Order workflow delay",
+    "solution": "Check order workflow status and rerun or investigate delayed workflow nodes.",
+    "category": "Environment",
+    "confidence": "medium",
+    "source": "excel_cleaned"
+  },
+  {
+    "error_type": "业务报错",
+    "root_cause": "Array index out of bounds",
+    "solution": "Check whether the returned list is empty before accessing elements. Add boundary validation and handle empty result scenarios.",
+    "category": "Code",
+    "confidence": "high",
+    "source": "excel_cleaned"
+  },
+  {
+    "error_type": "会将卡预留加入到前置中",
+    "root_cause": "Resource does not exist or was not generated",
+    "solution": "Check whether the required resource exists and whether upstream data generation completed.",
+    "category": "Data",
+    "confidence": "medium",
+    "source": "excel_cleaned"
+  },
+  {
+    "error_type": "保险检查",
+    "root_cause": "Insurance order not generated",
+    "solution": "Check whether the insurance order was generated and whether the insurance processing flow completed.",
+    "category": "Data",
+    "confidence": "high",
+    "source": "excel_cleaned"
+  },
+  {
+    "error_type": "保险检查",
+    "root_cause": "保险订单没有生成，暂时再观察",
+    "solution": "Further analyze logs or contact the relevant system owner.",
+    "category": "Other",
+    "confidence": "high",
+    "source": "excel_cleaned"
+  },
+  {
+    "error_type": "保险检查",
+    "root_cause": "保险订单没有生成，暂时再观察--crm处理工作流较慢",
+    "solution": "Further analyze logs or contact the relevant system owner.",
+    "category": "Other",
+    "confidence": "high",
+    "source": "excel_cleaned"
+  },
+  {
+    "error_type": "取SIMinfo失败，导致case执行失败",
+    "root_cause": "[\"http://10.1.248.197:60001/selfcare/mvc/product/subscriber/42103111372801/offer/90127808 404\", \"Failed to get oseOrderId or crm order id\"]",
+    "solution": "Further analyze logs or contact the relevant system owner.",
+    "category": "Other",
+    "confidence": "medium",
+    "source": "excel_cleaned"
+  },
+  {
+    "error_type": "已经提交bug给开发",
+    "root_cause": "Order workflow delay",
+    "solution": "Check order workflow status and rerun or investigate delayed workflow nodes.",
+    "category": "Environment",
+    "confidence": "medium",
+    "source": "excel_cleaned"
+  },
+  {
+    "error_type": "执行超时",
+    "root_cause": "CRM environment abnormal",
+    "solution": "Check CRM environment status, database connection, and related service availability.",
+    "category": "Environment",
+    "confidence": "high",
+    "source": "excel_cleaned"
+  },
+  {
+    "error_type": "执行超时",
+    "root_cause": "Order workflow delay",
+    "solution": "Check order workflow status and rerun or investigate delayed workflow nodes.",
+    "category": "Environment",
+    "confidence": "high",
+    "source": "excel_cleaned"
+  },
+  {
+    "error_type": "计划启动的时，误删，导致未执行这两个case",
+    "root_cause": "未执行",
+    "solution": "Further analyze logs or contact the relevant system owner.",
+    "category": "Other",
+    "confidence": "medium",
+    "source": "excel_cleaned"
+  },
+  {
+    "error_type": "订单卡在开通，没有跳单成功",
+    "root_cause": "Order workflow delay",
+    "solution": "Check order workflow status and rerun or investigate delayed workflow nodes.",
+    "category": "Environment",
+    "confidence": "medium",
+    "source": "excel_cleaned"
+  },
+  {
+    "error_type": "？",
+    "root_cause": "1.90127867 offer找不到了 影响3个case； 2.change offer选了offer后点了continue没反应 影响5个case",
+    "solution": "Further analyze logs or contact the relevant system owner.",
+    "category": "Other",
+    "confidence": "high",
+    "source": "excel_cleaned"
+  },
+  {
+    "error_type": "？",
+    "root_cause": "np流程没到SEND CONFIRM TO OCH 节点，np没有报错，后面跑没问题",
+    "solution": "Further analyze logs or contact the relevant system owner.",
+    "category": "Other",
+    "confidence": "high",
+    "source": "excel_cleaned"
+  },
+  {
+    "error_type": "？",
+    "root_cause": "提交订单后40分钟内页面没响应",
+    "solution": "Further analyze logs or contact the relevant system owner.",
+    "category": "Other",
+    "confidence": "high",
+    "source": "excel_cleaned"
   }
 ]

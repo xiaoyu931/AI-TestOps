@@ -6,6 +6,7 @@ from typing import Optional, Dict, List, Tuple
 
 from fastapi import APIRouter
 
+from app.analyzer.analyzer_core import analyze_error
 from app.database import SessionLocal
 from app.models.batch_detail_model import BatchDetail
 from app.models.cfg_test_case_task_model import TestCaseTask
@@ -69,38 +70,6 @@ def get_stage(state: int) -> str:
     return "UNKNOWN"
 
 
-ERROR_RULES = [
-    ("UI_SELECTOR", [
-        "找不到对应此选取器的用户界面元素",
-        "选取器",
-        "selector",
-        "uielement",
-        "element not found"
-    ]),
-    ("TIMEOUT", ["timeout", "超时", "timed out"]),
-    ("LOGIN", ["login", "登录", "not successfully"]),
-    ("DATA_ERROR", [
-        "校验",
-        "validate",
-        "validation",
-        "mismatch",
-        "不一致",
-        "data can\"t found",
-        "data can't found",
-        "data not found"
-    ]),
-    ("NETWORK", ["connection", "network", "socket", "connect", "communication with server"]),
-    ("CODE_ERROR", [
-        "index out of bounds",
-        "nullpointer",
-        "undefined",
-        "cannot read",
-        "exception"
-    ]),
-    ("SCRIPT_CAPTURE_ERROR", ["traceback", "脚本", "script capture exception"]),
-]
-
-
 def parse_json_text(text: Optional[str]):
     if not text:
         return None
@@ -137,182 +106,12 @@ def extract_error_from_result_data(test_result_data: Optional[str]) -> str:
     return clean_text(test_result_data)
 
 
-def classify_error(error_text: str) -> str:
-    text = (error_text or "").lower()
-
-    for error_type, keywords in ERROR_RULES:
-        for kw in keywords:
-            if kw.lower() in text:
-                return error_type
-
-    return "OTHER"
-
-
 def shorten_text(text: str, limit: int = 220) -> str:
     text = clean_text(text)
     if len(text) <= limit:
         return text
     return text[:limit] + "..."
 
-
-# def build_error_advice(error_type: str, error_text: str):
-#     text = (error_text or "").lower()
-#
-#     if "selector" in text or "选取器" in text:
-#         return {
-#             "reason": "UI element locating failed (selector issue or page changed)",
-#             "suggestion": "1. Check whether the page structure changed\n2. Check whether the selector is stable\n3. Add more wait time before locating the element"
-#         }
-#
-#     if "timeout" in text or "超时" in text:
-#         return {
-#             "reason": "Execution timeout (page or service response is too slow)",
-#             "suggestion": "1. Check service performance\n2. Increase timeout settings\n3. Check network condition"
-#         }
-#
-#     if "login" in text or "登录" in text:
-#         return {
-#             "reason": "Login failed",
-#             "suggestion": "1. Verify username and password\n2. Verify account permission\n3. Verify environment configuration"
-#         }
-#
-#     if "data" in text or "数据" in text:
-#         return {
-#             "reason": "Data is missing or invalid",
-#             "suggestion": "1. Check whether test data exists\n2. Verify data format\n3. Verify database connectivity"
-#         }
-#
-#     mapping = {
-#         "UI_SELECTOR": {
-#             "reason": "UI element locating failed",
-#             "suggestion": "Check whether the selector is stable and avoid dynamic IDs"
-#         },
-#         "TIMEOUT": {
-#             "reason": "Execution timeout",
-#             "suggestion": "Check performance and increase timeout if necessary"
-#         },
-#         "LOGIN": {
-#             "reason": "Login failed",
-#             "suggestion": "Check credentials and account permission"
-#         },
-#         "DATA_ERROR": {
-#             "reason": "Data validation failed",
-#             "suggestion": "Check test data and business rules"
-#         },
-#         "NETWORK": {
-#             "reason": "Network issue detected",
-#             "suggestion": "Check network connectivity and service availability"
-#         },
-#         "CODE_ERROR": {
-#             "reason": "Application code error (logic or boundary issue)",
-#             "suggestion": "1. Add boundary checks\n2. Validate array/list before access\n3. Improve error handling"
-#         },
-#         "SCRIPT_CAPTURE_ERROR": {
-#             "reason": "Script execution failed",
-#             "suggestion": "Check script logic and exception handling"
-#         },
-#         "OTHER": {
-#             "reason": "Unknown issue",
-#             "suggestion": "Review the detailed error log for further analysis"
-#         }
-#     }
-#
-#     return mapping.get(error_type, mapping["OTHER"])
-def build_error_advice(error_type: str, error_text: str):
-    text = (error_text or "").lower()
-
-    # =========================
-    # High-priority specific rules
-    # =========================
-
-    # 1. Code boundary / array index issue
-    if "index out of bounds" in text:
-        return {
-            "reason": "Application code error: array/list index out of bounds",
-            "suggestion": "1. Check list or array size before accessing elements\n2. Add boundary validation\n3. Improve exception handling for empty results"
-        }
-
-    # 2. Null / undefined reference
-    if "nullpointer" in text or "cannot read" in text or "undefined" in text:
-        return {
-            "reason": "Application code error: null or undefined reference",
-            "suggestion": "1. Add null checks before accessing object fields\n2. Validate returned objects before use\n3. Improve defensive coding and exception handling"
-        }
-
-    # 3. UI selector issue
-    if "selector" in text or "选取器" in text or "uielement" in text:
-        return {
-            "reason": "UI element locating failed (selector issue or page changed)",
-            "suggestion": "1. Check whether the page structure changed\n2. Check whether the selector is stable\n3. Add more wait time before locating the element"
-        }
-
-    # 4. Timeout
-    if "timeout" in text or "超时" in text or "timed out" in text:
-        return {
-            "reason": "Execution timeout (page or service response is too slow)",
-            "suggestion": "1. Check service performance\n2. Increase timeout settings\n3. Check network condition"
-        }
-
-    # 5. Login issue
-    if "login" in text or "登录" in text or "not successfully" in text:
-        return {
-            "reason": "Login failed",
-            "suggestion": "1. Verify username and password\n2. Verify account permission\n3. Verify environment configuration"
-        }
-
-    # 6. SAP / API not found
-    if "soasapinterface" in text or "data can't found" in text or "data can\"t found" in text or "data not found" in text:
-        return {
-            "reason": "Required business data was not found in upstream service or database",
-            "suggestion": "1. Verify whether the required upstream data exists\n2. Check query conditions and request parameters\n3. Verify service and database connectivity"
-        }
-
-    # 7. Generic data issue
-    if "validation" in text or "validate" in text or "mismatch" in text or "不一致" in text:
-        return {
-            "reason": "Data validation failed",
-            "suggestion": "1. Verify expected data and actual data\n2. Check business rules\n3. Confirm test data preparation is correct"
-        }
-
-    # =========================
-    # Fallback by classified type
-    # =========================
-    mapping = {
-        "UI_SELECTOR": {
-            "reason": "UI element locating failed",
-            "suggestion": "Check whether the selector is stable and avoid dynamic IDs"
-        },
-        "TIMEOUT": {
-            "reason": "Execution timeout",
-            "suggestion": "Check performance and increase timeout if necessary"
-        },
-        "LOGIN": {
-            "reason": "Login failed",
-            "suggestion": "Check credentials and account permission"
-        },
-        "DATA_ERROR": {
-            "reason": "Data validation failed",
-            "suggestion": "Check test data and business rules"
-        },
-        "NETWORK": {
-            "reason": "Network issue detected",
-            "suggestion": "Check network connectivity and service availability"
-        },
-        "SCRIPT_CAPTURE_ERROR": {
-            "reason": "Script execution failed",
-            "suggestion": "Check script logic and exception handling"
-        },
-        "CODE_ERROR": {
-            "reason": "Application code error",
-            "suggestion": "Review code logic, add validation, and improve exception handling"
-        },
-        "OTHER": {
-            "reason": "Unknown issue",
-            "suggestion": "Review the detailed error log for further analysis"
-        }
-    }
-
-    return mapping.get(error_type, mapping["OTHER"])
 
 def extract_error_pattern(error_text: str) -> str:
     text = error_text or ""
@@ -321,22 +120,18 @@ def extract_error_pattern(error_text: str) -> str:
     if match:
         return "Index Out Of Bounds"
 
-    # Selector by id
     match = re.search(r"id='([^']+)'", text)
     if match:
         return f"Selector ID: {match.group(1)}"
 
-    # Selector by aaname
     match = re.search(r"aaname='([^']+)'", text)
     if match:
         return f"Selector Name: {match.group(1)}"
 
-    # SAP API
     match = re.search(r"SoaSapInterFace\(([^)]+)\)", text, flags=re.IGNORECASE)
     if match:
         return f"SAP API: {match.group(1)}"
 
-    # Generic error code
     match = re.search(r"code[:=]\s*(\d+)", text, flags=re.IGNORECASE)
     if match:
         return f"Error Code: {match.group(1)}"
@@ -345,60 +140,60 @@ def extract_error_pattern(error_text: str) -> str:
 
 
 def build_pattern_display(pattern: str):
-
     if pattern == "Index Out Of Bounds":
         return {
             "title": "Array index out of bounds",
-            "suggestion": "Check list/array size before accessing elements; add boundary validation"
+            "suggestion": "Check list/array size before accessing elements; add boundary validation",
         }
+
     if pattern.startswith("SAP API"):
         api = pattern.split(":")[-1].strip()
         return {
             "title": f"SAP API failure ({api})",
-            "suggestion": "Check SAP API status, confirm whether data exists, and verify whether the request timed out"
+            "suggestion": "Check SAP API status, confirm whether data exists, and verify whether the request timed out",
         }
 
     if "UserVertifyCode" in pattern:
         return {
             "title": "Login page verification-code element missing",
-            "suggestion": "Check whether the login page changed, whether the selector is invalid, and whether additional wait time is needed"
+            "suggestion": "Check whether the login page changed, whether the selector is invalid, and whether additional wait time is needed",
         }
 
     if "HeadTable_agrTable" in pattern:
         return {
             "title": "Agreement page table element missing",
-            "suggestion": "Check the Agreement page structure and verify the selector path"
+            "suggestion": "Check the Agreement page structure and verify the selector path",
         }
 
     if pattern.startswith("Selector ID"):
         selector_id = pattern.split(":")[-1].strip()
         return {
             "title": f"UI element missing ({selector_id})",
-            "suggestion": "Check whether the selector is stable and whether the related page changed"
+            "suggestion": "Check whether the selector is stable and whether the related page changed",
         }
 
     if pattern.startswith("Selector Name"):
         selector_name = pattern.split(":")[-1].strip()
         return {
             "title": f"UI element missing ({selector_name})",
-            "suggestion": "Check whether the selector is stable and whether the related page changed"
+            "suggestion": "Check whether the selector is stable and whether the related page changed",
         }
 
     if pattern.startswith("Error Code: 404"):
         return {
             "title": "Requested data not found",
-            "suggestion": "Check whether upstream data exists and whether the query condition is correct"
+            "suggestion": "Check whether upstream data exists and whether the query condition is correct",
         }
 
     if pattern.startswith("Error Code: 410"):
         return {
             "title": "Data indexing or boundary issue",
-            "suggestion": "Check whether the returned list is empty and verify boundary handling in the script"
+            "suggestion": "Check whether the returned list is empty and verify boundary handling in the script",
         }
 
     return {
         "title": "Unknown issue",
-        "suggestion": "Review the detailed log and classify this issue into a reusable rule if it happens repeatedly"
+        "suggestion": "Review the detailed log and classify this issue into a reusable rule if it happens repeatedly",
     }
 
 
@@ -423,8 +218,8 @@ def get_failure_analysis(
     8  FINISH_DATE
     """
     db = SessionLocal()
+
     try:
-        # 1. Query batch_detail first
         batch_query = db.query(BatchDetail).with_entities(
             BatchDetail.BATCH_ID,
             BatchDetail.BATCH_DETAIL_ID,
@@ -464,7 +259,6 @@ def get_failure_analysis(
         if not batch_rows:
             return build_empty_response()
 
-        # 2. Load cfg info and support UiPath case name filtering
         batch_cfg_ids = {row[2] for row in batch_rows if row[2] is not None}
 
         cfg_map: Dict[int, TestCaseTask] = {}
@@ -495,7 +289,6 @@ def get_failure_analysis(
         else:
             cfg_map = {}
 
-        # 3. Summary
         total = len(batch_rows)
         failed_batch_rows = [row for row in batch_rows if row[3] in FAIL_STATES]
         success_batch_rows = [row for row in batch_rows if row[3] in SUCCESS_STATES]
@@ -519,7 +312,6 @@ def get_failure_analysis(
                 "failure_details": [],
             }
 
-        # 4. Collect failed case execution ids only
         failed_case_exe_ids = set()
         for row in failed_batch_rows:
             status = row[3]
@@ -545,7 +337,6 @@ def get_failure_analysis(
                 "failure_details": [],
             }
 
-        # 5. Query case executions
         case_rows = db.query(TestCaseExecution).filter(
             TestCaseExecution.TEST_CASE_EXE_ID.in_(list(failed_case_exe_ids))
         ).all()
@@ -554,12 +345,11 @@ def get_failure_analysis(
             x.TEST_CASE_EXE_ID: x for x in case_rows
         }
 
-        # 6. Query related component executions
         component_rows = db.query(TestComponentExecution).filter(
             TestComponentExecution.TEST_CASE_EXE_ID.in_(list(failed_case_exe_ids))
         ).order_by(
             TestComponentExecution.TEST_CASE_EXE_ID.asc(),
-            TestComponentExecution.TEST_COMPONENT_EXE_ID.desc()
+            TestComponentExecution.TEST_COMPONENT_EXE_ID.desc(),
         ).limit(MAX_COMPONENT_ROWS).all()
 
         component_preferred_map: Dict[int, TestComponentExecution] = {}
@@ -578,10 +368,10 @@ def get_failure_analysis(
             if case_exe_id not in component_preferred_map:
                 component_preferred_map[case_exe_id] = latest_row
 
-        # 7. Build detail rows and counters
         stage_counter = Counter()
         error_type_counter = Counter()
         pattern_counter = Counter()
+        pattern_display_map = {}
         failure_details = []
 
         for batch_row in failed_batch_rows:
@@ -639,9 +429,21 @@ def get_failure_analysis(
                     elif system_error:
                         base_error = system_error
 
-            error_type = classify_error(base_error)
-            advice = build_error_advice(error_type, base_error)
-            pattern = extract_error_pattern(base_error)
+            analysis = analyze_error(db, base_error)
+
+            error_type = analysis["error_type"]
+            error_reason = analysis["root_cause"]
+            suggestion = analysis["solution"]
+
+            if analysis.get("matched"):
+                pattern = analysis["root_cause"]
+                pattern_display_map[pattern] = {
+                    "title": analysis["root_cause"],
+                    "suggestion": analysis["solution"],
+                }
+            else:
+                pattern = extract_error_pattern(base_error)
+                pattern_display_map[pattern] = build_pattern_display(pattern)
 
             stage_counter[stage] += 1
             error_type_counter[error_type] += 1
@@ -658,8 +460,8 @@ def get_failure_analysis(
                 "state": state,
                 "state_text": state_text,
                 "error_type": error_type,
-                "error_reason": advice["reason"],
-                "suggestion": advice["suggestion"],
+                "error_reason": error_reason,
+                "suggestion": suggestion,
                 "error_pattern": pattern,
                 "error_summary": shorten_text(base_error, 220) if base_error else "-",
                 "component_name": component_name if component_name else "Not Triggered",
@@ -679,7 +481,7 @@ def get_failure_analysis(
 
         pattern_distribution = []
         for k, v in sorted(pattern_counter.items(), key=lambda x: x[1], reverse=True):
-            display = build_pattern_display(k)
+            display = pattern_display_map.get(k) or build_pattern_display(k)
             percent = round((v / failed) * 100, 1) if failed > 0 else 0
 
             pattern_distribution.append({
