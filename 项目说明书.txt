@@ -771,3 +771,11 @@ Test Plan Health 与 Failure Analysis 的分析口径统一
 ```text
 让所有错误分析逻辑收口到 Analyzer Core。
 ```
+
+前后端已经完成 Schema 收敛：
+
+旧字段 error_reason / suggestion 不再用于 Failure Detail
+新字段 root_cause / solution 成为唯一来源
+已完成：Analyzer 输出字段标准化
+已完成：Failure Analysis 前端字段从 error_reason/suggestion 迁移到 root_cause/solution
+已完成：旧兼容字段清理

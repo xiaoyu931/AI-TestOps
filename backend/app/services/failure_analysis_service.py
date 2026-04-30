@@ -461,14 +461,13 @@ class FailureAnalysisService:
 
         analysis = analyze_error(self.db, base_error)
 
-        error_type = analysis["error_type"]
-        error_reason = analysis["root_cause"]
-        suggestion = analysis["solution"]
+        root_cause = analysis["root_cause"]
+        solution = analysis["solution"]
 
         if analysis.get("matched"):
-            pattern = analysis["root_cause"]
-            pattern_title = analysis["root_cause"]
-            pattern_suggestion = analysis["solution"]
+            pattern = root_cause
+            pattern_title = root_cause
+            pattern_suggestion = solution
         else:
             pattern = extract_error_pattern(base_error)
             display = build_pattern_display(pattern)
@@ -485,9 +484,25 @@ class FailureAnalysisService:
             "stage": stage,
             "state": state,
             "state_text": state_text,
-            "error_type": error_type,
-            "error_reason": error_reason,
-            "suggestion": suggestion,
+
+            # Analyzer standard fields
+            "matched": analysis["matched"],
+            "error_type": analysis["error_type"],
+            "root_cause": root_cause,
+            "solution": solution,
+            "category": analysis["category"],
+            "confidence": analysis["confidence"],
+            "confidence_score": analysis["confidence_score"],
+            "matched_rule_id": analysis["matched_rule_id"],
+            "matched_pattern": analysis["matched_pattern"],
+            "rule_source": analysis["rule_source"],
+            "knowledge_source": analysis["knowledge_source"],
+
+            # Compatible fields for existing frontend
+            # "error_reason": root_cause,
+            # "suggestion": solution,
+
+            # Display / aggregation fields
             "error_pattern": pattern,
             "error_pattern_title": pattern_title,
             "error_pattern_suggestion": pattern_suggestion,

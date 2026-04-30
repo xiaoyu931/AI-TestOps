@@ -39,7 +39,7 @@ def build_failure_analysis_response(summary: dict, failure_details: List[dict]) 
         "error_type_distribution": distribution["error_type_distribution"],
         "error_pattern_distribution": distribution["error_pattern_distribution"],
         "top_issue": distribution["top_issue"],
-        "failure_details": failure_details,
+        "failure_details": distribution["failure_details"],
     }
 
 
@@ -58,7 +58,8 @@ def aggregate_failure_details(failure_details: List[dict], failed_count: int) ->
 
         pattern_display_map[detail["error_pattern"]] = {
             "title": detail.get("error_pattern_title") or detail["error_pattern"],
-            "suggestion": detail.get("error_pattern_suggestion") or detail.get("suggestion") or "",
+            "suggestion": detail.get("error_pattern_suggestion") or detail.get("solution") or "",
+            # "suggestion": detail.get("error_pattern_suggestion") or detail.get("solution") or detail.get("suggestion") or "",
         }
 
         cleaned_detail = dict(detail)

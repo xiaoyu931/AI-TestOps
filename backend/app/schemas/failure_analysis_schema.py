@@ -32,12 +32,29 @@ class FailureDetailItem(BaseModel):
     batch_id: Optional[int] = None
     cfg_id: Optional[int] = None
     uipath_case_name: Optional[str] = None
+
     stage: str
     state: int
     state_text: str
+
+    # Analyzer standard fields
+    matched: Optional[bool] = None
     error_type: str
-    error_reason: Optional[str] = None
-    suggestion: Optional[str] = None
+    root_cause: Optional[str] = None
+    solution: Optional[str] = None
+    category: Optional[str] = None
+    confidence: Optional[str] = None
+    confidence_score: Optional[float] = None
+    matched_rule_id: Optional[int] = None
+    matched_pattern: Optional[str] = None
+    rule_source: Optional[str] = None
+    knowledge_source: Optional[str] = None
+
+    # Compatible fields for existing frontend
+    # error_reason: Optional[str] = None
+    # suggestion: Optional[str] = None
+
+    # Display / aggregation fields
     error_pattern: Optional[str] = None
     error_summary: Optional[str] = None
     component_name: Optional[str] = None

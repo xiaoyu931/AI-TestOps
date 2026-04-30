@@ -40,12 +40,27 @@ type FailureDetail = {
   batch_id?: number;
   cfg_id?: number;
   uipath_case_name?: string;
+
   stage: string;
   state: number;
   state_text: string;
+
+  matched?: boolean;
   error_type: string;
-  error_reason?: string;
-  suggestion?: string;
+  root_cause?: string;
+  solution?: string;
+  category?: string;
+  confidence?: string;
+  confidence_score?: number;
+  matched_rule_id?: number;
+  matched_pattern?: string;
+  rule_source?: string;
+  knowledge_source?: string;
+
+  // Compatible fields from old response
+  // error_reason?: string;
+  // suggestion?: string;
+
   error_pattern?: string;
   error_summary?: string;
   component_name?: string;
@@ -88,6 +103,22 @@ function getErrorTypeColor(errorType: string) {
       return "#666";
   }
 }
+
+// function getRootCause(row: FailureDetail) {
+//   return row.root_cause || row.error_reason || "-";
+// }
+
+// function getSolution(row: FailureDetail) {
+//   return row.solution || row.suggestion || "-";
+// }
+function getRootCause(row: FailureDetail) {
+  return row.root_cause || "-";
+}
+
+function getSolution(row: FailureDetail) {
+  return row.solution || "-";
+}
+
 
 export default function FailureAnalysisPage() {
   const [searchParams] = useSearchParams();
@@ -142,7 +173,6 @@ export default function FailureAnalysisPage() {
     }
   };
 
-  // 进入页面时，如果 URL 里有 batch_id，则自动查询
   useEffect(() => {
     const nextSearchForm: SearchForm = {
       ...initialSearchForm,
@@ -156,7 +186,6 @@ export default function FailureAnalysisPage() {
     }
   }, [batchIdFromUrl]);
 
-  // 如果 URL 里带了 issue，等 patternDistribution 加载出来后自动匹配选中
   useEffect(() => {
     if (!issueFromUrl || patternDistribution.length === 0) return;
 
@@ -521,66 +550,71 @@ export default function FailureAnalysisPage() {
             </thead>
 
             <tbody>
-              {filteredFailureDetails.map((row) => (
-                <tr key={`${row.test_case_exe_id}-${row.error_pattern || "na"}`}>
-                  <td>{row.test_case_exe_id}</td>
-                  <td>{row.batch_id ?? "-"}</td>
-                  <td>{row.cfg_id ?? "-"}</td>
-                  <td>{row.uipath_case_name || "-"}</td>
-                  <td>{row.stage}</td>
-                  <td>{row.state_text}</td>
+              {filteredFailureDetails.map((row) => {
+                const rootCause = getRootCause(row);
+                const solution = getSolution(row);
 
-                  <td>
-                    <span
+                return (
+                  <tr key={`${row.test_case_exe_id}-${row.error_pattern || "na"}`}>
+                    <td>{row.test_case_exe_id}</td>
+                    <td>{row.batch_id ?? "-"}</td>
+                    <td>{row.cfg_id ?? "-"}</td>
+                    <td>{row.uipath_case_name || "-"}</td>
+                    <td>{row.stage}</td>
+                    <td>{row.state_text}</td>
+
+                    <td>
+                      <span
+                        style={{
+                          display: "inline-block",
+                          padding: "2px 8px",
+                          borderRadius: 12,
+                          fontSize: 12,
+                          fontWeight: 600,
+                          color: "#fff",
+                          background: getErrorTypeColor(row.error_type)
+                        }}
+                      >
+                        {row.error_type}
+                      </span>
+                    </td>
+
+                    <td className="error-reason">
+                      {rootCause}
+                    </td>
+
+                    <td
+                      className="error-suggestion"
+                      title={solution}
                       style={{
-                        display: "inline-block",
-                        padding: "2px 8px",
-                        borderRadius: 12,
-                        fontSize: 12,
-                        fontWeight: 600,
-                        color: "#fff",
-                        background: getErrorTypeColor(row.error_type)
+                        maxWidth: 260,
+                        overflow: "hidden",
+                        textOverflow: "ellipsis",
+                        fontSize: 13
                       }}
                     >
-                      {row.error_type}
-                    </span>
-                  </td>
+                      {solution}
+                    </td>
 
-                  <td className="error-reason">
-                    {row.error_reason || "-"}
-                  </td>
+                    <td>{row.component_name || "Not Triggered"}</td>
 
-                  <td
-                    className="error-suggestion"
-                    title={row.suggestion || ""}
-                    style={{
-                      maxWidth: 260,
-                      overflow: "hidden",
-                      textOverflow: "ellipsis",
-                      fontSize: 13
-                    }}
-                  >
-                    {row.suggestion || "-"}
-                  </td>
+                    <td
+                      className="error-summary"
+                      title={row.error_summary || ""}
+                      style={{
+                        maxWidth: 360,
+                        whiteSpace: "normal",
+                        wordBreak: "break-word",
+                        lineHeight: 1.5
+                      }}
+                    >
+                      {row.error_summary || "-"}
+                    </td>
 
-                  <td>{row.component_name || "Not Triggered"}</td>
-
-                  <td
-                    className="error-summary"
-                    title={row.error_summary || ""}
-                    style={{
-                      maxWidth: 360,
-                      whiteSpace: "normal",
-                      wordBreak: "break-word",
-                      lineHeight: 1.5
-                    }}
-                  >
-                    {row.error_summary || "-"}
-                  </td>
-
-                  <td>{row.create_date || "-"}</td>
-                </tr>
-              ))}
+                    <td>{row.create_date || "-"}</td>
+                  </tr>
+                );
+              })}
 
               {!loading && filteredFailureDetails.length === 0 && (
                 <tr>
