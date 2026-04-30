@@ -13,26 +13,56 @@ jobs:
         working-directory: playwright-testops
 
     steps:
+      # 1️⃣ 拉代码
       - name: Checkout code
         uses: actions/checkout@v4
 
+      # 2️⃣ Python环境
       - name: Setup Python
         uses: actions/setup-python@v5
         with:
           python-version: '3.11'
 
-      - name: Install dependencies
+      # 3️⃣ 安装Python依赖（测试项目）
+      - name: Install test dependencies
         run: |
           pip install -r requirements.txt
 
+      # 4️⃣ 安装Playwright浏览器
       - name: Install Playwright browsers
         run: |
           playwright install
 
+      # 5️⃣ 安装 Node.js（前端）
+      - name: Setup Node.js
+        uses: actions/setup-node@v4
+        with:
+          node-version: '18'
+
+      # 6️⃣ 启动后端（FastAPI）
+      - name: Start backend
+        run: |
+          cd ../backend
+          pip install -r requirements.txt || true
+          nohup uvicorn app.main:app --host 0.0.0.0 --port 8000 > backend.log 2>&1 &
+
+      # 7️⃣ 启动前端
+      - name: Start frontend
+        run: |
+          cd ../frontend
+          npm install
+          nohup npm run dev -- --host 0.0.0.0 > frontend.log 2>&1 &
+
+      # 8️⃣ 等待服务启动
+      - name: Wait for services
+        run: sleep 20
+
+      # 9️⃣ 运行测试
       - name: Run tests
         run: |
           pytest --browser=chromium --alluredir=reports/allure-results
 
+      # 🔟 上传Allure结果
       - name: Upload Allure Results
         uses: actions/upload-artifact@v4
         with:
