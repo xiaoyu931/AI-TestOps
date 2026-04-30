@@ -61,6 +61,25 @@ jobs:
       - name: Run tests
         run: |
           pytest --browser=chromium --alluredir=reports/allure-results
+          
+      - name: Install Allure
+        run: |
+          sudo apt-get update
+          sudo apt-get install -y default-jre
+          wget https://github.com/allure-framework/allure2/releases/download/2.29.0/allure-2.29.0.tgz
+          tar -zxvf allure-2.29.0.tgz
+          sudo mv allure-2.29.0 /opt/allure
+          sudo ln -s /opt/allure/bin/allure /usr/bin/allure
+          
+      - name: Generate Allure Report
+        run: |
+          allure generate reports/allure-results -o reports/allure-report --clean      
+
+      - name: Deploy to GitHub Pages
+        uses: peaceiris/actions-gh-pages@v4
+        with:
+          github_token: ${{ secrets.GITHUB_TOKEN }}
+          publish_dir: playwright-testops/reports/allure-report          
 
       # 🔟 上传Allure结果
       - name: Upload Allure Results
