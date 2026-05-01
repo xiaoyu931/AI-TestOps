@@ -102,6 +102,7 @@ jobs:
             Write-Host "Skip Allure report generation because Allure CLI is not installed."
           }
 
+
       - name: Upload Allure Results
         uses: actions/upload-artifact@v4
         with:
