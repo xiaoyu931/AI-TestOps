@@ -4,84 +4,104 @@ on:
   push:
     branches: [ main ]
 
+  workflow_dispatch:
+    inputs:
+      batch_id:
+        description: "AI-TestOps batch_id created by platform"
+        required: true
+        type: string
+      dispatcher_plan_id:
+        description: "AI-TestOps dispatcher_plan_id"
+        required: false
+        type: string
+        default: "131"
+      pytest_nodeid:
+        description: "pytest nodeid to run"
+        required: false
+        type: string
+        default: "tests/test_day01_smoke.py::test_open_testops_home"
+      browser:
+        description: "Playwright browser"
+        required: false
+        type: string
+        default: "chromium"
+      test_env:
+        description: "Test environment"
+        required: false
+        type: string
+        default: "dev"
+
 jobs:
   test:
-    runs-on: ubuntu-latest
+    runs-on: self-hosted
 
     defaults:
       run:
         working-directory: playwright-testops
 
     steps:
-      # 1️⃣ 拉代码
       - name: Checkout code
         uses: actions/checkout@v4
 
-      # 2️⃣ Python环境
       - name: Setup Python
         uses: actions/setup-python@v5
         with:
           python-version: '3.11'
 
-      # 3️⃣ 安装Python依赖（测试项目）
       - name: Install test dependencies
         run: |
+          python -m pip install --upgrade pip
           pip install -r requirements.txt
 
-      # 4️⃣ 安装Playwright浏览器
       - name: Install Playwright browsers
         run: |
           playwright install
 
-      # 5️⃣ 安装 Node.js（前端）
       - name: Setup Node.js
         uses: actions/setup-node@v4
         with:
           node-version: '18'
 
-      # 6️⃣ 启动后端（FastAPI）
       - name: Start backend
         run: |
           cd ../backend
           pip install -r requirements.txt || true
-          nohup uvicorn app.main:app --host 0.0.0.0 --port 8000 > backend.log 2>&1 &
+          Start-Process -FilePath "python" -ArgumentList "-m uvicorn app.main:app --host 0.0.0.0 --port 8000" -WindowStyle Hidden
 
-      # 7️⃣ 启动前端
       - name: Start frontend
         run: |
           cd ../frontend
           npm install
-          nohup npm run dev -- --host 0.0.0.0 > frontend.log 2>&1 &
+          Start-Process -FilePath "npm" -ArgumentList "run dev -- --host 0.0.0.0" -WindowStyle Hidden
 
-      # 8️⃣ 等待服务启动
       - name: Wait for services
-        run: sleep 20
+        run: |
+          Start-Sleep -Seconds 20
 
-      # 9️⃣ 运行测试
       - name: Run tests
+        env:
+          TEST_ENV: ${{ github.event.inputs.test_env || 'dev' }}
         run: |
-          pytest --browser=chromium --alluredir=reports/allure-results
-          
+          pytest "${{ github.event.inputs.pytest_nodeid || 'tests/test_day01_smoke.py::test_open_testops_home' }}" --browser="${{ github.event.inputs.browser || 'chromium' }}" --testops-batch-id="${{ github.event.inputs.batch_id }}"
+
       - name: Install Allure
+        shell: powershell
         run: |
-          sudo apt-get update
-          sudo apt-get install -y default-jre
-          wget https://github.com/allure-framework/allure2/releases/download/2.29.0/allure-2.29.0.tgz
-          tar -zxvf allure-2.29.0.tgz
-          sudo mv allure-2.29.0 /opt/allure
-          sudo ln -s /opt/allure/bin/allure /usr/bin/allure
-          
+          if (-not (Get-Command allure -ErrorAction SilentlyContinue)) {
+            Write-Host "Allure CLI not found. Please install Allure on the self-hosted runner."
+          } else {
+            allure --version
+          }
+
       - name: Generate Allure Report
+        shell: powershell
         run: |
-          allure generate reports/allure-results -o reports/allure-report --clean      
+          if (Get-Command allure -ErrorAction SilentlyContinue) {
+            allure generate reports/allure-results -o reports/allure-report --clean
+          } else {
+            Write-Host "Skip Allure report generation because Allure CLI is not installed."
+          }
 
-      - name: Deploy to GitHub Pages
-        uses: peaceiris/actions-gh-pages@v4
-        with:
-          github_token: ${{ secrets.GITHUB_TOKEN }}
-          publish_dir: playwright-testops/reports/allure-report          
-
-      # 🔟 上传Allure结果
       - name: Upload Allure Results
         uses: actions/upload-artifact@v4
         with:
